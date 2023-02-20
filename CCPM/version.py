@@ -33,12 +33,15 @@ CCPM
 ========
 CCPM is a small library containing tools to map children's cognitive
 profiles based on neurocognitive tests/questionnaires.
+
 License
-=======
+========
 ``CCPM`` is licensed under the terms of the MIT license. See the file
 "LICENSE" for information on the history of this software, terms & conditions
 for usage, and a DISCLAIMER OF ALL WARRANTIES.
+
 All trademarks referenced herein are property of their respective holders.
+
 Copyright (c) 2022, Anthony Gagnon
 Université de Sherbrooke
 """
@@ -49,7 +52,6 @@ MAINTAINER_EMAIL = "Anthony.Gagnon7@usherbrooke.ca"
 DESCRIPTION = description
 LONG_DESCRIPTION = long_description
 URL = "https://github.com/gagnonanthony/CCPM"
-DOWNLOAD_URL = ""
 LICENSE = "MIT"
 AUTHOR = "Anthony Gagnon"
 AUTHOR_EMAIL = ""

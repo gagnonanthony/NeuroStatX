@@ -1,5 +1,4 @@
 import os
-
 from setuptools import find_packages, setup
 
 with open('requirements.txt') as f:
@@ -24,7 +23,6 @@ opts = dict(name=NAME,
             description=DESCRIPTION,
             long_description=LONG_DESCRIPTION,
             url=URL,
-            download_url=DOWNLOAD_URL,
             license=LICENSE,
             classifiers=CLASSIFIERS,
             author=AUTHOR,
