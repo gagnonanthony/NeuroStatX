@@ -1,10 +1,16 @@
 name: Build & Development
 
 on:
-  push:
-    branches: [ $default-branch ]
   pull_request:
-    branches: [ $default-branch ]
+    branches:
+      - main
+    types: [opened,reopened,synchronize]
+    paths:
+      - 'CCPM/**/*.py'
+      - 'Scripts/*.py'
+      - 'setup.py'
+      - '!.github/**'
+      - '.github/workflows/*.yml'
 
 jobs:
   build:
