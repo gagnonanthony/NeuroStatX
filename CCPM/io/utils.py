@@ -10,9 +10,9 @@ def load_df_in_any_format(file):
     """
     _, ext = os.path.splitext(file)
     if ext == '.csv':
-        df = pd.read_csv(file, header=True)
+        df = pd.read_csv(file)
     if ext == '.xlsx':
-        df = pd.read_excel(file, header=True)
+        df = pd.read_excel(file)
 
     return df
 
