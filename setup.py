@@ -31,6 +31,8 @@ opts = dict(name=NAME,
             version=VERSION,
             packages=find_packages(),
             scripts=SCRIPTS,
-            include_package_data=True)
+            include_package_data=True,
+            data_files=[('data',
+                         ['/CCPM.png'])])
 
 setup(**opts)
