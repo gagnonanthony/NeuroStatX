@@ -41,6 +41,7 @@ def plot_distributions(df, out_folder, context='poster', font_scale=1):
         sns.histplot(data=df, x=var, fill=True, kde=True, ax=axes[0])
         sns.ecdfplot(data=df, x=var, ax=axes[1])
         plt.savefig(f'{out_folder}/{var}.png')
+        plt.close()
 
 
 def compute_shapiro_wilk_test(df):
@@ -63,7 +64,7 @@ def compute_shapiro_wilk_test(df):
     return wilk, pvalues
 
 
-def compute_correlation_coefficient(df, out_folder, context='poster', font_scale=1, cmap=None,
+def compute_correlation_coefficient(df, out_folder, context='poster', font_scale=0.2, cmap=None,
                                     annot=False):
     """
     Function to compute a correlation matrix for all variables in a dataframe.
@@ -77,7 +78,7 @@ def compute_correlation_coefficient(df, out_folder, context='poster', font_scale
     """
 
     # Setting plotting parameters.
-    plt.rcParams['figure.figsize'] = [10, 7]
+    plt.rcParams['figure.figsize'] = [20, 15]
     plt.rcParams['figure.autolayout'] = True
     sns.set_style('white')
     sns.set_context(f'{context}', font_scale)
