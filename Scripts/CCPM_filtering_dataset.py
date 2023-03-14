@@ -160,6 +160,7 @@ def main():
                             f"for parametric test. \n")
 
         pdf.print_chapter(1, 'Normality concerns : ', 'basic_stats.txt')
+        os.remove('basic_stats.txt')
 
         with open('correlation_stats.txt', 'w') as f:
             corr = np.triu(corr_mat.to_numpy(), 1)
@@ -172,6 +173,7 @@ def main():
                                 f"similar information. \n")
 
         pdf.print_chapter(2, 'Correlation concerns : ', 'correlation_stats.txt')
+        os.remove('correlation_stats.txt')
         pdf.output(f'{args.out_folder}/report.pdf', 'F')
 
 
