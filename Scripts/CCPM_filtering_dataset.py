@@ -139,8 +139,16 @@ def main():
 
         # Plotting heatmap and computing correlation matrix.
         logging.info('Generating correlation matrix and heatmap.')
-        corr_mat = compute_correlation_coefficient(variable_to_plot, args.out_folder, context=args.context,
-                                                   font_scale=args.font_scale, cmap=args.cmap, annot=args.annotate)
+        if args.annotate:
+            if len(raw_df.columns) > 10:
+                logging.warning('Due to high number of variables, annotating heatmap is deactivated. Annotation is \n '
+                                'only available for dataset with 10 or less variables.')
+            corr_mat = compute_correlation_coefficient(variable_to_plot, args.out_folder, context=args.context,
+                                                       font_scale=args.font_scale, cmap=args.cmap,
+                                                       annot=False if len(raw_df.columns) > 10 else True)
+        else:
+            corr_mat = compute_correlation_coefficient(variable_to_plot, args.out_folder, context=args.context,
+                                                       font_scale=args.font_scale, cmap=args.cmap)
 
     corr_mat.to_excel(f'{args.out_folder}/correlation_coefficient.xlsx', header=True, index=True)
 
