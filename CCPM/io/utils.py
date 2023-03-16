@@ -5,6 +5,11 @@ import shutil
 import pandas as pd
 from fpdf import FPDF
 
+"""
+Some function comes from the scilpy toolbox. Please see : 
+https://github.com/scilus/scilpy
+"""
+
 
 def load_df_in_any_format(file):
     """
@@ -34,6 +39,7 @@ def add_verbose_arg(p):
 def assert_input(p, required, optional=None):
     """
     Function to validate the existence of an input file.
+    From the scilpy toolbox : https://github.com/scilus/scilpy
     :param p:           Parser
     :param required:    Paths to assert the existence
     :param optional:    Paths to assert optional arguments
@@ -59,6 +65,7 @@ def assert_input(p, required, optional=None):
 def assert_output(p, args, required, optional=None, check_dir=True):
     """
     Validate that output exist and force the use of -f.
+    From the scilpy toolbox : https://github.com/scilus/scilpy
     :param p:           Parser.
     :param args:        Arguments.
     :param required:    Required paths to assert.
@@ -90,7 +97,8 @@ def assert_output(p, args, required, optional=None, check_dir=True):
 
 def assert_output_dir_exist(p, args, required, optional=None, create_dir=True):
     """
-
+    Function to validate existence of output directory.
+    From scilpy toolbox : https://github.com/scilus/scilpy
     :param p:               Parser.
     :param args:            Arguments.
     :param required:        Required paths to validate.
@@ -147,6 +155,9 @@ def get_data_dir():
 
 
 class PDF(FPDF):
+    """
+    Object class to generate pdf reports for the toolbox scripts.
+    """
     def header(self):
         path = os.path.join(get_data_dir()+'CCPM.png')
         self.image(path, 10, 8, 33)
