@@ -9,8 +9,8 @@ from scipy.stats import shapiro
 def remove_nans(df):
     """
     Clean up dataset by removing all rows containing NaNs.
-    :param df:
-    :return:
+    :param df:      Pandas dataframe.
+    :return:        One df containing the removed rows and one df with the complete rows.
     """
     rows_with_nans = df[df.isna().any(axis=1)]
     complete_rows = df.drop(index=rows_with_nans.index)
@@ -21,11 +21,10 @@ def remove_nans(df):
 def plot_distributions(df, out_folder, context='poster', font_scale=1):
     """
     Script to visualize distribution plots for a complete dataframe.
-    :param df:
-    :param out_folder:
-    :param context:
-    :param font_scale:
-    :param aspect:
+    :param df:              Pandas dataframe.
+    :param out_folder:      Path to the output folder.
+    :param context:         Style to apply to the plots.
+    :param font_scale:      Font Scale
     :return:
     """
 
@@ -48,8 +47,8 @@ def compute_shapiro_wilk_test(df):
     """
     Function computing the normality statistic using the Shapiro Wilk's test for normality
     and outputting W and p values.
-    :param df:
-    :return:
+    :param df:      Pandas dataframe.
+    :return:        Shapiro-Wilk values (W) and associated p-values.
     """
 
     wilk = []
@@ -68,13 +67,14 @@ def compute_correlation_coefficient(df, out_folder, context='poster', font_scale
                                     annot=False):
     """
     Function to compute a correlation matrix for all variables in a dataframe.
-    :param df:
-    :param out_folder:
-    :param context:
-    :param font_scale:
-    :param cmap:
-    :param annot:
+    :param df:              Pandas dataframe.
+    :param out_folder:      Path to the output folder.
+    :param context:         Style to apply to the plots.
+    :param font_scale:      Font scale.
+    :param cmap:            Cmap to use in the heatmap.
+    :param annot:           Flag to write correlation values inside the heatmap squares.
     :return:
+    Correlation matrix with pearson correlation coefficients.
     """
 
     # Setting plotting parameters.
