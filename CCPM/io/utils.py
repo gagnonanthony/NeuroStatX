@@ -2,13 +2,16 @@ import inspect
 import os
 import shutil
 
-import pandas as pd
+from detect_delimiter import detect
 from fpdf import FPDF
+import pandas as pd
+
 
 """
 Some function comes from the scilpy toolbox. Please see : 
 https://github.com/scilus/scilpy
 """
+
 
 def load_df_in_any_format(file):
     """
@@ -22,6 +25,11 @@ def load_df_in_any_format(file):
         df = pd.read_csv(file)
     if ext == '.xlsx':
         df = pd.read_excel(file)
+    if ext == '.txt':
+        with open(file, 'r') as f:
+            f = f.read()
+            delimiter = detect(f, whitelist=['\t', ':', ';', ' ', ','])
+        df = pd.read_csv(file, sep=delimiter)
 
     return df
 

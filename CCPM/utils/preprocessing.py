@@ -89,3 +89,27 @@ def compute_correlation_coefficient(df, out_folder, context='poster', font_scale
     plt.savefig(f'{out_folder}/correlation_heatmap.png')
 
     return corr_mat
+
+
+def merge_dataframes(dict_df, index, repeated_columns=False):
+    """
+    Function to merge a variable number of dataframe by matching the values of a specific column (hereby
+    labeled as index.) Index values must appear only once in the dataframe for the function to work.
+    :param dict_df:             Dictionary of pandas dataframe.
+    :param index:               String of the name of the column to use as index (needs to be the same across all dataframes).
+    :param repeated_columns     Flag to use if column name are repeated across dataframe to merge.
+    :return:                    Joint large pandas dataframe.
+    """
+
+    keys = list(dict_df.keys())
+    for k in keys:
+        dict_df[k] = dict_df[k].set_index(f'{index}')
+
+    if repeated_columns:
+        out = dict_df[keys[0]]
+        for k in keys[1:len(keys)]:
+            out = out.join(dict_df[k], lsuffix='a', rsuffix='b')
+    else:
+        out = dict_df[keys[0]].join([dict_df[k] for k in keys[1:len(keys)]])
+
+    return out
