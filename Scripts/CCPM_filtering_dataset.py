@@ -123,7 +123,7 @@ def main():
         dict_df = {i: load_df_in_any_format(i) for i in args.in_dataset}
         raw_df = merge_dataframes(dict_df, args.identifier_column)
     else:
-        raw_df = load_df_in_any_format(args.in_dataset)
+        raw_df = load_df_in_any_format(args.in_dataset[0])
     descriptive_columns = [n for n in range(0, args.nb_descriptive_columns)]
 
     # Removing NaNs from dataset and saving the rows in a different file.
