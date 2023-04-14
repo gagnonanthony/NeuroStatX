@@ -12,9 +12,23 @@
               Children Cognitive Profile Mapping Toolbox©
 =============================================================================
 
+CCPM_creating_medical_statistics.py is a script that creates and exports a
+demographics or medical data table. It can handle continuous, categorical and
+binary variables.
 
+Input can be a single or multiple files (in this case, --identifier_column needs
+to be specified).
 
+Supported output format is : csv, xlsx, html, json and tex.
 
+--apply_yes_or_no assumes that variables specified in --categorical_variables
+have 1 = yes and 0 = no. Please validate that your dataset assumes the same values.
+If it is not the case, please modify your dataset before launching this script.
+
+EXAMPLE USAGE:
+CCPM_creating_medical_statistics.py -i input -o output.xlsx --total_variables age
+sex IQ --categorical_variables sex --var_names "Age" "Sex" "Intellectual Quotient"
+--apply_yes_or_no -v -f
 """
 
 import argparse
@@ -55,8 +69,8 @@ def _build_arg_parser():
                           "--total_variables and in the same order. Use 'Column Name' if you want to enter spaces"
                           "in your column name. Otherwise, the parser will interpret the next word as a new variable.")
     idx.add_argument('--apply_yes_or_no', action='store_true',
-                     help="If true, will change binary answers for categorical variables to yes or no"
-                          "(assumes yes = 1 and no = 0)")
+                     help="If true, will change binary answers for specified categorical variables to yes or no"
+                          "(assumes yes = 1 and no = 0).")
 
     add_verbose_arg(p)
     add_overwrite_arg(p)
