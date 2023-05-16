@@ -4,7 +4,7 @@ import tempfile
 from CCPM.io.download import get_home, download_data, save_files_dict
 
 
-download_data(save_files_dict(), keys=['data.zip'])
+download_data(save_files_dict(), keys=['testing_data.zip'])
 tmp_dir = tempfile.TemporaryDirectory()
 
 
