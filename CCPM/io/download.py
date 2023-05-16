@@ -9,8 +9,8 @@ import gdown
 
 def save_files_dict():
     """ Getting dictionary file list from GDrive. """
-    return {'data.zip':
-            '1WNytflyfZ9gCge1hCCIkDtYnSGpbUsnY'}
+    return {'testing_data.zip':
+            '1g9fBCefNGvC1ApzUaXBkB_YJxUmitZP-'}
 
 
 def download_file_from_GDrive(id, destination):
@@ -51,17 +51,17 @@ def download_data(files_dict, keys=None):
     elif isinstance(keys, str):
         keys = [keys]
     for f in keys:
-        id = files_dict[f]
+        key = files_dict[f]
         full_path = os.path.join(ccpm_home, f)
         full_path_no_ext, ext = os.path.splitext(full_path)
 
         if not os.path.isdir(full_path_no_ext):
             if ext == '.zip' and not os.path.isdir(full_path_no_ext):
                 logging.warning('Downloading file and extracting {} from id {} to {}'.format(
-                    f, id, ccpm_home
+                    f, key, ccpm_home
                 ))
 
-                download_file_from_GDrive(id, full_path)
+                download_file_from_GDrive(key, full_path)
 
                 try:
                     z = zipfile.ZipFile(full_path)
