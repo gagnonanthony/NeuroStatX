@@ -44,7 +44,7 @@ def add_verbose_arg(p):
                    help='If true, produce verbose output.')
 
 
-def assert_input(p, required, optional=None):
+def assert_input(required, optional=None):
     """
     Function to validate the existence of an input file.
     From the scilpy toolbox : https://github.com/scilus/scilpy
@@ -55,7 +55,7 @@ def assert_input(p, required, optional=None):
     """
     def check(path):
         if not os.path.isfile(path):
-            p.error('File {} does not exist.'.format(path))
+            exit('File {} does not exist.'.format(path))
 
     if isinstance(required, str):
         required = [required]
@@ -103,12 +103,11 @@ def assert_output(p, args, required, optional=None, check_dir=True):
             check(file)
 
 
-def assert_output_dir_exist(p, args, required, optional=None, create_dir=True):
+def assert_output_dir_exist(overwrite, required, optional=None, create_dir=True):
     """
     Validate the existence of the output directory.
     From the scilpy toolbox : https://github.com/scilus/scilpy
-    :param p:               Parser.
-    :param args:            Arguments.
+    :param overwrite:       Overwrite argument value (true or false).
     :param required:        Required paths to validate.
     :param optional:        Optional paths to validate.
     :param create_dir:      Option to create the directory if it does not already exist.
@@ -117,13 +116,13 @@ def assert_output_dir_exist(p, args, required, optional=None, create_dir=True):
     def check(path):
         if not os.path.isdir(path):
             if not create_dir:
-                p.error('Output directory {} does not exist. Use create_dir = True.'.format(path))
+                exit('Output directory {} does not exist. Use create_dir = True.'.format(path))
             else:
                 os.makedirs(path, exist_ok=True)
         if os.listdir(path):
-            if not args.overwrite:
-                p.error('Output directory {} is not empty. Use -f to overwrite the existing '
-                        'content.'.format(path))
+            if not overwrite:
+                exit('Output directory {} is not empty. Use -f to overwrite the existing '
+                     'content.'.format(path))
             else:
                 for file in os.listdir(path):
                     file_path = os.path.join(path, file)
