@@ -14,7 +14,7 @@ def test_help(script_runner):
 
     assert ret.success
 
-# TODO: adapt test function.
+
 def test_execution_filtering(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_dataset = os.path.join(get_home(), 'data/factor_data.xlsx')
