@@ -3,9 +3,7 @@
 
 # Import required libraries.
 import logging
-import time
 import warnings
-from pathlib import Path
 
 from factor_analyzer import FactorAnalyzer
 from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity
@@ -28,7 +26,7 @@ from CCPM.utils.preprocessing import merge_dataframes
 from CCPM.utils.factor import RotationTypes, MethodTypes
 
 
-def main(in_dataset: Annotated[list[str], typer.Option(help='Input dataset(s) to use in the factorial analysis. '
+def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to use in the factorial analysis. '
                                                             'If multiple files are provided as input,'
                                                             'will be merged according to the subject id columns.',
                                                        show_default=False,

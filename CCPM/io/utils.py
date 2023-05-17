@@ -70,26 +70,25 @@ def assert_input(required, optional=None):
             check(file)
 
 
-def assert_output(p, args, required, optional=None, check_dir=True):
+def assert_output(overwrite, required, optional=None, check_dir=True):
     """
     Validate that output exist and force the use of -f.
     From the scilpy toolbox : https://github.com/scilus/scilpy
-    :param p:           Parser.
-    :param args:        Arguments.
+    :param overwrite:       Overwrite argument value (true or false).
     :param required:    Required paths to assert.
     :param optional:    Optional paths to assert.
     :param check_dir:   Validate if output directory exist.
     :return:
     """
     def check(path):
-        if os.path.isfile(path) and not args.overwrite:
-            p.error('Output file {} exists. Select the -f to force '
+        if os.path.isfile(path) and not overwrite:
+            exit('Output file {} exists. Select the -f to force '
                     'overwriting of the existing file.'.format(path))
 
         if check_dir:
             path_dir = os.path.dirname(path)
             if path_dir and not os.path.isdir(path_dir):
-                p.error('Directory {} is not created for the output file.'.format(path_dir))
+                exit('Directory {} is not created for the output file.'.format(path_dir))
 
     if isinstance(required, str):
         required = [required]

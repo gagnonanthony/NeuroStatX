@@ -15,7 +15,7 @@ def test_help(script_runner):
     assert ret.success
 
 
-def test_execution_filtering(script_runner):
+def test_execution_medical_stats(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_dataset = os.path.join(get_home(), 'data/demographics.xlsx')
     out_table = os.path.join(get_home(), 'data/table.xlsx')
