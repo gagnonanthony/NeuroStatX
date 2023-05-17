@@ -21,4 +21,4 @@ tableone==0.8.0
 factor_analyzer==0.4.1
 matplotlib==3.7.1
 typer[all]
-adjustText @ git+https://github.com/Phlya/adjustText/archive/master.zip
+adjustText @ git+https://github.com/Phlya/adjustText@main
