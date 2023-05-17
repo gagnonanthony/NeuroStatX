@@ -112,8 +112,8 @@ def main():
     if args.verbose:
         logging.getLogger().setLevel(logging.INFO)
 
-    assert_input(parser, args.in_dataset)
-    assert_output_dir_exist(parser, args, args.out_folder, create_dir=True)
+    assert_input(args.in_dataset)
+    assert_output_dir_exist(args.overwrite, args.out_folder, create_dir=True)
 
     # Loading dataframe.
     logging.info('Loading dataset(s)...')

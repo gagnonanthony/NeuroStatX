@@ -149,8 +149,8 @@ def main():
     if args.verbose:
         logging.getLogger().setLevel(logging.INFO)
 
-    assert_input(parser, args.in_dataset)
-    assert_output(parser, args, args.output)
+    assert_input(args.in_dataset)
+    assert_output(args.overwrite, args.output)
 
     # Loading dataframe.
     logging.info('Loading dataset(s)...')
