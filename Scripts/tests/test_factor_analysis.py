@@ -19,7 +19,8 @@ def test_execution_filtering(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_dataset = os.path.join(get_home(), 'data/factor_data.xlsx')
     out_folder = os.path.join(get_home(), 'data/factor_results/')
-    ret = script_runner.run('CCPM_factor_analysis.py', '-i', in_dataset, '-o', out_folder,
-                            '-s', 'subjectkey', '-f')
+    ret = script_runner.run('CCPM_factor_analysis.py', '--in-dataset', in_dataset, '--out-folder', out_folder,
+                            '--id-column', 'subjectkey',
+                            '--overwrite')
 
     assert ret.success

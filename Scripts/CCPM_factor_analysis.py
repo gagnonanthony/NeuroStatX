@@ -5,6 +5,7 @@
 import logging
 import time
 import warnings
+from pathlib import Path
 
 from factor_analyzer import FactorAnalyzer
 from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity
@@ -27,17 +28,23 @@ from CCPM.utils.preprocessing import merge_dataframes
 from CCPM.utils.factor import RotationTypes, MethodTypes
 
 
-def main(in_dataset: Annotated[List[str], typer.Argument(help='Input dataset(s) to use in the factorial analysis. '
-                                                              'If multiple files are provided as input,'
-                                                              'will be merged according to the subject id columns.')],
-         out_folder: Annotated[str, typer.Argument(help='Path of the folder in which the results will be written. '
-                                                        'If not specified, current folder and default'
-                                                        'name will be used (e.g. = ./output/).')],
-         id_column: Annotated[str, typer.Argument(help="Name of the column containing the subject's ID tag. "
-                                                       "Required for proper handling of IDs and"
-                                                       "merging multiple datasets.")],
-         test_name: Annotated[str, typer.Argument(help='Provide the name of the test the variables come from. Will '
-                                                       'be used in the titles if provided.', show_default=False)] = "",
+def main(in_dataset: Annotated[list[str], typer.Option(help='Input dataset(s) to use in the factorial analysis. '
+                                                            'If multiple files are provided as input,'
+                                                            'will be merged according to the subject id columns.',
+                                                       show_default=False,
+                                                       rich_help_panel='Essential Files Options')],
+         id_column: Annotated[str, typer.Option(help="Name of the column containing the subject's ID tag. "
+                                                     "Required for proper handling of IDs and"
+                                                     "merging multiple datasets.",
+                                                show_default=False,
+                                                rich_help_panel='Essential Files Options')],
+         out_folder: Annotated[str, typer.Option(help='Path of the folder in which the results will be written. '
+                                                      'If not specified, current folder and default'
+                                                      'name will be used (e.g. = ./output/).',
+                                                 rich_help_panel='Essential Files Options')] = './default',
+         test_name: Annotated[str, typer.Option(help='Provide the name of the test the variables come from. Will '
+                                                     'be used in the titles if provided.', show_default=False,
+                                                rich_help_panel='Essential Files Options')] = "",
          rotation: Annotated[RotationTypes, typer.Option(help='Select the type of rotation to apply on your data.\n'
                                                               'List of possible rotations: \n'
                                                               'varimax: Orthogonal Rotation \n'
@@ -62,10 +69,10 @@ def main(in_dataset: Annotated[List[str], typer.Argument(help='Input dataset(s) 
          median: Annotated[bool, typer.Option('--median', help='Impute missing values in the original dataset based '
                                                                'on the column mean.',
                                               rich_help_panel="Imputing parameters")] = False,
-         verbose: Annotated[bool, typer.Option('--verbose', help='If true, produce verbose output.',
+         verbose: Annotated[bool, typer.Option('-v', '--verbose', help='If true, produce verbose output.',
                                                rich_help_panel="Optional parameters")] = False,
-         overwrite: Annotated[bool, typer.Option('--overwrite', help='If true, force overwriting of existing output '
-                                                                     'files.',
+         overwrite: Annotated[bool, typer.Option('-f', '--overwrite', help='If true, force overwriting of existing '
+                                                                           'output files.',
                                                  rich_help_panel="Optional parameters")] = False):
 
     """
@@ -118,7 +125,6 @@ def main(in_dataset: Annotated[List[str], typer.Argument(help='Input dataset(s) 
         else:
             df = load_df_in_any_format(in_dataset[0])
         progress.update(task, completed=True, description="[green]Dataset(s) loaded.")
-        time.sleep(0.1)
 
         task = progress.add_task(description="Processing of dataset(s)...", total=None)
         # Imputing missing values (or not).
@@ -143,7 +149,6 @@ def main(in_dataset: Annotated[List[str], typer.Argument(help='Input dataset(s) 
         logging.info("Bartlett's test of sphericity returned a p-value of {} and Keiser-Meyer-Olkin (KMO)"
                      "test returned a value of {}.".format(p_value, kmo_model))
         progress.update(task, completed=True, description="[green]Dataset(s) processed.")
-        time.sleep(0.1)
 
         task = progress.add_task(description="Performing factorial analysis and generating plots...", total=None)
         # Fit the data in the model
@@ -215,7 +220,6 @@ def main(in_dataset: Annotated[List[str], typer.Argument(help='Input dataset(s) 
                   f"Bartlett's p-value = {p_value} and KMO value = {kmo_model}.")
 
         progress.update(task, completed=True, description="[green]Analysis completed. Enjoy your results ! :beer:")
-        time.sleep(0.1)
 
 
 if __name__ == "__main__":
