@@ -11,9 +11,7 @@ import typer
 from typing import List
 from typing_extensions import Annotated
 
-from CCPM.io.utils import (add_verbose_arg,
-                           add_overwrite_arg,
-                           assert_input,
+from CCPM.io.utils import (assert_input,
                            assert_output,
                            load_df_in_any_format)
 from CCPM.utils.preprocessing import (merge_dataframes)
@@ -150,54 +148,68 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
     --apply_yes_or_no assumes that variables specified in --categorical_variables
     have 1 = yes and 0 = no. Please validate that your dataset assumes the same values.
     If it is not the case, please modify your dataset before launching this script.
+    \b
+    EXAMPLE USAGE:
+    CCPM_creating_medical_statistics.py --in-dataset in_dataset --output out_table
+    \b                                    --id-column subid -r Sex -r Age -r IQ
+    \b                                    -c Sex -n Sex -n Age -n Quotient
+    \b                                    --apply_yes_or_no -f
     """
 
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
 
-    assert_input(in_dataset)
-    assert_output(overwrite, output)
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=False
+    ) as progress:
+        task = progress.add_task(description='Running script...', total=None)
+        assert_input(in_dataset)
+        assert_output(overwrite, output)
 
-    # Loading dataframe.
-    logging.info('Loading dataset(s)...')
-    if len(in_dataset) > 1:
-        if id_column is None:
-            sys.exit('Column name for index matching is required when inputting multiple dataframe.')
-        dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
-        raw_df = merge_dataframes(dict_df, id_column)
-    else:
-        raw_df = load_df_in_any_format(in_dataset[0])
+        # Loading dataframe.
+        logging.info('Loading dataset(s)...')
+        if len(in_dataset) > 1:
+            if id_column is None:
+                sys.exit('Column name for index matching is required when inputting multiple dataframe.')
+            dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
+            raw_df = merge_dataframes(dict_df, id_column)
+        else:
+            raw_df = load_df_in_any_format(in_dataset[0])
 
-    # Changing binary response for yes or no in categorical variables.
-    logging.info('Changing binary values to yes or no...')
-    if apply_yes_or_no:
-        assert len(categorical_variables) > 0, 'To change values to yes or no, the argument --categorical_variables' \
-                                               ' must be provided.'
-        raw_df = binary_to_yes_no(raw_df, categorical_variables)
+        # Changing binary response for yes or no in categorical variables.
+        logging.info('Changing binary values to yes or no...')
+        if apply_yes_or_no:
+            assert len(categorical_variables) > 0, 'To change values to yes or no, the argument --categorical_variables' \
+                                                   ' must be provided.'
+            raw_df = binary_to_yes_no(raw_df, categorical_variables)
 
-    # Changing column names.
-    logging.info('Changing column names...')
-    col_index = get_column_indices(raw_df, categorical_variables)
-    new_df = rename_columns(raw_df, raw_variables, variable_names)
-    new_cat_names = list(new_df.columns[col_index])
+        # Changing column names.
+        logging.info('Changing column names...')
+        col_index = get_column_indices(raw_df, categorical_variables)
+        new_df = rename_columns(raw_df, raw_variables, variable_names)
+        new_cat_names = list(new_df.columns[col_index])
 
-    # Creating descriptive table.
-    logging.info('Creating table...')
-    mytable = TableOne(new_df, columns=variable_names, categorical=new_cat_names)
+        # Creating descriptive table.
+        logging.info('Creating table...')
+        mytable = TableOne(new_df, columns=variable_names, categorical=new_cat_names)
 
-    # Exporting table in desired output format.
-    logging.info('Exporting table...')
-    _, ext = os.path.splitext(output)
-    if ext == '.csv':
-        mytable.to_csv(output)
-    elif ext == '.xlsx':
-        mytable.to_excel(output)
-    elif ext == '.html':
-        mytable.to_html(output)
-    elif ext == '.json':
-        mytable.to_json(output)
-    elif ext == '.tex':
-        mytable.to_latex(output)
+        # Exporting table in desired output format.
+        logging.info('Exporting table...')
+        _, ext = os.path.splitext(output)
+        if ext == '.csv':
+            mytable.to_csv(output)
+        elif ext == '.xlsx':
+            mytable.to_excel(output)
+        elif ext == '.html':
+            mytable.to_html(output)
+        elif ext == '.json':
+            mytable.to_json(output)
+        elif ext == '.tex':
+            mytable.to_latex(output)
+
+        progress.update(task, completed=True, description='[green]Table generated. Have fun! :beer:')
 
 
 if __name__ == '__main__':
