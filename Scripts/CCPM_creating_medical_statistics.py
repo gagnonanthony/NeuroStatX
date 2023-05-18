@@ -1,44 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-=============================================================================
-            ________    ________   ________     ____     ____
-           /    ____|  /    ____| |   ___  \   |    \___/    |
-          /   /       /   /       |  |__|   |  |             |
-         |   |       |   |        |   _____/   |   |\___/|   |
-          \   \_____  \   \_____  |  |         |   |     |   |
-           \________|  \________| |__|         |___|     |___|
-              Children Cognitive Profile Mapping Toolbox©
-=============================================================================
-
-CCPM_creating_medical_statistics.py is a script that creates and exports a
-demographics or medical data table. It can handle continuous, categorical and
-binary variables.
-
-Input can be a single or multiple files (in this case, --identifier_column needs
-to be specified).
-
-Supported output format is : csv, xlsx, html, json and tex.
-
-To rename variables for final clean formatting, use --var_names arguments. Variable
-names have to be in the same order as the list provided in --total_variables.
-
---apply_yes_or_no assumes that variables specified in --categorical_variables
-have 1 = yes and 0 = no. Please validate that your dataset assumes the same values.
-If it is not the case, please modify your dataset before launching this script.
-
-EXAMPLE USAGE:
-CCPM_creating_medical_statistics.py -i input -o output.xlsx --total_variables age
-sex IQ --categorical_variables sex --var_names "Age" "Sex" "Intellectual Quotient"
---apply_yes_or_no -v -f
-"""
-
-import argparse
 import logging
 import os
+import sys
 
+from rich.progress import Progress, SpinnerColumn, TextColumn
 from tableone import TableOne
+import typer
+from typing import List
+from typing_extensions import Annotated
 
 from CCPM.io.utils import (add_verbose_arg,
                            add_overwrite_arg,
@@ -46,39 +17,6 @@ from CCPM.io.utils import (add_verbose_arg,
                            assert_output,
                            load_df_in_any_format)
 from CCPM.utils.preprocessing import (merge_dataframes)
-
-
-def _build_arg_parser():
-    p = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawTextHelpFormatter)
-
-    p.add_argument('-i', '--in_dataset', nargs='+', required=True,
-                   help="Input dataset(s). When inputting multiple datasets, all columns except the identifier column"
-                        "need to be unique.")
-    p.add_argument('--identifier_column',
-                   help='Column name containing the subject ids. (Necessary when merging multiple dataframe.')
-    p.add_argument('-o', '--output', required=True,
-                   help="Path and filename of the output dataframe.")
-
-    idx = p.add_argument_group('Formatting options.')
-    idx.add_argument('--total_variables', nargs='+',
-                     help="Variables to include in final table (raw_name).")
-    idx.add_argument('--categorical_variables', nargs='+',
-                     help='Variables containing answers as string. (variable name still needs to be stated in'
-                          '--total_variables and in the same order)')
-    idx.add_argument('--var_names', nargs='+',
-                     help="Specify new variables' name for a clean table. Needs to be the same length as"
-                          "--total_variables and in the same order. Use 'Column Name' if you want to enter spaces"
-                          "in your column name. Otherwise, the parser will interpret the next word as a new variable.")
-    idx.add_argument('--apply_yes_or_no', action='store_true',
-                     help="If true, will change binary answers for specified categorical variables to yes or no"
-                          "(assumes yes = 1 and no = 0).")
-
-    add_verbose_arg(p)
-    add_overwrite_arg(p)
-
-    return p
 
 
 def rename_columns(df, old_names, new_names):
@@ -142,57 +80,125 @@ def get_column_indices(df, column_names):
     return indices
 
 
-def main():
-    parser = _build_arg_parser()
-    args = parser.parse_args()
+def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to use in for the descriptive table. '
+                                                            'If multiple files are provided as input,'
+                                                            'will be merged according to the subject id columns.',
+                                                       rich_help_panel='Essential Files Options',
+                                                       show_default=False)],
+         id_column: Annotated[str, typer.Option(help='Column name containing the subject ids. (Necessary when'
+                                                     'merging multiple dataframe.',
+                                                rich_help_panel='Essential Files Options',
+                                                show_default=False)],
+         output: Annotated[str, typer.Option(help='Path and filename of the output dataframe.',
+                                             rich_help_panel='Essential Files Options',
+                                             show_default=False)],
+         raw_variables: Annotated[List[str], typer.Option('-r', '--raw_variables',
+                                                          help='Variables to include in final table (raw_name). Must'
+                                                               'include every variable from every datatype (categorical'
+                                                               ' or continuous).',
+                                                          rich_help_panel='Formatting Options',
+                                                          show_default=False)],
+         categorical_variables: Annotated[List[str], typer.Option('-c', '--categorical_variables',
+                                                                  help='Variables containing answers as string.'
+                                                                       '(Variable name still needs to be stated in'
+                                                                       '--raw_variables and in the same order.',
+                                                                  rich_help_panel='Formatting Options',
+                                                                  show_default=False)],
+         variable_names: Annotated[List[str], typer.Option('-n', '--variable_names',
+                                                           help="Specify new variables' name for a clean table. Needs"
+                                                                "to be the same length as --raw_variables and in the"
+                                                                "same order. State the new names as 'Column Name' if "
+                                                                "you want to enter spaces in your column name."
+                                                                "Otherwise, the parser will interpret the next word as"
+                                                                "a new variable.",
+                                                           rich_help_panel='Formatting Options',
+                                                           show_default=False)],
+         apply_yes_or_no: Annotated[bool, typer.Option('--apply_yes_or_no',
+                                                       help='If true, will change binary answers for specified'
+                                                            'categorical variables to yes or no (assume yes = 1 and'
+                                                            'no = 0).',
+                                                       rich_help_panel='Formatting Options')] = True,
+         verbose: Annotated[bool, typer.Option('-v', '--verbose', help='If true, produce verbose output.',
+                                               rich_help_panel="Optional parameters")] = False,
+         overwrite: Annotated[bool, typer.Option('-f', '--overwrite', help='If true, force overwriting of existing '
+                                                                           'output files.',
+                                                 rich_help_panel="Optional parameters")] = False):
+    """
+    \b
+    =============================================================================
+                ________    ________   ________     ____     ____
+               /    ____|  /    ____| |   ___  \   |    \___/    |
+              /   /       /   /       |  |__|   |  |             |
+             |   |       |   |        |   _____/   |   |\___/|   |
+              \   \_____  \   \_____  |  |         |   |     |   |
+               \________|  \________| |__|         |___|     |___|
+                  Children Cognitive Profile Mapping Toolbox©
+    =============================================================================
+    \b
+    CCPM_creating_medical_statistics.py is a script that creates and exports a
+    demographics or medical data table. It can handle continuous, categorical and
+    binary variables.
+    \b
+    Input can be a single or multiple files (in this case, --id_column needs
+    to be specified).
+    \b
+    Supported output format is : csv, xlsx, html, json and tex.
+    \b
+    To rename variables for final clean formatting, use --variable_names arguments. Variable
+    names have to be in the same order as the list provided in --raw_variables.
+    \b
+    --apply_yes_or_no assumes that variables specified in --categorical_variables
+    have 1 = yes and 0 = no. Please validate that your dataset assumes the same values.
+    If it is not the case, please modify your dataset before launching this script.
+    """
 
-    if args.verbose:
+    if verbose:
         logging.getLogger().setLevel(logging.INFO)
 
-    assert_input(args.in_dataset)
-    assert_output(args.overwrite, args.output)
+    assert_input(in_dataset)
+    assert_output(overwrite, output)
 
     # Loading dataframe.
     logging.info('Loading dataset(s)...')
-    if len(args.in_dataset) > 1:
-        if args.identifier_column is None:
-            parser.error('Column name for index matching is required when inputting multiple dataframe.')
-        dict_df = {i: load_df_in_any_format(i) for i in args.in_dataset}
-        raw_df = merge_dataframes(dict_df, args.identifier_column)
+    if len(in_dataset) > 1:
+        if id_column is None:
+            sys.exit('Column name for index matching is required when inputting multiple dataframe.')
+        dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
+        raw_df = merge_dataframes(dict_df, id_column)
     else:
-        raw_df = load_df_in_any_format(args.in_dataset[0])
+        raw_df = load_df_in_any_format(in_dataset[0])
 
     # Changing binary response for yes or no in categorical variables.
     logging.info('Changing binary values to yes or no...')
-    if args.apply_yes_or_no:
-        assert len(args.categorical_variables) > 0, 'To change values to yes or no, the argument --categorical_values' \
-                                                    ' must be provided.'
-        raw_df = binary_to_yes_no(raw_df, args.categorical_variables)
+    if apply_yes_or_no:
+        assert len(categorical_variables) > 0, 'To change values to yes or no, the argument --categorical_variables' \
+                                               ' must be provided.'
+        raw_df = binary_to_yes_no(raw_df, categorical_variables)
 
     # Changing column names.
     logging.info('Changing column names...')
-    col_index = get_column_indices(raw_df, args.categorical_variables)
-    new_df = rename_columns(raw_df, args.total_variables, args.var_names)
+    col_index = get_column_indices(raw_df, categorical_variables)
+    new_df = rename_columns(raw_df, raw_variables, variable_names)
     new_cat_names = list(new_df.columns[col_index])
 
     # Creating descriptive table.
     logging.info('Creating table...')
-    mytable = TableOne(new_df, columns=args.var_names, categorical=new_cat_names)
+    mytable = TableOne(new_df, columns=variable_names, categorical=new_cat_names)
 
     # Exporting table in desired output format.
     logging.info('Exporting table...')
-    _, ext = os.path.splitext(args.output)
+    _, ext = os.path.splitext(output)
     if ext == '.csv':
-        mytable.to_csv(args.output)
+        mytable.to_csv(output)
     elif ext == '.xlsx':
-        mytable.to_excel(args.output)
+        mytable.to_excel(output)
     elif ext == '.html':
-        mytable.to_html(args.output)
+        mytable.to_html(output)
     elif ext == '.json':
-        mytable.to_json(args.output)
+        mytable.to_json(output)
     elif ext == '.tex':
-        mytable.to_latex(args.output)
+        mytable.to_latex(output)
 
 
 if __name__ == '__main__':
-    main()
+    typer.run(main)

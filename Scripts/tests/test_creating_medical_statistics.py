@@ -19,9 +19,9 @@ def test_execution_medical_stats(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_dataset = os.path.join(get_home(), 'data/demographics.xlsx')
     out_table = os.path.join(get_home(), 'data/table.xlsx')
-    ret = script_runner.run('CCPM_creating_medical_statistics.py', '-i', in_dataset, '-o', out_table,
-                            '--identifier_column', 'subid', '--total_variables', 'Sex', 'Age', 'IQ',
-                            '--categorical_variables', 'Sex', '--var_names', 'Sex', 'Age', 'Quotient',
+    ret = script_runner.run('CCPM_creating_medical_statistics.py', '--in-dataset', in_dataset, '--output', out_table,
+                            '--id-column', 'subid', '-r', 'Sex', '-r', 'Age', '-r', 'IQ',
+                            '-c', 'Sex', '-n', 'Sex', '-n', 'Age', '-n', 'Quotient',
                             '--apply_yes_or_no', '-f')
 
     assert ret.success
