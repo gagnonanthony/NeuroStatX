@@ -1,6 +1,7 @@
 import inspect
 import os
 import shutil
+import sys
 
 from detect_delimiter import detect
 from fpdf import FPDF
@@ -55,7 +56,7 @@ def assert_input(required, optional=None):
     """
     def check(path):
         if not os.path.isfile(path):
-            exit('File {} does not exist.'.format(path))
+            sys.exit('File {} does not exist.'.format(path))
 
     if isinstance(required, str):
         required = [required]
@@ -82,13 +83,13 @@ def assert_output(overwrite, required, optional=None, check_dir=True):
     """
     def check(path):
         if os.path.isfile(path) and not overwrite:
-            exit('Output file {} exists. Select the -f to force '
-                    'overwriting of the existing file.'.format(path))
+            sys.exit('Output file {} exists. Select the -f to force '
+                     'overwriting of the existing file.'.format(path))
 
         if check_dir:
             path_dir = os.path.dirname(path)
             if path_dir and not os.path.isdir(path_dir):
-                exit('Directory {} is not created for the output file.'.format(path_dir))
+                sys.exit('Directory {} is not created for the output file.'.format(path_dir))
 
     if isinstance(required, str):
         required = [required]
@@ -115,13 +116,13 @@ def assert_output_dir_exist(overwrite, required, optional=None, create_dir=True)
     def check(path):
         if not os.path.isdir(path):
             if not create_dir:
-                exit('Output directory {} does not exist. Use create_dir = True.'.format(path))
+                sys.exit('Output directory {} does not exist. Use create_dir = True.'.format(path))
             else:
                 os.makedirs(path, exist_ok=True)
         if os.listdir(path):
             if not overwrite:
-                exit('Output directory {} is not empty. Use -f to overwrite the existing '
-                     'content.'.format(path))
+                sys.exit('Output directory {} is not empty. Use -f to overwrite the existing '
+                         'content.'.format(path))
             else:
                 for file in os.listdir(path):
                     file_path = os.path.join(path, file)
