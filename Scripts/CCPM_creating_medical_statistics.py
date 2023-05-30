@@ -78,6 +78,11 @@ def get_column_indices(df, column_names):
     return indices
 
 
+# Initializing the app.
+app = typer.Typer()
+
+
+@app.command()
 def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to use in for the descriptive table. '
                                                             'If multiple files are provided as input,'
                                                             'will be merged according to the subject id columns.',
@@ -213,4 +218,4 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
 
 
 if __name__ == '__main__':
-    typer.run(main)
+    app()

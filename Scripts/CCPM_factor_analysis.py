@@ -26,6 +26,11 @@ from CCPM.utils.preprocessing import merge_dataframes
 from CCPM.utils.factor import RotationTypes, MethodTypes, FormattedTextPrompt
 
 
+# Initializing the app.
+app = typer.Typer()
+
+
+@app.command()
 def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to use in the factorial analysis. '
                                                             'If multiple files are provided as input,'
                                                             'will be merged according to the subject id columns.'
@@ -244,4 +249,4 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
 
 
 if __name__ == "__main__":
-    typer.run(main)
+    app()
