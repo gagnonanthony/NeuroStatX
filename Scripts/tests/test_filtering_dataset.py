@@ -25,6 +25,7 @@ def test_execution_filtering(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_dataset = os.path.join(get_home(), 'data/data_example.xlsx')
     out_folder = os.path.join(get_home(), 'data/Filtering/')
+
     ret = runner.invoke(app, ['--out-folder', out_folder, '--in-dataset', in_dataset,
                               '--desc-columns', 1, '--id-column', 'subjectkey',
                               '-f'])
