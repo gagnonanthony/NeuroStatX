@@ -13,22 +13,29 @@ import numpy as np
 import pandas as pd
 from rich.progress import Progress, SpinnerColumn, TextColumn
 import seaborn as sns
-from tableone import tableone
 import typer
 from typing import List
 from typing_extensions import Annotated
 
 from CCPM.io.utils import (assert_input,
                            assert_output_dir_exist,
-                           load_df_in_any_format)
-from CCPM.io.viz import flexible_barplot, autolabel
+                           load_df_in_any_format,
+                           PDF)
+from CCPM.io.viz import flexible_barplot
 from CCPM.utils.preprocessing import merge_dataframes
-from CCPM.utils.factor import RotationTypes, MethodTypes
+from CCPM.utils.factor import RotationTypes, MethodTypes, FormattedTextPrompt
 
 
+# Initializing the app.
+app = typer.Typer(add_completion=False)
+
+
+@app.command()
 def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to use in the factorial analysis. '
                                                             'If multiple files are provided as input,'
-                                                            'will be merged according to the subject id columns.',
+                                                            'will be merged according to the subject id columns.'
+                                                            'For multiple inputs, use this: --in-dataset df1 '
+                                                            '--in-dataset df2 [...]',
                                                        show_default=False,
                                                        rich_help_panel='Essential Files Options')],
          id_column: Annotated[str, typer.Option(help="Name of the column containing the subject's ID tag. "
@@ -39,11 +46,11 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
          out_folder: Annotated[str, typer.Option(help='Path of the folder in which the results will be written. '
                                                       'If not specified, current folder and default'
                                                       'name will be used (e.g. = ./output/).',
-                                                 rich_help_panel='Essential Files Options')] = './default',
+                                                 rich_help_panel='Essential Files Options')] = './output/',
          test_name: Annotated[str, typer.Option(help='Provide the name of the test the variables come from. Will '
                                                      'be used in the titles if provided.', show_default=False,
                                                 rich_help_panel='Essential Files Options')] = "",
-         rotation: Annotated[RotationTypes, typer.Option(help='Select the type of rotation to apply on your data.\n'
+         rotation: Annotated[RotationTypes, typer.Option(help='\b Select the type of rotation to apply on your data.\n'
                                                               'List of possible rotations: \n'
                                                               'varimax: Orthogonal Rotation \n'
                                                               'promax: Oblique Rotation \n'
@@ -54,7 +61,7 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
                                                               'equamax: Orthogonal Rotation',
                                                          rich_help_panel="Factorial Analysis parameters",
                                                          case_sensitive=False)] = RotationTypes.promax,
-         method: Annotated[MethodTypes, typer.Option(help='Select the method for fitting the data. \n'
+         method: Annotated[MethodTypes, typer.Option(help='\b Select the method for fitting the data. \n'
                                                           'List of possible methods: \n'
                                                           'minres: Minimal Residual \n'
                                                           'ml: Maximum Likelihood Factor \n'
@@ -65,13 +72,16 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
                                                            'column mean.',
                                             rich_help_panel="Imputing parameters")] = False,
          median: Annotated[bool, typer.Option('--median', help='Impute missing values in the original dataset based '
-                                                               'on the column mean.',
+                                                               'on the column median.',
                                               rich_help_panel="Imputing parameters")] = False,
          verbose: Annotated[bool, typer.Option('-v', '--verbose', help='If true, produce verbose output.',
                                                rich_help_panel="Optional parameters")] = False,
          overwrite: Annotated[bool, typer.Option('-f', '--overwrite', help='If true, force overwriting of existing '
                                                                            'output files.',
-                                                 rich_help_panel="Optional parameters")] = False):
+                                                 rich_help_panel="Optional parameters")] = False,
+         report: Annotated[bool, typer.Option('-r', '--report', help='If true, will generate a pdf report named '
+                                                                     'report_factor_analysis.pdf',
+                                              rich_help_panel='Optional parameters')] = False):
 
     """
     \b
@@ -148,7 +158,7 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
                      "test returned a value of {}.".format(p_value, kmo_model))
         progress.update(task, completed=True, description="[green]Dataset(s) processed.")
 
-        task = progress.add_task(description="Performing factorial analysis and generating plots...", total=None)
+        task1 = progress.add_task(description="Performing factorial analysis and generating plots...", total=None)
         # Fit the data in the model
         if kmo_model > 0.6 and p_value < 0.05:
             logging.info("Dataset passed the Bartlett's test and KMO test. Proceeding with factorial analysis.")
@@ -164,7 +174,7 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
             plt.xlabel('Factors')
             plt.ylabel('Eigenvalues')
             plt.grid()
-            plt.savefig(f"{out_folder}/scree_plot.pdf")
+            plt.savefig(f"{out_folder}/scree_plot.png")
             plt.close()
 
             # Perform the factorial analysis.
@@ -184,7 +194,7 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
                              linewidth=.5, fmt=".1f", annot_kws={"size" : 8})
             ax.set_title('Correlation Heatmap of raw {} variables.'.format(test_name))
             plt.tight_layout()
-            plt.savefig(f'{out_folder}/Heatmap.pdf')
+            plt.savefig(f'{out_folder}/Heatmap.png')
             plt.close()
 
             # Plot loadings in a barplot.
@@ -210,15 +220,33 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
             for i, txt in enumerate(label):
                 plt.annotate(txt, (x[i], y[i]))
             plt.tight_layout()
-            plt.savefig(f"{out_folder}/scatterplot_loadings.pdf")
+            plt.savefig(f"{out_folder}/scatterplot_loadings.png")
 
         else:
-            print(f"In order to perform a factorial analysis, the Bartlett's test p-value needs to be significant (<0.05)\n"
-                  f"and the Keiser-Meyer-Olkin (KMO) Test needs to return a value greater than 0.6. Current results : \n"
-                  f"Bartlett's p-value = {p_value} and KMO value = {kmo_model}.")
+            print(f"In order to perform a factorial analysis, the Bartlett's test p-value needs to be significant \n"
+                  f" (<0.05) and the Keiser-Meyer-Olkin (KMO) Test needs to return a value greater than 0.6. Current\n "
+                  f" results : Bartlett's p-value = {p_value} and KMO value = {kmo_model}.")
 
-        progress.update(task, completed=True, description="[green]Analysis completed. Enjoy your results ! :beer:")
+        if report:
+            task2 = progress.add_task(description='Generating report...')
+
+            pdf = PDF()
+            pdf.alias_nb_pages()
+            pdf.set_font('Arial', '', 12)
+
+            pdf.print_chapter(1, 'Heatmap', string=FormattedTextPrompt.heatmap, image=f'{out_folder}/Heatmap.png')
+            pdf.print_chapter(2, 'Scree Plot', string=FormattedTextPrompt.screeplot,
+                              image=f'{out_folder}/scree_plot.png')
+            pdf.print_chapter(3, 'Variables Loadings', string=FormattedTextPrompt.loadings,
+                              image=f'{out_folder}/barplot_loadings.png')
+            pdf.print_chapter(4, 'Scatterplot', string=FormattedTextPrompt.scatterplot,
+                              image=f'{out_folder}/scatterplot_loadings.png')
+            pdf.output(f'{out_folder}/report_factorial_analysis.pdf')
+
+            progress.update(task2, completed=True, description="[green]Report generated.")
+
+        progress.update(task1, completed=True, description="[green]Analysis completed. Enjoy your results ! :beer:")
 
 
 if __name__ == "__main__":
-    typer.run(main)
+    app()
