@@ -79,7 +79,7 @@ def get_column_indices(df, column_names):
 
 
 # Initializing the app.
-app = typer.Typer()
+app = typer.Typer(add_completion=False)
 
 
 @app.command()

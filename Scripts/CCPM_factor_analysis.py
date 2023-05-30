@@ -27,7 +27,7 @@ from CCPM.utils.factor import RotationTypes, MethodTypes, FormattedTextPrompt
 
 
 # Initializing the app.
-app = typer.Typer()
+app = typer.Typer(add_completion=False)
 
 
 @app.command()

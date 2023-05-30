@@ -30,7 +30,7 @@ class ContextChoices(str, Enum):
 
 
 # Initializing the app.
-app = typer.Typer()
+app = typer.Typer(add_completion=False)
 
 
 @app.command()
