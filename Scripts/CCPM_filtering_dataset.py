@@ -6,7 +6,6 @@ import os
 import sys
 
 from enum import Enum
-import numpy as np
 import pandas as pd
 import typer
 from typing import List
@@ -30,6 +29,11 @@ class ContextChoices(str, Enum):
     notebook = 'notebook'
 
 
+# Initializing the app.
+app = typer.Typer()
+
+
+@app.command()
 def main(
         in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to filter. If multiple files are'
                                                            'provided as input, will be merged according to '
@@ -207,4 +211,4 @@ def main(
 
 
 if __name__ == '__main__':
-    typer.run(main)
+    app()
