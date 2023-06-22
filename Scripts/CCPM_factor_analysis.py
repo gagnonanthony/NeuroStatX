@@ -5,7 +5,7 @@
 import logging
 import warnings
 
-from factor_analyzer import FactorAnalyzer
+from factor_analyzer import FactorAnalyzer, ConfirmatoryFactorAnalyzer, ModelSpecification
 from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity
 from factor_analyzer.factor_analyzer import calculate_kmo
 import matplotlib.pyplot as plt
@@ -23,7 +23,7 @@ from CCPM.io.utils import (assert_input,
                            PDF)
 from CCPM.io.viz import flexible_barplot
 from CCPM.utils.preprocessing import merge_dataframes
-from CCPM.utils.factor import RotationTypes, MethodTypes, FormattedTextPrompt
+from CCPM.utils.factor import RotationTypes, MethodTypes, FormattedTextPrompt, horn_parallel_analysis
 
 
 # Initializing the app.
@@ -33,13 +33,13 @@ app = typer.Typer(add_completion=False)
 @app.command()
 def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to use in the factorial analysis. '
                                                             'If multiple files are provided as input,'
-                                                            'will be merged according to the subject id columns.'
+                                                            ' will be merged according to the subject id columns.'
                                                             'For multiple inputs, use this: --in-dataset df1 '
                                                             '--in-dataset df2 [...]',
                                                        show_default=False,
                                                        rich_help_panel='Essential Files Options')],
          id_column: Annotated[str, typer.Option(help="Name of the column containing the subject's ID tag. "
-                                                     "Required for proper handling of IDs and"
+                                                     "Required for proper handling of IDs and "
                                                      "merging multiple datasets.",
                                                 show_default=False,
                                                 rich_help_panel='Essential Files Options')],
@@ -68,6 +68,13 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
                                                           'principal: Principal Component',
                                                      rich_help_panel="Factorial Analysis parameters",
                                                      case_sensitive=False)] = MethodTypes.minres,
+         use_horn_parallel: Annotated[bool, typer.Option('--use_horn_parallel', help='If set, will use the suggested '
+                                                                                     'number of factors from the Horns '
+                                                                                     'parallel analysis in a case where'
+                                                                                     ' values differ between the scree'
+                                                                                     'plot and horns parallel analysis.'
+                                                                                     '',
+                                                         rich_help_panel='Factorial Analysis parameters')] = False,
          mean: Annotated[bool, typer.Option('--mean', help='Impute missing values in the original dataset based on the '
                                                            'column mean.',
                                             rich_help_panel="Imputing parameters")] = False,
@@ -162,7 +169,7 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
         # Fit the data in the model
         if kmo_model > 0.6 and p_value < 0.05:
             logging.info("Dataset passed the Bartlett's test and KMO test. Proceeding with factorial analysis.")
-            fa = FactorAnalyzer(rotation=None)
+            fa = FactorAnalyzer(rotation=None, method=method)
             fa.fit(df)
             ev, v = fa.get_eigenvalues()
 
@@ -177,12 +184,29 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
             plt.savefig(f"{out_folder}/scree_plot.png")
             plt.close()
 
-            # Perform the factorial analysis.
+            # Horn's parallel analysis.
+            suggfactor, suggcomponent = horn_parallel_analysis(df.values, out_folder, rotation=None, method=method)
+
+            # Validating the results from scree plot and horn's parallel analysis.
             eigenvalues = sum(map(lambda a: a > 1, ev))
-            fa_final = FactorAnalyzer(rotation=rotation, n_factors=eigenvalues, method=method)
+            if suggfactor == eigenvalues:
+                logging.info("Both the scree plot and horn's parallel analysis suggests the same number of factors : "
+                             "{} . Proceeding with this number for the final analysis.".format(suggfactor))
+                nfactors = suggfactor
+            else:
+                logging.info("The scree plot and horn's parallel analysis returned different values : {} and {}"
+                             " respectively. Default is taking the value suggested from the scree plot method "
+                             "if the --use_horns_parallel flag is not used.".format(eigenvalues, suggfactor))
+                if use_horn_parallel:
+                    nfactors = suggfactor
+                else:
+                    nfactors = eigenvalues
+
+            # Perform the factorial analysis.
+            fa_final = FactorAnalyzer(rotation=rotation, n_factors=nfactors, method=method)
             fa_final.fit(df)
             out = fa_final.transform(df)
-            columns = [f"Factor {i}" for i in range(1, eigenvalues+1)]  # Validate if the list comprehension works.
+            columns = [f"Factor {i}" for i in range(1, nfactors+1)]  # Validate if the list comprehension works.
             out = pd.DataFrame(out, index=record_id, columns=columns)
             out.to_excel(f"{out_folder}/transformed_data.xlsx", header=True, index=True)
 
@@ -200,7 +224,7 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
             # Plot loadings in a barplot.
             loadings = pd.DataFrame(fa_final.loadings_, columns=columns, index=df.columns)
             data_to_plot = [loadings[i].values for i in loadings.columns]
-            flexible_barplot(data_to_plot, loadings.index, eigenvalues,
+            flexible_barplot(data_to_plot, loadings.index, nfactors,
                              title='Loadings values', filename=f'{out_folder}/barplot_loadings.png',
                              ylabel='Loading')
 
