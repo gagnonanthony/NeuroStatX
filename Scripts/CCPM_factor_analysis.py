@@ -3,9 +3,9 @@
 
 # Import required libraries.
 import logging
-import warnings
+import os
 
-from factor_analyzer import FactorAnalyzer, ConfirmatoryFactorAnalyzer, ModelSpecification
+from factor_analyzer import FactorAnalyzer
 from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity
 from factor_analyzer.factor_analyzer import calculate_kmo
 import matplotlib.pyplot as plt
@@ -13,6 +13,8 @@ import numpy as np
 import pandas as pd
 from rich.progress import Progress, SpinnerColumn, TextColumn
 import seaborn as sns
+import semopy
+from sklearn.preprocessing import StandardScaler
 import typer
 from typing import List
 from typing_extensions import Annotated
@@ -23,7 +25,8 @@ from CCPM.io.utils import (assert_input,
                            PDF)
 from CCPM.io.viz import flexible_barplot
 from CCPM.utils.preprocessing import merge_dataframes
-from CCPM.utils.factor import RotationTypes, MethodTypes, FormattedTextPrompt, horn_parallel_analysis
+from CCPM.utils.factor import (RotationTypes, MethodTypes, FormattedTextPrompt, horn_parallel_analysis,
+                               apply_efa_only, apply_efa_and_cfa)
 
 
 # Initializing the app.
@@ -71,10 +74,32 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
          use_horn_parallel: Annotated[bool, typer.Option('--use_horn_parallel', help='If set, will use the suggested '
                                                                                      'number of factors from the Horns '
                                                                                      'parallel analysis in a case where'
-                                                                                     ' values differ between the scree'
-                                                                                     'plot and horns parallel analysis.'
+                                                                                     ' values differ between the Kaiser'
+                                                                                     ' criterion '
+                                                                                     'and Horns parallel analysis.'
                                                                                      '',
                                                          rich_help_panel='Factorial Analysis parameters')] = False,
+         use_only_efa: Annotated[bool, typer.Option('--use_only_efa', help='If set, the script will not perform the'
+                                                                           ' default 2 steps factor analysis '
+                                                                           '(exploratory factor analysis + confirmatory'
+                                                                           ' factor analysis on 2 distinct subset of '
+                                                                           'the data) but will simply do an exploratory'
+                                                                           ' factor analysis on the complete dataset.',
+                                                    rich_help_panel='Factorial Analysis parameters')] = False,
+         train_dataset_size: Annotated[float, typer.Option('--train_dataset_size', help='Specify the proportion of the '
+                                                                                        'input dataset to use as '
+                                                                                        'training dataset in the EFA. '
+                                                                                        '(value from 0 to 1)',
+                                                           rich_help_panel='Factorial Analysis parameters')] = 0.5,
+         threshold: Annotated[float, typer.Option('--threshold', help='Threshold to use to determine variables'
+                                                                      ' to include for each factor in CFA analysis.'
+                                                                      ' (ex: if set to 0.40, only variables with '
+                                                                      'loadings higher than 0.40 will be assigned to a '
+                                                                      'factor in the CFA.',
+                                                  rich_help_panel='Factorial Analysis parameters')] = 0.40,
+         random_state: Annotated[int, typer.Option('--random_state', help='Random State value to use for'
+                                                                          ' reproducibility.',
+                                                   rich_help_panel='Factorial Analysis parameters')] = 1234,
          mean: Annotated[bool, typer.Option('--mean', help='Impute missing values in the original dataset based on the '
                                                            'column mean.',
                                             rich_help_panel="Imputing parameters")] = False,
@@ -101,21 +126,47 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
                \________|  \________| |__|         |___|     |___|
                   Children Cognitive Profile Mapping Toolbox©
     =============================================================================
-    CCPM_factor_analysis.py is a script that can be used to perform a factor analysis
-    on observed data. It can handle continuous, categorical and binary variables. This
-    script can be used to perform a factor analysis on observed data. It will
-    return weights and new scores for each subject and global graphs showing loadings
-    for each variable.
+    CCPM_factor_analysis.py is a script that can be used to perform an exploratory
+    factorial analysis (EFA) and a confirmatory factorial analysis (CFA). A user can
+    decide if he wants to perform only EFA or both sequentially.
+    \b
+    In the case of performing only an EFA (use the flag --use_only_efa), the script
+    will use either the Kaiser's criterion or Horn's parallel analysis (see
+    --use_horn_parallel) to determine the optimal number of factors to extract from
+    the data. Then the final EFA model will be fitted using the provided rotation and
+    method.
+    \b
+    If --use_only_efa is not selected, the script will perform subsequently an EFA and
+    a CFA. The selection of the appropriate number of factors will be done on the full
+    input dataset. However, the fitting of the EFA model will be performed on the selected
+    proportion of the input data to use as a training data (see --train_dataset_size).
+    The parameters surrounding the fitting of the final EFA is identical to what is
+    described above.
+    \b
+    Following the EFA, resulting loadings will be assigned to a latent factor based
+    on the supplied threshold value. A CFA model will then be build using this
+    structure and fitted to the data. Statistics of goodness of fit such as Chi-square,
+    RMSEA, CFI and NFI will be computed and exported as a table and into a html report.
+    A good reference to understand those metrics can be accessed here:
+    Costa, V., & Sarmento, R. Confirmatory Factor Analysis.
+    https://arxiv.org/ftp/arxiv/papers/1905/1905.05598.pdf
+    \b
+    Both method can be used to derive factor scores. Since there is no clear
+    consensus surrounding which is preferred (see
+    https://stats.stackexchange.com/questions/346499/whether-to-use-efa-or-cfa-to-predict-latent-variables-scores)
+    the script will output both factor scores. As shown in https://github.com/gagnonanthony/CCPM/pull/11,
+    both methods highly correlate with one another. It then comes down to the user's
+    preference.
     \b
     Dataset should contain only subject's ID and variables that will be included in
     factorial analysis. Rows with missing values will be removed by default, please
     select the mean or median option to impute missing data (be cautious when doing
     this).
     \b
-    Usually used to interpret psychometric or behavioral measures. The default parameters
-    might not be optimized for all types of data.
+    EXAMPLE USAGE
+    CCPM_factor_analysis --in-dataset df --id-column IDs --out-folder results_FA/ --test-name EXAMPLE
+                         --rotation promax --method ml --threshold 0.4 --train_dataset_size 0.8 -v -f
     """
-    warnings.filterwarnings('ignore', category=DeprecationWarning)
 
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
@@ -129,6 +180,10 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
         logging.info('Validating input files and creating output folder {}'.format(out_folder))
         assert_input(in_dataset)
         assert_output_dir_exist(overwrite, out_folder, create_dir=True)
+
+        if not use_only_efa:
+            os.makedirs(f'{out_folder}/efa/')
+            os.makedirs(f'{out_folder}/cfa/')
 
         # Loading dataset.
         logging.info('Loading {}'.format(in_dataset))
@@ -158,9 +213,12 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
         record_id = df[id_column]
         df.drop([id_column], axis=1, inplace=True)
 
+        # Scaling the dataset.
+        scaled_df = pd.DataFrame(StandardScaler().fit_transform(df), columns=df.columns)
+
         # Requirement for factorial analysis.
-        chi_square_value, p_value = calculate_bartlett_sphericity(df)
-        kmo_all, kmo_model = calculate_kmo(df)
+        chi_square_value, p_value = calculate_bartlett_sphericity(scaled_df)
+        kmo_all, kmo_model = calculate_kmo(scaled_df)
         logging.info("Bartlett's test of sphericity returned a p-value of {} and Keiser-Meyer-Olkin (KMO)"
                      "test returned a value of {}.".format(p_value, kmo_model))
         progress.update(task, completed=True, description="[green]Dataset(s) processed.")
@@ -170,10 +228,10 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
         if kmo_model > 0.6 and p_value < 0.05:
             logging.info("Dataset passed the Bartlett's test and KMO test. Proceeding with factorial analysis.")
             fa = FactorAnalyzer(rotation=None, method=method)
-            fa.fit(df)
+            fa.fit(scaled_df)
             ev, v = fa.get_eigenvalues()
 
-            # Plot results using matplotlib
+            # Plot scree plot to determine the optimal number of factors using the Kaiser's method. (eigenvalues > 1)
             plt.scatter(range(1, df.shape[1] + 1), ev)
             plt.plot(range(1, df.shape[1] + 1), ev)
             sns.set_style("whitegrid")
@@ -185,7 +243,8 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
             plt.close()
 
             # Horn's parallel analysis.
-            suggfactor, suggcomponent = horn_parallel_analysis(df.values, out_folder, rotation=None, method=method)
+            suggfactor, suggcomponent = horn_parallel_analysis(scaled_df.values, out_folder, rotation=None,
+                                                               method=method)
 
             # Validating the results from scree plot and horn's parallel analysis.
             eigenvalues = sum(map(lambda a: a > 1, ev))
@@ -203,48 +262,66 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
                     nfactors = eigenvalues
 
             # Perform the factorial analysis.
-            fa_final = FactorAnalyzer(rotation=rotation, n_factors=nfactors, method=method)
-            fa_final.fit(df)
-            out = fa_final.transform(df)
-            columns = [f"Factor {i}" for i in range(1, nfactors+1)]  # Validate if the list comprehension works.
-            out = pd.DataFrame(out, index=record_id, columns=columns)
-            out.to_excel(f"{out_folder}/transformed_data.xlsx", header=True, index=True)
+            if use_only_efa:
+                efa = apply_efa_only(scaled_df, rotation=rotation, nfactors=nfactors, method=method)
+            else:
+                efa, cfa = apply_efa_and_cfa(scaled_df, nfactors=nfactors, rotation=rotation, method=method,
+                                             threshold=threshold, random_state=random_state,
+                                             train_size=train_dataset_size)
+
+            columns = [f"Factor {i}" for i in range(1, nfactors+1)]
+
+            # Export EFA and CFA transformed data.
+            efa_out = pd.DataFrame(efa.transform(scaled_df), index=record_id, columns=columns)
+            if use_only_efa:
+                efa_out.to_excel(f"{out_folder}/scores.xlsx", header=True, index=True)
+            else:
+                efa_out.to_excel(f"{out_folder}/efa/scores.xlsx", header=True, index=True)
+
+                # Export scores from CFA analysis.
+                cfa_scores = cfa.predict_factors(scaled_df).set_index(record_id)
+                cfa_scores.to_excel(f'{out_folder}/cfa/scores.xlsx', header=True, index=True)
 
             # Plot correlation matrix between all raw variables.
-            corr = pd.DataFrame(fa_final.corr_, index=df.columns, columns=df.columns)
+            corr = pd.DataFrame(efa.corr_, index=df.columns, columns=df.columns)
             mask = np.triu(np.ones_like(corr, dtype=bool))
             f, ax = plt.subplots(figsize=(11, 9))
             ax = sns.heatmap(corr, mask=mask, cmap='BrBG', vmax=1, vmin=-1, center=0, square=True, annot=True,
-                             linewidth=.5, fmt=".1f", annot_kws={"size" : 8})
+                             linewidth=.5, fmt=".1f", annot_kws={"size": 8})
             ax.set_title('Correlation Heatmap of raw {} variables.'.format(test_name))
             plt.tight_layout()
             plt.savefig(f'{out_folder}/Heatmap.png')
             plt.close()
 
-            # Plot loadings in a barplot.
-            loadings = pd.DataFrame(fa_final.loadings_, columns=columns, index=df.columns)
-            data_to_plot = [loadings[i].values for i in loadings.columns]
-            flexible_barplot(data_to_plot, loadings.index, nfactors,
-                             title='Loadings values', filename=f'{out_folder}/barplot_loadings.png',
-                             ylabel='Loading')
+            # Plot EFA loadings in a barplot.
+            efa_loadings = pd.DataFrame(efa.loadings_, columns=columns, index=df.columns)
+            efa_data_to_plot = [efa_loadings[i].values for i in efa_loadings.columns]
+            if use_only_efa:
+                flexible_barplot(efa_data_to_plot, efa_loadings.index, nfactors,
+                                 title='Loadings values for the EFA', filename=f'{out_folder}/barplot_loadings.png',
+                                 ylabel='Loading value')
+            else:
+                flexible_barplot(efa_data_to_plot, efa_loadings.index, nfactors,
+                                 title='Loadings values for the EFA', filename=f'{out_folder}/efa/barplot_loadings.png',
+                                 ylabel='Loading value')
 
-            # Export and plot loadings for all variables
-            eig, v = fa_final.get_eigenvalues()
-            eigen_table = pd.DataFrame(eig, index=[f'Factor {i}' for i in range(1, len(df.columns)+1)],
+                # Export table with all estimate from the CFA analysis.
+                stats = cfa.inspect(mode='list', what='est', information='expected')
+                stats.to_excel(f'{out_folder}/cfa/statistics.xlsx', header=True, index=False)
+
+            # Export EFA loadings for all variables.
+            eigen_table = pd.DataFrame(efa.get_eigenvalues()[0],
+                                       index=[f'Factor {i}' for i in range(1, len(df.columns)+1)],
                                        columns=['Eigenvalues'])
-            eigen_table.to_excel(f"{out_folder}/eigenvalues.xlsx", header=True, index=True)
-            loadings.to_excel(f"{out_folder}/loadings.xlsx", header=True, index=True)
-            x = loadings['Factor 1'].tolist()
-            y = loadings["Factor 2"].tolist()
-            label = df.columns.tolist()
-            plt.scatter(x, y)
-            plt.title('Scatterplot of variables loadings from the first and second factor.')
-            plt.xlabel('Factor 1')
-            plt.ylabel('Factor 2')
-            for i, txt in enumerate(label):
-                plt.annotate(txt, (x[i], y[i]))
-            plt.tight_layout()
-            plt.savefig(f"{out_folder}/scatterplot_loadings.png")
+            if use_only_efa:
+                eigen_table.to_excel(f"{out_folder}/eigenvalues.xlsx", header=True, index=True)
+                efa_loadings.to_excel(f"{out_folder}/loadings.xlsx", header=True, index=True)
+            else:
+                eigen_table.to_excel(f"{out_folder}/efa/eigenvalues.xlsx", header=True, index=True)
+                efa_loadings.to_excel(f"{out_folder}/efa/loadings.xlsx", header=True, index=True)
+
+                semopy.semplot(cfa, f'{out_folder}/cfa/semplot.png', plot_covs=True)
+                semopy.report(cfa, f'{out_folder}/cfa/Detailed_CFA_Report')
 
         else:
             print(f"In order to perform a factorial analysis, the Bartlett's test p-value needs to be significant \n"
@@ -261,10 +338,15 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
             pdf.print_chapter(1, 'Heatmap', string=FormattedTextPrompt.heatmap, image=f'{out_folder}/Heatmap.png')
             pdf.print_chapter(2, 'Scree Plot', string=FormattedTextPrompt.screeplot,
                               image=f'{out_folder}/scree_plot.png')
-            pdf.print_chapter(3, 'Variables Loadings', string=FormattedTextPrompt.loadings,
-                              image=f'{out_folder}/barplot_loadings.png')
-            pdf.print_chapter(4, 'Scatterplot', string=FormattedTextPrompt.scatterplot,
-                              image=f'{out_folder}/scatterplot_loadings.png')
+            if use_only_efa:
+                pdf.print_chapter(3, 'Variables Loadings', string=FormattedTextPrompt.loadings,
+                                  image=f'{out_folder}/barplot_loadings.png')
+            else:
+                pdf.print_chapter(3, 'Variables Loadings', string=FormattedTextPrompt.loadings,
+                                  image=f'{out_folder}/efa/barplot_loadings.png')
+
+            pdf.print_chapter(4, 'SEMplot showing relation between latent variables and indicators.',
+                              string=FormattedTextPrompt.semplot, image=f'{out_folder}/cfa/semplot.png')
             pdf.output(f'{out_folder}/report_factorial_analysis.pdf')
 
             progress.update(task2, completed=True, description="[green]Report generated.")
