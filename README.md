@@ -15,6 +15,19 @@ environment are recommended (e.g. virtualenv)) :
 
 ``pip install -e .``
 
+Installing Graphviz
+===================
+In order to correctly use the visualisation function of ``semopy``, it
+is suggested to install Graphviz in your base system.
+
+_FOR MAC USERS:_
+
+``brew install graphviz``
+
+_FOR LINUX USERS:_
+
+``sudo apt get graphviz``
+
 License
 ============
 ``CCPM`` is licensed under the terms of the MIT license. See the file
