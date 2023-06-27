@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from enum import Enum
+
+import pandas as pd
 from factor_analyzer import FactorAnalyzer
+import graphviz
 import matplotlib.pyplot as plt
 import numpy as np
+import semopy
+from sklearn.model_selection import train_test_split
 
 
 class RotationTypes(str, Enum):
@@ -28,6 +33,7 @@ class FormattedTextPrompt(str):
     loadings = "Plot displaying the contribution of each variable to all factors with an eigenvalues > 1."
     scatterplot = "Visual representation of the contribution of each variable to the first 2 factors." \
                   " Scatterplot for the other factors are not produced."
+    semplot = "Visual representation of the relationship between latent variables and indicators."
 
 
 def horn_parallel_analysis(x, output_folder, method="minres", rotation=None, nfactors=1, niter=20):
@@ -103,3 +109,107 @@ def horn_parallel_analysis(x, output_folder, method="minres", rotation=None, nfa
     plt.close()
 
     return suggfactors, suggcomponents
+
+
+def apply_efa_only(df, method, nfactors, rotation):
+    """
+    Legacy function to compute a simple exploratory factor analysis (EFA) using the factor_analyzer package.
+    The function fit a EFA model to the data with the specified number of factors, method and rotation while
+    returning the complete model object.
+
+    :param df:          Input dataset with only variables to include in the EFA.
+    :param method:      Method used to fit the model.
+                        List of possible methods:
+                            minres: Minimal Residual
+                            ml: Maximum Likelihood Factor
+                            principal: Principal Component
+    :param nfactors:    Number of factors (latent variables) to extract from the data.
+    :param rotation:    Rotation method to apply to the factor loadings:
+                        List of possible rotations:
+                            varimax: Orthogonal Rotation
+                            promax: Oblique Rotation
+                            oblimin: Oblique Rotation
+                            oblimax: Orthogonal Rotation
+                            quartimin: Oblique Rotation
+                            quartimax: Orthogonal Rotation
+                            equamax: Orthogonal Rotation
+    :return:            Fitted FactorAnalyzer object.
+    """
+
+    # Instantiating and fitting the exploratory factorial analysis.
+    efa = FactorAnalyzer(rotation=rotation, n_factors=nfactors, method=method)
+    efa.fit(df)
+
+    # Return every possible information about the model and factors.
+    return efa
+
+
+def apply_efa_and_cfa(df, method, nfactors, rotation, train_size=0.5, threshold=0.40, random_state=None):
+    """
+    Used to compute subsequently an exploratory factor analysis (EFA) to determine the original loadings and a
+    confirmatory factor analysis (CFA) to evaluate the goodness of fit of the model.
+
+    This function uses the factor_analyzer to compute the EFA
+    (https://factor-analyzer.readthedocs.io/en/latest/index.html) and then,
+    leverage semopy package to evaluate the goodness of fit of the proposed model
+    (https://semopy.com/).
+
+    Supplied dataset will be split into 2 datasets : train and test sets. The train set
+    will be used in the EFA whereas the test set will be used in the CFA.
+
+    The function then returned both model object classes for further plotting, exporting statistics,
+    etc.
+
+    :param df:              Input dataset with only variables to include in the EFA.
+    :param method:          Method used to fit the model.
+                            List of possible methods:
+                                minres: Minimal Residual
+                                ml: Maximum Likelihood Factor
+                                principal: Principal Component
+    :param nfactors:        Number of factors (latent variables) to extract from the data.
+    :param rotation:        Rotation method to apply to the factor loadings:
+                            List of possible rotations:
+                                varimax: Orthogonal Rotation
+                                promax: Oblique Rotation
+                                oblimin: Oblique Rotation
+                                oblimax: Orthogonal Rotation
+                                quartimin: Oblique Rotation
+                                quartimax: Orthogonal Rotation
+                                equamax: Orthogonal Rotation
+    :param train_size:      Proportion of supplied dataset to use for training (a.k.a EFA).
+                            Test dataset size will be derived from this simple equation :
+                            test_size = 1 - train_size.
+    :param threshold:       Threshold value to consider a loading to be sufficiently enough
+                            to be included in the model to test with CFA.
+    :param random_state:    Random hash to use for reproducible results.
+    :return:                Both FactorAnalyzer class object and semopy.Model class object.
+    """
+
+    # Splitting the dataset randomly in 2 subsets.
+    test_size = 1 - train_size
+    train_efa, test_cfa = train_test_split(df, train_size=train_size, test_size=test_size, random_state=random_state)
+
+    # Run traditional efa analysis on training dataset (simple random half of the original dataset).
+    efa = FactorAnalyzer(rotation=rotation, n_factors=nfactors, method=method)
+    efa.fit(train_efa)
+
+    # Sort model specification using the semopy synthax.
+    columns = [f'F{i}' for i in range(1, nfactors+1)]
+    loadings_df = pd.DataFrame(efa.loadings_, columns=columns, index=df.columns)
+    modeldict = {}
+    for col in loadings_df.columns:
+        idx = loadings_df.index[(loadings_df[col] >= threshold) | (loadings_df[col] <= -threshold)].tolist()
+        modeldict[col] = idx
+
+    mod = ""
+    for key, values in modeldict.items():
+        mod += f"{key} =~ {' + '.join(values)}\n"
+
+    contributing_col = {x for v in modeldict.values() for x in v}
+    test_cfa = test_cfa.filter(contributing_col)
+
+    # Run confirmatory factor analysis.
+    cfa = semopy.Model(mod)
+    cfa.fit(test_cfa)
+
+    return efa, cfa
