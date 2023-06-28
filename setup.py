@@ -1,5 +1,5 @@
 import os
-from setuptools import find_packages, setup
+from setuptools import find_namespace_packages, setup
 
 with open('requirements.txt') as f:
     required_dependencies = f.read().splitlines()
@@ -29,7 +29,7 @@ opts = dict(name=NAME,
             author_email=AUTHOR_EMAIL,
             platforms=PLATFORMS,
             version=VERSION,
-            packages=find_packages(),
+            packages=find_namespace_packages(),
             scripts=SCRIPTS,
             include_package_data=True,
             data_files=[('data',
