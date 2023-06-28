@@ -36,4 +36,4 @@ jobs:
           python -m pip install -e .
       - name: Test with pytest
         run: |
-          pytest
+          pytest --verbose
