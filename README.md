@@ -13,6 +13,13 @@ environment are recommended (e.g. virtualenv)) :
 
 ``cd CCPM``
 
+``pip install -r requirements.txt``
+
+Temporarily, install semopy separately due to the legacy use of sklearn (an upcoming PR in pip will allow
+to ignore package dependencies directly in requirements.txt).
+
+``pip install semopy==2.3.9 --no-deps``
+
 ``pip install -e .``
 
 Installing Graphviz
