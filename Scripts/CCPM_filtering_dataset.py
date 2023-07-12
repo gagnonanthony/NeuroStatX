@@ -136,9 +136,12 @@ def main(
         raw_df = load_df_in_any_format(in_dataset[0])
     descriptive_columns = [n for n in range(0, desc_columns)]
 
-    # Removing NaNs from dataset and saving the rows in a different file.
+    # Removing NaNs from dataset and saving the rows in a different file. Exporting excluded rows and included rows in
+    # 2 different files.
     logging.info('Filtering dataset to remove NaN values. ')
     nans, clean = remove_nans(raw_df)
+    nans.to_excel(f'{out_folder}/excluded_rows.xlsx', header=True, index=True)
+    clean.to_excel(f'{out_folder}/included_rows.xlsx', header=True, index=True)
 
     # Exporting global description statistics.
     variable_for_stats = clean.drop(clean.columns[descriptive_columns], axis=1, inplace=False).astype('float')
