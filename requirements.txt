@@ -21,6 +21,7 @@ openpyxl==3.1.2
 seaborn==0.12.2
 pytest-console-scripts==1.4.1
 gdown==4.7.1
+kneed==0.8.5
 fpdf==1.7.2
 detect-delimiter==0.1.1
 pillow==9.5.0
