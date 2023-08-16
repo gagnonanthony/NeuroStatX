@@ -10,7 +10,7 @@ import gdown
 def save_files_dict():
     """ Getting dictionary file list from GDrive. """
     return {'testing_data.zip':
-            '1g9fBCefNGvC1ApzUaXBkB_YJxUmitZP-'}
+            '1WNytflyfZ9gCge1hCCIkDtYnSGpbUsnY'}
 
 
 def download_file_from_GDrive(id, destination):

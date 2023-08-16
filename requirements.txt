@@ -1,10 +1,11 @@
 joblib==1.2.0
 numpy==1.25.0
 pandas==2.0.2
-pip==23.1.2
+pip==23.2.1
 python-dateutil==2.8.2
 pytz==2023.3
 scikit-learn==1.2.2
+scikit-fuzzy==0.4.2
 scipy==1.10.1
 sympy==1.12
 statsmodels==0.13.5
