@@ -45,7 +45,7 @@ def compute_knee_location(lst):
     """
     
     knee = KneeLocator(
-        range(2, len(lst)+2), lst, curve='convex', direction='decreasing'
+        range(2, len(lst)+2), lst, S=1, curve='convex', direction='decreasing'
     )
     elbow = knee.elbow
     

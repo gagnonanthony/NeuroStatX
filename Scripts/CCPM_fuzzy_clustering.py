@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 
+import numpy as np
 import pandas as pd
 import typer
 from typing import List
@@ -16,7 +17,7 @@ from CCPM.io.utils import (load_df_in_any_format,
                            assert_output_dir_exist)
 from CCPM.clustering.fuzzy import fuzzyCmeans
 from CCPM.utils.preprocessing import merge_dataframes
-from CCPM.clustering.viz import plot_clustering_results, plot_dendrogram
+from CCPM.clustering.viz import plot_clustering_results, plot_dendrogram, plot_parallel_plot, plot_grouped_barplot
 from CCPM.clustering.metrics import compute_knee_location
 
 
@@ -145,7 +146,7 @@ def main(
     plot_dendrogram(X, f'{out_folder}/METRICS/dendrogram.png')
     
     # Computing a range of C-means clustering method. 
-    cntr, u, wss, fpcs, ss, chi, dbi, gap = fuzzyCmeans(X,
+    cntr, u, d, wss, fpcs, ss, chi, dbi, gap = fuzzyCmeans(X,
                                                         max_cluster=max_cluster,
                                                         m=m,
                                                         error=error,
@@ -164,7 +165,7 @@ def main(
     
     # Plotting results for each indicators. 
     plot_clustering_results(wss, title='Within Cluster Sum of Square Error (WSS)', metric='WSS', output=f'{out_folder}/METRICS/wss.png',
-                            annotation=f'Elbow threshold (Optimal cluster nb): {elbow_wss+2}')
+                            annotation=f'Elbow threshold (Optimal cluster nb): {elbow_wss}')
     fpcs_index = fpcs.index(max(fpcs))
     plot_clustering_results(fpcs, title='Fuzzy Partition Coefficient (FPC)', metric='FPC', output=f'{out_folder}/METRICS/fpc.png',
                             annotation=f'Optimal Number of Cluster: {fpcs_index+2}')
@@ -182,7 +183,18 @@ def main(
                             annotation=f'Optimal Number of Clusters: {gap_index+2}')
     
     # Selecting the best number of cluster.
-    
+    # Using GAP Statistic and elbow method for now as it seems to be the most relevant ones. 
+    # Plotting results in a parallel coordinates plot.
+    membership = np.argmax(u[gap_index], axis=0)
+    plot_parallel_plot(df_for_clust, membership, output=f'{out_folder}/parallel_plot_gap.png',
+                       title='Parallel Coordinates plot stratified by optimal cluster membership determined by the GAP statistic.')
+    plot_grouped_barplot(df_for_clust, membership, title='Barplot of clusters characteristics using the number of clusters from the GAP statistic.',
+                         output=f'{out_folder}/barplot_gap.png')
+    membership = np.argmax(u[elbow_wss-2], axis=0)
+    plot_parallel_plot(df_for_clust, membership, output=f'{out_folder}/parallel_plot_elbow.png',
+                       title='Parallel Coordinates plot stratified by optimal cluster membership determined by the elbow method.')
+    plot_grouped_barplot(df_for_clust, membership, title='Barplot of clusters characteristics using the number of clusters from the elbow method.',
+                         output=f'{out_folder}/barplot_elbow.png')
     
 if __name__ == '__main__':
     app()
