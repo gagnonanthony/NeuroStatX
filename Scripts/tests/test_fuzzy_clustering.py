@@ -21,7 +21,7 @@ def test_help():
     assert ret.exit_code == 0
 
 
-def test_execution_filtering():
+def test_execution_fuzzy():
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_dataset = os.path.join(get_home(), 'data/clustering_data.xlsx')
     out_folder = os.path.join(get_home(), 'data/Fuzzy_Clustering/')

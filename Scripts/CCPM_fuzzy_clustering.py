@@ -61,7 +61,7 @@ def main(
                                                         show_default=True,
                                                         rich_help_panel='Clustering Options')] = DistanceMetrics.euclidean,
         pca: Annotated[bool, typer.Option('--pca',
-                                          help='If set, will perform PCA decomposition to 2 component before clustering',
+                                          help='If set, will perform PCA decomposition to 2 components before clustering',
                                           show_default=True,
                                           rich_help_panel='Clustering Options')] = False,
         out_folder: Annotated[str, typer.Option(help='Path of the folder in which the results will be written. '
