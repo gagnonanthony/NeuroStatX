@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import get_cmap
 from matplotlib.colors import rgb2hex
@@ -8,9 +10,10 @@ import scipy.cluster.hierarchy as shc
 from scipy.stats import ttest_ind
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
+from statannotations.Annotator import Annotator
 
 
-def plot_clustering_results(lst, title, metric, output, annotation=None):
+def plot_clustering_results(lst, title, metric, output, errorbar=None, annotation=None):
     """
     Function to plot goodness of fit indicators resulting from a clustering model. Resulting
     plot will be saved in the output folder specified in function's arguments. 
@@ -20,29 +23,49 @@ def plot_clustering_results(lst, title, metric, output, annotation=None):
         title (str):                Title of the plot.
         metric (str):               Metric name.
         output (str):               Output filename. 
+        errorbar (List):            List of values to plot as errorbar (CI, SD, etc.).
         annotation (str, optional): Annotation to add directly on the plot. Defaults to None.
     """
     
     # Plotting data.
     fig = plt.figure(figsize=(10,7))
-    ax = fig.add_subplot(111)
-    ax.plot(range(2, len(lst)+2), lst)
-    plt.xticks(range(2, len(lst)+2))
-    plt.title(f'{title}')
-    plt.xlabel('Number of clusters')
-    plt.ylabel(f'{metric}')
+    axes= fig.add_subplot(111)
     
-    # Annotating 
-    if annotation is not None:
-        if ax.get_ylim()[0] < 0:
-            y_pos = ax.get_ylim()[0] * 0.95
-        else:
-            y_pos = ax.get_ylim()[1] * 0.95
-    
-        plt.text(x=ax.get_xlim()[1] * 0.5, y=y_pos, s=f'{annotation}')
-    
-    plt.savefig(f'{output}')
-    plt.close()
+    with plt.rc_context({'font.size': 10, 'font.weight': 'bold', 'axes.titleweight': 'bold'}):
+
+        axes.plot(range(2, len(lst)+2), lst)
+        
+        # Add error bar if provided.
+        if errorbar is not None:
+            assert len(errorbar) == len(lst), "Values to plot and error bars are not of the same length [{} and {}]".format(len(lst), len(errorbar)) 
+            axes.errorbar(range(2, len(errorbar)+2), lst,
+                        yerr=errorbar, 
+                        ecolor='black',
+                        elinewidth=1,
+                        fmt="o",
+                        color='black',
+                        barsabove=True)
+
+        # Set parameters.
+        plt.xticks(range(2, len(lst)+2))
+        plt.title(f'{title}')
+        plt.xlabel('Number of clusters')
+        plt.ylabel(f'{metric}')
+        axes.spines[['top', 'right']].set_visible(False)
+        axes.spines['bottom'].set(linewidth=1.5)
+        axes.spines['left'].set(linewidth=1.5)
+        
+        # Annotating 
+        if annotation is not None:
+            if axes.get_ylim()[0] < 0:
+                y_pos = axes.get_ylim()[0] * 0.95
+            else:
+                y_pos = axes.get_ylim()[1] * 0.95
+        
+            plt.text(x=axes.get_xlim()[1] * 0.5, y=y_pos, s=f'{annotation}')
+        
+        plt.savefig(f'{output}')
+        plt.close()
     
 
 def plot_dendrogram(X, output, title='Dendrograms', annotation=None):
@@ -60,17 +83,23 @@ def plot_dendrogram(X, output, title='Dendrograms', annotation=None):
     """
     
     fig = plt.figure(figsize=(10,7))
-    plt.title(f'{title}')
+    axes = fig.add_subplot(111)
     
-    dend = shc.dendrogram(shc.linkage(X, method='ward'))
-    
-    if annotation is not None:
-        plt.text(x=fig.axes[0].get_xlim()[1] * 0.10, y=fig.axes[0].get_ylim()[1] * 0.85, s=f'{annotation}')
+    with plt.rc_context({'font.size': 10, 'font.weight': 'bold', 'axes.titleweight': 'bold'}):
+        axes.set_title(f'{title}')
         
-    plt.xticks([])
-    
-    plt.savefig(f'{output}')
-    plt.close()
+        dend = shc.dendrogram(shc.linkage(X, method='ward'))
+        
+        if annotation is not None:
+            plt.text(x=fig.axes[0].get_xlim()[1] * 0.10, y=fig.axes[0].get_ylim()[1] * 0.85, s=f'{annotation}')
+            
+        axes.set_xticks([])
+        axes.set_yticks([])
+        axes.spines[['top', 'right', 'left']].set_visible(False)
+        axes.spines['bottom'].set(linewidth=1.5)
+        
+        plt.savefig(f'{output}')
+        plt.close()
     
     
 def sort_int_labels_legend(ax, title=None):
@@ -147,12 +176,18 @@ def plot_parallel_plot(X, labels, output, mean_values=False, title='Parallel Coo
     
     fig = plt.figure(figsize=(15, 7))
     ax = fig.add_subplot(111)
-    parallel_coordinates(final_df, 'Clusters', ax=ax, color=colors)
-    sort_int_labels_legend(ax, title='Cluster #')
-    ax.set_title(f'{title}')
-    plt.rcParams.update({'font.size': 8})
-    plt.savefig(f'{output}')
-    plt.close()
+    
+    with plt.rc_context({'font.size': 10, 'font.weight': 'bold', 'axes.titleweight': 'bold'}):
+        
+        parallel_coordinates(final_df, 'Clusters', ax=ax, color=colors)
+        sort_int_labels_legend(ax, title='Cluster #')
+        ax.set_title(f'{title}')
+        ax.grid(False)
+        ax.spines[['top', 'bottom']].set_visible(False)
+        ax.spines['left'].set(linewidth=1.5)
+        ax.spines['right'].set(linewidth=1.5)
+        plt.savefig(f'{output}')
+        plt.close()
 
 
 def plot_grouped_barplot(X, labels, output, title='Barplot', annotation=None):
@@ -167,78 +202,67 @@ def plot_grouped_barplot(X, labels, output, title='Barplot', annotation=None):
         labels (Array):                        Array of hard membership value (S, ). 
         output (str):                          Filename of the png file. 
         title (str, optional): _description_.  Title of the plot. Defaults to 'Barplot'.
-        annotation (str, optional):         Annotation. Defaults to None.
+        annotation (str, optional):            Annotation. Defaults to None.
     """
     # Make labels start at 1 rather than 0, better for viz. 
     labels = labels + 1
     
-    columns = list(X.columns)
-    columns.append('Clusters')
+    features = list(X.columns)
+    features.append('Clusters')
     
     ss = StandardScaler()
     scaled_df = ss.fit_transform(X)
-    df = pd.DataFrame(np.vstack((scaled_df.T, labels)).T, columns=columns)
+    df = pd.DataFrame(np.vstack((scaled_df.T, labels)).T, columns=features)
     
-    # Calculating mean values for each features for each clusters. 
-    final_df = pd.DataFrame()
-    i = 0
-    for col in X.columns:
-        mean = list()
-        for k in np.unique(labels):
-            mean.append(df.loc[df['Clusters'] == k, col].mean())
-        final_df.insert(i, col, mean)
-        i += 1
-    final_df.insert(i, 'Clusters', np.unique(labels))
-    final_df.set_index('Clusters', inplace=True, drop=True)
+    # Melting the dataframe for plotting.
+    viz_df = df.melt(id_vars='Clusters')
     
-    # Add horizontal significance bars and asterisks
-    num_bars = len(final_df)
-    num_features = len(final_df.columns)
+    # Setting up matplotlib figure. 
+    fig = plt.figure(figsize=(15,8))
+    axes = fig.add_subplot()
     
-    bar_width = 0.1  # Adjust the width of the significance bars
-    bar_centers = np.arange(num_features) + (bar_width * num_bars / 2)
+    # Setting parameters for the barplot.
+    plotting_parameters = {
+        'data': viz_df,
+        'x': 'variable',
+        'y': 'value',
+        'hue': 'Clusters',
+        'palette': 'plasma',
+        'saturation': 0.5
+    }
     
-    fig = plt.figure(figsize=(12, 7))
-    axes = fig.add_subplot(111)
+    with plt.rc_context({'font.size': 10, 'font.weight': 'bold', 'axes.titleweight': 'bold'}):
+        
+        # Plotting barplot using Seaborn.
+        sns.barplot(ax=axes, **plotting_parameters)
+        
+        # Setting pairs for statistical testing between clusters for each feature.
+        clusters = np.unique(labels)
+        features = list(X.columns)
+        
+        pairs = [[(var, cluster1), (var, cluster2)]
+                for var in features
+                for i, cluster1 in enumerate(clusters)
+                for cluster2 in clusters[-(i):]
+                if (cluster1 != cluster2) and not (cluster1 > cluster2)]
+        
+        # Plotting statistical difference. 
+        annotator = Annotator(axes, pairs, verbose=False, **plotting_parameters, hide_non_significant=True)
+        annotator.configure(test='t-test_ind', text_format='star', show_test_name=False,
+                            verbose=0)
+        annotator.apply_test()
+        _, results = annotator.annotate()
+        
+        # Customization options.
+        axes.spines[['top', 'right', 'bottom']].set_visible(False)
+        axes.spines['left'].set(linewidth=1.5)
+        axes.legend(title='Cluster #', loc='best', title_fontsize='medium')
+        axes.set_title(f'{title}')
+        axes.set_ylabel('Scaled Scores', fontdict={'fontweight': 'bold'})
+        axes.set_xlabel('')
+        
+        plt.savefig(f'{output}')
+        plt.close()
     
-    for i, feature in enumerate(final_df.T.columns):
-        axes.bar(bar_centers + bar_width * i, final_df.T[feature], width=bar_width, label=feature)
-    
-    # Calculate p-values for significance between clusters for each feature
-    p_values = np.zeros((num_features, len(np.unique(labels)), len(np.unique(labels))))
-    for f_idx, feature in enumerate(X.columns):
-        for i in range(len(np.unique(labels))):
-            for j in range(i + 1, len(np.unique(labels))):
-                cluster_i = df[df['Clusters'] == i+1][feature]
-                cluster_j = df[df['Clusters'] == j+1][feature]
-                _, p_value = ttest_ind(cluster_i, cluster_j)
-                p_values[f_idx, i, j] = p_value
-    
-    # Plot significance bar. 
-    for f_idx, feature in enumerate(X.columns):
-        bar_height = []
-        for i in range(len(np.unique(labels))):
-            for j in range(i + 1, len(np.unique(labels))):
-                p_value = p_values[f_idx, i, j]
-                if p_value < 0.05:  # You can adjust the significance threshold
-                    y_position = max(final_df.iloc[i][f_idx], final_df.iloc[j][f_idx]) * 1.05
-                    if y_position in bar_height:
-                        y_position = y_position * 1.1
-                    bar_height.append(y_position)
-                    x_position = [bar_centers[f_idx] + bar_width * i, bar_centers[f_idx] + bar_width * j]
-                    axes.plot(x_position, [y_position, y_position], color='black')
-                    x_center = np.mean(x_position)
-                    axes.text(x_center, y_position * 1.05, '*', verticalalignment='center')
-    
-    # Customizing plot.
-    sort_int_labels_legend(axes)
-    axes.set_xticks(bar_centers + (bar_width * num_features / 2))
-    axes.set_xticklabels(final_df.columns)
-    axes.legend(title='Cluster #')
-    axes.set_title(f'{title}')
-    plt.rcParams.update({'font.size': 12})
-    
-    plt.savefig(f'{output}')
-    plt.close()
     
     

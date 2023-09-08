@@ -1,18 +1,20 @@
+# -*- coding: utf-8 -*-
+
 import math
 
 from functools import partial
-import numpy as np
-import skfuzzy as fuzz
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import get_cmap
 from matplotlib.colors import rgb2hex
 import multiprocessing
+import numpy as np
 
 from CCPM.clustering.metrics import compute_evaluation_metrics, compute_sse, compute_gap_stats
+from CCPM.clustering.cluster import cmeans
 
 
 # Define process_cluster outside fuzzyCmeans
-def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init, distance):
+def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init, metric):
     """
     Core worker function of fuzzyCmeans(). Compute the clustering, metrics, and visualization dataset.
 
@@ -23,7 +25,7 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init, distanc
         error (float, optional):        Stopping criterion. Defaults to 1E-6.
         maxiter (int, optional):        Maximum iteration value. Defaults to 1000.
         init (2d array, optional):      Initial fuzzy c-partitioned matrix. Defaults to None.
-        distance (str, optional):       Distance method to use to compute intra/inter subjects/clusters distance. Defaults to
+        metric (str, optional):         Distance metric to use to compute intra/inter subjects/clusters distance. Defaults to
                                         euclidean.
 
     Returns:
@@ -38,22 +40,23 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init, distanc
         chi:                            Calinski-Harabasz Index.
         dbi:                            Davies-Bouldin Index.
         gap:                            GAP statistic.
+        sk:                             GAP standard error.
         xpts_for_viz:                   X data points for visualization.
         ypts_for_viz:                   Y data points for visualization.
         cluster_membership_for_viz:     Hard membership value for visualization data points. 
     """
     
     if n_cluster <= max_clusters:
-        cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(
-            X.T, n_cluster, m=m, error=error, maxiter=maxiter, init=init
+        cntr, u, u0, d, jm, p, fpc = cmeans(
+            X.T, n_cluster, m=m, error=error, maxiter=maxiter, metric=metric, init=init
         )
         
         cluster_membership = np.argmax(u, axis=0)
         
-        ss, chi, dbi = compute_evaluation_metrics(X, cluster_membership, distance=distance)
-        wss = compute_sse(d, u)
+        ss, chi, dbi = compute_evaluation_metrics(X, cluster_membership, metric=metric)
+        wss = compute_sse(X, cntr, u)
         
-        gap = compute_gap_stats(X.T, wss, nrefs=3, n_cluster=n_cluster, m=m, error=error, maxiter=maxiter, init=init)
+        gap, sk = compute_gap_stats(X, wss, nrefs=3, n_cluster=n_cluster, m=m, error=error, metric=metric, maxiter=maxiter, init=init)
         
         xpts = X[:, 0]
         ypts = X[:, 1]
@@ -68,13 +71,13 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init, distanc
             ypts_for_viz = ypts
             cluster_membership_for_viz = cluster_membership
         
-        return n_cluster, p, fpc, cntr, u, d, wss, ss, chi, dbi, gap, xpts_for_viz, ypts_for_viz, cluster_membership_for_viz
+        return n_cluster, p, fpc, cntr, u, d, wss, ss, chi, dbi, gap, sk, xpts_for_viz, ypts_for_viz, cluster_membership_for_viz
     
     else:    
         return None
 
 
-def fuzzyCmeans(X, max_cluster=10, m=2, error=1E-6, maxiter=1000, init=None, distance='euclidean', output='./'):
+def fuzzyCmeans(X, max_cluster=10, m=2, error=1E-6, maxiter=1000, init=None, metric='euclidean', output='./'):
     """ 
     Fuzzy C-Means clustering function. Iteratively test and report statistics on multiple number
     of clusters. Based on documentation found here : 
@@ -87,7 +90,7 @@ def fuzzyCmeans(X, max_cluster=10, m=2, error=1E-6, maxiter=1000, init=None, dis
         error (float, optional):        Stopping criterion. Defaults to 1E-6.
         maxiter (int, optional):        Maximum iteration value. Defaults to 1000.
         init (2d array, optional):      Initial fuzzy c-partitioned matrix. Defaults to None.
-        distance (str, optional):       Distance method to use to compute intra/inter subjects/clusters distance. Defaults to
+        metric (str, optional):         Distance metric to use to compute intra/inter subjects/clusters distance. Defaults to
                                         euclidean.
         output (String, optional):      Output folder. Defaults to './'.
 
@@ -111,7 +114,7 @@ def fuzzyCmeans(X, max_cluster=10, m=2, error=1E-6, maxiter=1000, init=None, dis
     
     # Partial function to pass common arguments
     process_cluster_partial = partial(
-        process_cluster, X, max_clusters=num_clusters, m=m, error=error, maxiter=maxiter, init=init, distance=distance
+        process_cluster, X, max_clusters=num_clusters, m=m, error=error, maxiter=maxiter, init=init, metric=metric
     )
         
     pool = multiprocessing.Pool()
@@ -121,8 +124,8 @@ def fuzzyCmeans(X, max_cluster=10, m=2, error=1E-6, maxiter=1000, init=None, dis
     
     for result in results:
         if result is not None:
-            n_cluster, p, fpc_, cntr_, u_, d_, wss_, ss_, chi_, dbi_, gap_, xpts_for_viz, ypts_for_viz, cluster_membership_for_viz = result
-                
+            n_cluster, p, fpc_, cntr_, u_, d_, wss_, ss_, chi_, dbi_, gap_, sk_, xpts_for_viz, ypts_for_viz, cluster_membership_for_viz = result
+           
             ax = axes[(n_cluster - 2) // grid, (n_cluster - 2) % grid]
                 
             cmap = get_cmap('plasma', n_cluster)
@@ -135,7 +138,7 @@ def fuzzyCmeans(X, max_cluster=10, m=2, error=1E-6, maxiter=1000, init=None, dis
             for pt in cntr_:
                 ax.plot(pt[0], pt[1], 'rs')
                 
-            ax.set_title('Clusters = {0}; FPC = {1:.2f}\nIteration = {0}'.format(n_cluster, fpc_, p), fontdict={'fontsize': 8})
+            ax.set_title('Clusters = {0}; FPC = {1:.2f}\nIterations = {iteration}'.format(n_cluster, fpc_, iteration = p), fontdict={'fontsize': 8})
             ax.axis('off')
     
     # Removing unused axis. 
@@ -146,8 +149,8 @@ def fuzzyCmeans(X, max_cluster=10, m=2, error=1E-6, maxiter=1000, init=None, dis
     fig1.savefig(f'{output}/viz_multiple_cluster_nb.png')
     plt.close()
     
-    n_cluster, p, fpc, cntr, u, d, wss, ss, chi, dbi, gap, xpts_for_viz, ypts_for_viz, cluster_membership_for_viz = zip(*results)
+    n_cluster, p, fpc, cntr, u, d, wss, ss, chi, dbi, gap, sk, xpts_for_viz, ypts_for_viz, cluster_membership_for_viz = zip(*results)
         
-    return cntr, u, d, wss, fpc, ss, chi, dbi, gap
+    return cntr, u, d, wss, fpc, ss, chi, dbi, gap, sk
 
 

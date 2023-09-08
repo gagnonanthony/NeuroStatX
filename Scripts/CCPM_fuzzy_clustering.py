@@ -12,13 +12,13 @@ from typing import List
 from typing_extensions import Annotated
 
 from CCPM.io.utils import (load_df_in_any_format,
-                           PDF,
                            assert_input,
                            assert_output_dir_exist)
 from CCPM.clustering.fuzzy import fuzzyCmeans
-from CCPM.utils.preprocessing import merge_dataframes
+from CCPM.utils.preprocessing import merge_dataframes, compute_pca
 from CCPM.clustering.viz import plot_clustering_results, plot_dendrogram, plot_parallel_plot, plot_grouped_barplot
-from CCPM.clustering.metrics import compute_knee_location
+from CCPM.clustering.metrics import compute_knee_location, find_optimal_gap
+from CCPM.clustering.distance import DistanceMetrics
 
 
 # Initializing the app.
@@ -54,22 +54,25 @@ def main(
                                              rich_help_panel='Clustering Options')] = 1000,
         init: Annotated[str, typer.Option(help='Initial fuzzy c-partitioned matrix',
                                           show_default=True,
-                                          rich_help_panel='Clustering Options')] = None,
-        distance: Annotated[str, typer.Option(help='Distance method to use to compute intra/inter subjects/clusters distance',
-                                              show_default=True,
-                                              rich_help_panel='Clustering Options')] = 'euclidean',
+                                          rich_help_panel='Clustering Options',
+                                          case_sensitive=False)] = None,
+        metric: Annotated[DistanceMetrics, typer.Option(help='Metric to use to compute distance between original points'
+                                                             ' and clusters centroids.',
+                                                        show_default=True,
+                                                        rich_help_panel='Clustering Options')] = DistanceMetrics.euclidean,
+        pca: Annotated[bool, typer.Option('--pca',
+                                          help='If set, will perform PCA decomposition to 2 component before clustering',
+                                          show_default=True,
+                                          rich_help_panel='Clustering Options')] = False,
         out_folder: Annotated[str, typer.Option(help='Path of the folder in which the results will be written. '
                                                      'If not specified, current folder and default '
                                                      'name will be used (e.g. = ./output/).',
-                                                rich_help_panel='Essential Files Options')] = './',
+                                                rich_help_panel='Essential Files Options')] = './fuzzy_results/',
         verbose: Annotated[bool, typer.Option('-v', '--verbose', help='If true, produce verbose output.',
                                               rich_help_panel="Optional parameters")] = False,
         overwrite: Annotated[bool, typer.Option('-f', '--overwrite', help='If true, force overwriting of existing '
                                                                           'output files.',
-                                                rich_help_panel="Optional parameters")] = False,
-        report: Annotated[bool, typer.Option('-r', '--report', help='If true, will generate a pdf report named '
-                                                                    'report_factor_analysis.pdf',
-                                             rich_help_panel='Optional parameters')] = False):
+                                                rich_help_panel="Optional parameters")] = False):
 
     """
     \b
@@ -83,11 +86,15 @@ def main(
                   Children Cognitive Profile Mapping Toolbox©
     =============================================================================
     \b
+    FUZZY CLUSTERING
+    ----------------
+    
+    \b
     EVALUATION METRICS
     ------------------
     The fuzzy partition coefficient (FPC) is a metric defined between 0 and 1 with 1 representing the better score. It
     represents how well the data is described by the clustering model. Therefore, a higher FPC represents a better fitted
-    model.
+    model. 
     \b
     The Silhouette Coefficient represents an evaluation of cluster's definition. The score is bounded (-1 to 1) with 1
     as the perfect score and -1 as not a good clustering result. A higher Silhouette Coefficient relates to a model with
@@ -103,7 +110,7 @@ def main(
     It also tends to be generally higher for convex clusters and it uses the centroid distance between clusters therefore
     limiting the distance metric to euclidean space.
     \b
-    WSS
+    Within sum of square 
     \b
     GAP
     \b
@@ -113,6 +120,7 @@ def main(
     [2]     https://scikit-learn.org/stable/modules/clustering.html#clustering-performance-evaluation
     [3]     https://towardsdatascience.com/cheat-sheet-to-implementing-7-methods-for-selecting-optimal-number-of-clusters-in-python-898241e1d6ad
     [4]     https://towardsdatascience.com/how-to-determine-the-right-number-of-clusters-with-code-d58de36368b1
+    [5]     https://github.com/scikit-fuzzy/scikit-fuzzy
     
     """
     
@@ -141,19 +149,31 @@ def main(
     df_for_clust = raw_df.drop(raw_df.columns[descriptive_columns], axis=1, inplace=False).astype('float')
     X = df_for_clust.values
     
+    # Decomposing into 2 components if asked. 
+    if pca:
+        X, variance, chi, kmo = compute_pca(X, 2)
+        logging.info("Bartlett's test of sphericity returned a p-value of {} and Keiser-Meyer-Olkin (KMO)"
+                     " test returned a value of {}.".format(chi, kmo))
+        # Exporting variance explained data. 
+        os.mkdir(f'{out_folder}/PCA/')
+        var_exp = pd.DataFrame(variance, columns=['Variance Explained'])
+        var_exp.to_excel(f'{out_folder}/PCA/variance_explained.xlsx', index=True, header=True)
+        out = pd.DataFrame(X, columns=['Component #1', 'Component #2'])
+        out.to_excel(f'{out_folder}/PCA/transformed_data.xlsx', index=True, header=True)
+        
     # Plotting the dendrogram.
     sys.setrecursionlimit(50000)
     plot_dendrogram(X, f'{out_folder}/METRICS/dendrogram.png')
     
     # Computing a range of C-means clustering method. 
-    cntr, u, d, wss, fpcs, ss, chi, dbi, gap = fuzzyCmeans(X,
-                                                        max_cluster=max_cluster,
-                                                        m=m,
-                                                        error=error,
-                                                        maxiter=maxiter,
-                                                        init=init,
-                                                        distance=distance,
-                                                        output=out_folder)
+    cntr, u, d, wss, fpcs, ss, chi, dbi, gap, sk = fuzzyCmeans(X,
+                                                               max_cluster=max_cluster,
+                                                               m=m,
+                                                               error=error,
+                                                               maxiter=maxiter,
+                                                               init=init,
+                                                               metric=metric,
+                                                               output=out_folder)
     
     # Compute knee location on Silhouette Score. 
     elbow_wss = compute_knee_location(wss)
@@ -178,23 +198,29 @@ def main(
     dbi_index = dbi.index(min(dbi))
     plot_clustering_results(dbi, title='Davies-Bouldin Index (DBI)', metric='DBI', output=f'{out_folder}/METRICS/dbi.png',
                             annotation=f'Optimal Number of Clusters: {dbi_index+2}')
-    gap_index = gap.index(max(gap))
-    plot_clustering_results(gap, title='GAP Statistics.', metric='GAP', output=f'{out_folder}/METRICS/gap.png',
+    gap_index = find_optimal_gap(gap, sk)
+    plot_clustering_results(gap, title='GAP Statistics.', metric='GAP', output=f'{out_folder}/METRICS/gap.png', errorbar=sk,
                             annotation=f'Optimal Number of Clusters: {gap_index+2}')
     
     # Selecting the best number of cluster.
     # Using GAP Statistic and elbow method for now as it seems to be the most relevant ones. 
     # Plotting results in a parallel coordinates plot.
     membership = np.argmax(u[gap_index], axis=0)
-    plot_parallel_plot(df_for_clust, membership, output=f'{out_folder}/parallel_plot_gap.png',
+    plot_parallel_plot(df_for_clust, membership, mean_values=True, output=f'{out_folder}/parallel_plot_gap.png',
                        title='Parallel Coordinates plot stratified by optimal cluster membership determined by the GAP statistic.')
     plot_grouped_barplot(df_for_clust, membership, title='Barplot of clusters characteristics using the number of clusters from the GAP statistic.',
                          output=f'{out_folder}/barplot_gap.png')
     membership = np.argmax(u[elbow_wss-2], axis=0)
-    plot_parallel_plot(df_for_clust, membership, output=f'{out_folder}/parallel_plot_elbow.png',
+    plot_parallel_plot(df_for_clust, membership, mean_values=True, output=f'{out_folder}/parallel_plot_elbow.png',
                        title='Parallel Coordinates plot stratified by optimal cluster membership determined by the elbow method.')
     plot_grouped_barplot(df_for_clust, membership, title='Barplot of clusters characteristics using the number of clusters from the elbow method.',
                          output=f'{out_folder}/barplot_elbow.png')
+    
+    # Exporting final fuzzy c-partitioned matrix. 
+    np.save(f'{out_folder}/cluster_membership_gap.npy', u[gap_index])
+    np.save(f'{out_folder}/cluster_membership_elbow.npy', u[elbow_wss-2])
+    np.save(f'{out_folder}/cluster_centers_gap.npy', cntr[gap_index])
+    np.save(f'{out_folder}/cluster_centers_elbow.npy', cntr[elbow_wss-2])
     
 if __name__ == '__main__':
     app()
