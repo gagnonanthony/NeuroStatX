@@ -18,7 +18,7 @@ wheel==0.40.0
 pytest==7.3.2
 openpyxl==3.1.2
 seaborn==0.12.2
-statannotations==0.5.0
+#statannotations==0.5.0     Temporarily removing statannotations from requirements until pip includes the --no-deps option.
 pytest-console-scripts==1.4.1
 gdown==4.7.1
 kneed==0.8.5
