@@ -1,9 +1,11 @@
+from factor_analyzer.factor_analyzer import calculate_kmo, calculate_bartlett_sphericity
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-from tqdm import tqdm
 from scipy.stats import shapiro
+from sklearn.decomposition import PCA
+import seaborn as sns
+from tqdm import tqdm
 
 
 def remove_nans(df):
@@ -113,3 +115,23 @@ def merge_dataframes(dict_df, index, repeated_columns=False):
         out = dict_df[keys[0]].join([dict_df[k] for k in keys[1:len(keys)]])
 
     return out
+
+
+def compute_pca(X, n_components):
+    """
+    Function compute PCA decomposition on a dataset. 
+    
+    Args:
+        X (Array):                  Data array.
+        n_components (int):         Number of components.
+    
+    Return:
+    
+    """
+    chi_square_value, p_value = calculate_bartlett_sphericity(X)
+    kmo_all, kmo_model = calculate_kmo(X)
+    pca = PCA(n_components=n_components).fit(X)
+    X = pca.transform(X)
+    exp_var = pca.explained_variance_ratio_
+    
+    return X, exp_var, p_value, kmo_model
