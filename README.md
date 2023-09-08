@@ -16,9 +16,11 @@ environment are recommended (e.g. virtualenv)) :
 ``pip install -r requirements.txt``
 
 Temporarily, install semopy separately due to the legacy use of sklearn (an upcoming PR in pip will allow
-to ignore package dependencies directly in requirements.txt).
+to ignore package dependencies directly in requirements.txt). Similar case for statannotations. 
 
 ``pip install semopy==2.3.9 --no-deps``
+
+``pip install statannotations==0.5.0 --no-deps``
 
 ``pip install -e .``
 
