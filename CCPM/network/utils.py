@@ -47,6 +47,7 @@ def filter_node_centroids(n):
 
 def filter_node_subjects(n):
     """
+    Function to filter subject nodes from cluster's nodes.
 
     Args:
         n (str):        Node label.
