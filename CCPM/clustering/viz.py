@@ -186,6 +186,9 @@ def plot_parallel_plot(X, labels, output, mean_values=False, title='Parallel Coo
         ax.spines[['top', 'bottom']].set_visible(False)
         ax.spines['left'].set(linewidth=1.5)
         ax.spines['right'].set(linewidth=1.5)
+        
+        ax.figure.autofmt_xdate()
+        
         plt.savefig(f'{output}')
         plt.close()
 
@@ -243,7 +246,7 @@ def plot_grouped_barplot(X, labels, output, title='Barplot', annotation=None):
         pairs = [[(var, cluster1), (var, cluster2)]
                 for var in features
                 for i, cluster1 in enumerate(clusters)
-                for cluster2 in clusters[-(i):]
+                for cluster2 in clusters
                 if (cluster1 != cluster2) and not (cluster1 > cluster2)]
         
         # Plotting statistical difference. 
@@ -260,6 +263,8 @@ def plot_grouped_barplot(X, labels, output, title='Barplot', annotation=None):
         axes.set_title(f'{title}')
         axes.set_ylabel('Scaled Scores', fontdict={'fontweight': 'bold'})
         axes.set_xlabel('')
+        
+        axes.figure.autofmt_xdate()
         
         plt.savefig(f'{output}')
         plt.close()
