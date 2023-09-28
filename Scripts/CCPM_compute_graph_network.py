@@ -146,6 +146,7 @@ def main(
     assert_output_dir_exist(overwrite, out_folder, create_dir=True)
     
     # Loading membership matrix.
+    logging.info("Loading membership matrix.")
     membership_mat = np.load(in_matrix)
     
     # Fetching dataframe of nodes and edges.
@@ -155,6 +156,7 @@ def main(
     G = nx.from_pandas_edgelist(df, 'node1', 'node2', edge_attr='membership')
     
     # Visualizing and saving network.
+    logging.info("Constructing the layout and generating graph.")
     visualize_network(G, output=f'{out_folder}/graph_network.png',
                       layout=getattr(nx, layout),
                       weight='membership',

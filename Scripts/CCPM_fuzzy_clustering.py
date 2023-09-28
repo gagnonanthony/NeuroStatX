@@ -169,6 +169,7 @@ def main(
     
     # Decomposing into 2 components if asked. 
     if pca:
+        logging.info("Applying PCA dimensionality reduction.")
         X, variance, chi, kmo = compute_pca(X, 2)
         logging.info("Bartlett's test of sphericity returned a p-value of {} and Keiser-Meyer-Olkin (KMO)"
                      " test returned a value of {}.".format(chi, kmo))
@@ -180,6 +181,7 @@ def main(
         out.to_excel(f'{out_folder}/PCA/transformed_data.xlsx', index=True, header=True)
         
     # Plotting the dendrogram.
+    logging.info("Generating dendrogram.")
     sys.setrecursionlimit(50000)
     plot_dendrogram(X, f'{out_folder}/METRICS/dendrogram.png')
     
@@ -188,6 +190,7 @@ def main(
         init=np.load(init)
     
     # Computing a range of C-means clustering method. 
+    logging.info("Computing FCM from k=2 to k={}".format(max_cluster))
     cntr, u, d, wss, fpcs, ss, chi, dbi, gap, sk = fuzzyCmeans(X,
                                                                max_cluster=max_cluster,
                                                                m=m,
@@ -198,6 +201,7 @@ def main(
                                                                output=out_folder)
     
     # Compute knee location on Silhouette Score. 
+    logging.info("Plotting validation indicators and outputting final matrices.")
     elbow_wss = compute_knee_location(wss)
     
     # Creating a dataframe to export statistics. 
@@ -245,7 +249,8 @@ def main(
                            title='Parallel Coordinates plot stratified by manually selected cluster solution.')
         plot_grouped_barplot(df_for_clust, membership, title='Barplot of clusters characteristics using the manually selected number of clusters',
                             output=f'{out_folder}/barplot_selected.png')
-    
+        np.save(f'{out_folder}/cluster_membership_selected.npy', u[cluster_solution-2])
+        np.save(f'{out_folder}/cluster_centers_selected.npy', cntr[cluster_solution-2])
     
     # Exporting final fuzzy c-partitioned matrix. 
     np.save(f'{out_folder}/cluster_membership_gap.npy', u[gap_index])

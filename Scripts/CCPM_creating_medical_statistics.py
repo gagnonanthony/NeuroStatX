@@ -137,7 +137,8 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
                \________|  \________| |__|         |___|     |___|
                   Children Cognitive Profile Mapping Toolbox©
     =============================================================================
-    \b
+    DEMOGRAPHICS AND MEDICAL STATISTICS
+    -----------------------------------
     CCPM_creating_medical_statistics.py is a script that creates and exports a
     demographics or medical data table. It can handle continuous, categorical and
     binary variables.
@@ -154,7 +155,8 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
     have 1 = yes and 0 = no. Please validate that your dataset assumes the same values.
     If it is not the case, please modify your dataset before launching this script.
     \b
-    EXAMPLE USAGE:
+    EXAMPLE USAGE
+    -------------
     CCPM_creating_medical_statistics.py --in-dataset in_dataset --output out_table
     \b                                    --id-column subid -r Sex -r Age -r IQ
     \b                                    -c Sex -n Sex -n Age -n Quotient

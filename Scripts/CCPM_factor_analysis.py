@@ -4,6 +4,7 @@
 # Import required libraries.
 import logging
 import os
+import sys
 
 from factor_analyzer import FactorAnalyzer
 from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity
@@ -46,6 +47,10 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
                                                      "merging multiple datasets.",
                                                 show_default=False,
                                                 rich_help_panel='Essential Files Options')],
+         desc_columns: Annotated[int, typer.Option(help='Number of descriptive columns at the beginning of the dataset'
+                                                        ' to exclude in statistics and descriptive tables.',
+                                                   show_default=False,
+                                                   rich_help_panel='Essential Files Options')],
          out_folder: Annotated[str, typer.Option(help='Path of the folder in which the results will be written. '
                                                       'If not specified, current folder and default'
                                                       'name will be used (e.g. = ./output/).',
@@ -71,13 +76,15 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
                                                           'principal: Principal Component',
                                                      rich_help_panel="Factorial Analysis parameters",
                                                      case_sensitive=False)] = MethodTypes.minres,
+         factor_number: Annotated[int, typer.Option('--factor_number', help='If set, the script will use this number as the final '
+                                                                            'number of factors.',
+                                                                            rich_help_panel='Factorial Analysis parameters')] = None,
          use_horn_parallel: Annotated[bool, typer.Option('--use_horn_parallel', help='If set, will use the suggested '
                                                                                      'number of factors from the Horns '
                                                                                      'parallel analysis in a case where'
                                                                                      ' values differ between the Kaiser'
                                                                                      ' criterion '
-                                                                                     'and Horns parallel analysis.'
-                                                                                     '',
+                                                                                     'and Horns parallel analysis.',
                                                          rich_help_panel='Factorial Analysis parameters')] = False,
          use_only_efa: Annotated[bool, typer.Option('--use_only_efa', help='If set, the script will not perform the'
                                                                            ' default 2 steps factor analysis '
@@ -126,10 +133,14 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
                \________|  \________| |__|         |___|     |___|
                   Children Cognitive Profile Mapping Toolbox©
     =============================================================================
+    FACTORIAL ANALYSIS
+    ------------------
     CCPM_factor_analysis.py is a script that can be used to perform an exploratory
     factorial analysis (EFA) and a confirmatory factorial analysis (CFA). A user can
     decide if he wants to perform only EFA or both sequentially.
     \b
+    EXPLORATORY VS CONFIRMATORY FACTORIAL ANALYSIS
+    ----------------------------------------------
     In the case of performing only an EFA (use the flag --use_only_efa), the script
     will use either the Kaiser's criterion or Horn's parallel analysis (see
     --use_horn_parallel) to determine the optimal number of factors to extract from
@@ -147,29 +158,38 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
     on the supplied threshold value. A CFA model will then be build using this
     structure and fitted to the data. Statistics of goodness of fit such as Chi-square,
     RMSEA, CFI and NFI will be computed and exported as a table and into a html report.
-    A good reference to understand those metrics can be accessed here:
-    Costa, V., & Sarmento, R. Confirmatory Factor Analysis.
-    https://arxiv.org/ftp/arxiv/papers/1905/1905.05598.pdf
+    A good reference to understand those metrics can be accessed in [1].
     \b
     Both method can be used to derive factor scores. Since there is no clear
-    consensus surrounding which is preferred (see
-    https://stats.stackexchange.com/questions/346499/whether-to-use-efa-or-cfa-to-predict-latent-variables-scores)
-    the script will output both factor scores. As shown in https://github.com/gagnonanthony/CCPM/pull/11,
-    both methods highly correlate with one another. It then comes down to the user's
-    preference.
+    consensus surrounding which is preferred (see [2]) the script will output both factor 
+    scores. As shown in [3], both methods highly correlate with one another. It then comes 
+    down to the user's preference.
     \b
+    INPUT SPECIFICATIONS
+    --------------------
     Dataset should contain only subject's ID and variables that will be included in
     factorial analysis. Rows with missing values will be removed by default, please
     select the mean or median option to impute missing data (be cautious when doing
     this).
     \b
+    REFERENCES
+    ----------
+    [1] Costa, V., & Sarmento, R. Confirmatory Factor Analysis.
+        https://arxiv.org/ftp/arxiv/papers/1905/1905.05598.pdf
+    [2] https://stats.stackexchange.com/questions/346499/whether-to-use-efa-or-cfa-to-predict-latent-variables-scores
+    [3] https://github.com/gagnonanthony/CCPM/pull/11
+    \b
     EXAMPLE USAGE
+    -------------
     CCPM_factor_analysis --in-dataset df --id-column IDs --out-folder results_FA/ --test-name EXAMPLE
                          --rotation promax --method ml --threshold 0.4 --train_dataset_size 0.8 -v -f
     """
 
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
+
+    if factor_number is not None and use_horn_parallel:
+        sys.exit('--factor_number and --use_horn_parallel cannot be used at the same time.')
 
     with Progress(
         SpinnerColumn(),
@@ -194,6 +214,8 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
             df = merge_dataframes(dict_df, id_column)
         else:
             df = load_df_in_any_format(in_dataset[0])
+        descriptive_columns = [n for n in range(0, desc_columns)]
+        
         progress.update(task, completed=True, description="[green]Dataset(s) loaded.")
 
         task = progress.add_task(description="Processing of dataset(s)...", total=None)
@@ -211,7 +233,7 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
             df.dropna(inplace=True)
 
         record_id = df[id_column]
-        df.drop([id_column], axis=1, inplace=True)
+        df.drop(df.columns[descriptive_columns], axis=1, inplace=True)
 
         # Scaling the dataset.
         scaled_df = pd.DataFrame(StandardScaler().fit_transform(df), columns=df.columns)
@@ -258,6 +280,8 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
                              "if the --use_horns_parallel flag is not used.".format(eigenvalues, suggfactor))
                 if use_horn_parallel:
                     nfactors = suggfactor
+                elif factor_number is not None:
+                    nfactors = factor_number
                 else:
                     nfactors = eigenvalues
 
