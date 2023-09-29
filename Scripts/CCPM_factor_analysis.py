@@ -233,6 +233,7 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
             df.dropna(inplace=True)
 
         record_id = df[id_column]
+        desc_col = df[df.columns[descriptive_columns]]
         df.drop(df.columns[descriptive_columns], axis=1, inplace=True)
 
         # Scaling the dataset.
@@ -303,8 +304,9 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
                 efa_out.to_excel(f"{out_folder}/efa/scores.xlsx", header=True, index=True)
 
                 # Export scores from CFA analysis.
-                cfa_scores = cfa.predict_factors(scaled_df).set_index(record_id)
-                cfa_scores.to_excel(f'{out_folder}/cfa/scores.xlsx', header=True, index=True)
+                cfa_scores = cfa.predict_factors(scaled_df)
+                scores = pd.concat([desc_col, cfa_scores], axis=1)
+                scores.to_excel(f'{out_folder}/cfa/scores.xlsx', header=True, index=False)
 
             # Plot correlation matrix between all raw variables.
             corr = pd.DataFrame(efa.corr_, index=df.columns, columns=df.columns)
