@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import coloredlogs
+import coloredlogs
 import logging
 import os
 import sys
