@@ -73,10 +73,7 @@ def main(
                                               rich_help_panel="Optional parameters")] = False,
         overwrite: Annotated[bool, typer.Option('-f', '--overwrite', help='If true, force overwriting of existing '
                                                                           'output files.',
-                                                rich_help_panel="Optional parameters")] = False,
-        report: Annotated[bool, typer.Option('-r', '--report', help='If true, will generate a pdf report named '
-                                                                    'report_factor_analysis.pdf',
-                                             rich_help_panel='Optional parameters')] = False):
+                                                rich_help_panel="Optional parameters")] = False):
     """
     \b
     =============================================================================
@@ -88,10 +85,13 @@ def main(
                \________|  \________| |__|         |___|     |___|
                   Children Cognitive Profile Mapping Toolbox©
     =============================================================================
-    \b
+    FILTERING DATASET
+    -----------------
     CCPM_filtering_dataset is designed to compute basic statistics, plotting
     distributions and correlation matrix of raw data.
     \b
+    STEPS
+    -----
     Filtering and evaluating steps are:
         1)  Removing rows containing NaNs. (2 dataframes will be outputted, one
             with the cleaned dataset and one with the excluded rows.) Both files
@@ -102,9 +102,6 @@ def main(
             ecdf plot.
         4)  Computing correlation matrix. Correlation between all variables from the dataset
             is computed and plotted as a heatmap.
-        5)  Final pdf file with indications based on descriptive statistics is outputted (if --report
-            is selected). Indications will highlight variables with W statistic < 0.95 and pair
-            of variables with pearson value > 0.8.
     \b
     Manual evaluation of all outputted results is recommended to ensure the script behaved
     correctly.
@@ -113,10 +110,10 @@ def main(
     subject's id) appear only once in a single dataframe. Otherwise, merging dataframe will
     not behave correctly and index will not be aligned.
     \b
-    EXAMPLE USAGE :
+    EXAMPLE USAGE 
+    -------------
     CCPM_filtering_dataset.py --in-dataset IN_DATASET --id-column subjectkey --desc-columns subjectkey
     --out-folder OUT_FOLDER
-
     """
 
     if verbose:
@@ -168,12 +165,12 @@ def main(
         # Plotting heatmap and computing correlation matrix.
         logging.info('Generating correlation matrix and heatmap.')
         if annotate:
-            if len(raw_df.columns) > 10:
+            if len(raw_df.columns) > 15:
                 logging.warning('Due to high number of variables, annotating heatmap is deactivated. Annotation is \n '
                                 'only available for dataset with 10 or less variables.')
             corr_mat = compute_correlation_coefficient(variable_to_plot, out_folder, context=context,
                                                        font_scale=font_scale, cmap=cmap,
-                                                       annot=False if len(raw_df.columns) > 10 else True)
+                                                       annot=False if len(raw_df.columns) > 15 else True)
         else:
             corr_mat = compute_correlation_coefficient(variable_to_plot, out_folder, context=context,
                                                        font_scale=font_scale, cmap=cmap)

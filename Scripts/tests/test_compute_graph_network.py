@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -7,7 +7,8 @@ import tempfile
 from typer.testing import CliRunner
 
 from CCPM.io.download import get_home, download_data, save_files_dict
-from Scripts.CCPM_filtering_dataset import app
+from Scripts.CCPM_compute_graph_network import app
+
 
 download_data(save_files_dict(), keys=['data.zip'])
 tmp_dir = tempfile.TemporaryDirectory()
@@ -21,13 +22,11 @@ def test_help():
     assert ret.exit_code == 0
 
 
-def test_execution_filtering():
+def test_compute_graph_network():
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_dataset = os.path.join(get_home(), 'data/data_example.xlsx')
-    out_folder = os.path.join(get_home(), 'data/Filtering/')
+    in_matrix = os.path.join(get_home(), 'data/membership.npy')
+    out_folder = os.path.join(get_home(), 'data/graph_network/')
 
-    ret = runner.invoke(app, ['--out-folder', out_folder, '--in-dataset', in_dataset,
-                              '--desc-columns', 1, '--id-column', 'subjectkey',
-                              '-f'])
+    ret = runner.invoke(app, ['--in-matrix', in_matrix, '--out-folder', out_folder, '-f'])
 
     assert ret.exit_code == 0

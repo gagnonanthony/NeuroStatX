@@ -43,7 +43,8 @@ def main(
         max_cluster: Annotated[int, typer.Option(help='Maximum number of cluster to fit a model for.',
                                                  show_default=True,
                                                  rich_help_panel='Clustering Options')] = 10,
-        m: Annotated[float, typer.Option(help='Exponentiation value to apply on the membership function.',
+        m: Annotated[float, typer.Option(help='Exponentiation value to apply on the membership function, will '
+                                         'determined the degree of fuzziness of the membership matrix',
                                          show_default=True,
                                          rich_help_panel='Clustering Options')] = 2,
         error: Annotated[float, typer.Option(help='Error threshold for convergence stopping criterion.',
@@ -56,6 +57,9 @@ def main(
                                           show_default=True,
                                           rich_help_panel='Clustering Options',
                                           case_sensitive=False)] = None,
+        cluster_solution: Annotated[int, typer.Option(help='k value to export and plot solution',
+                                                      show_default=False,
+                                                      rich_help_panel='Clustering Options')] = None,
         metric: Annotated[DistanceMetrics, typer.Option(help='Metric to use to compute distance between original points'
                                                              ' and clusters centroids.',
                                                         show_default=True,
@@ -88,13 +92,15 @@ def main(
     \b
     FUZZY CLUSTERING
     ----------------
-    
+    CCPM_fuzzy_clustering.py is a wrapper script for a Fuzzy C-Means clustering analysis. By design,
+    the script will compute the analysis for k specified cluster (chosen by --max_cluster) and returns
+    various evaluation metrics and summary barplot/parallel plot. 
     \b
     EVALUATION METRICS
     ------------------
     The fuzzy partition coefficient (FPC) is a metric defined between 0 and 1 with 1 representing the better score. It
     represents how well the data is described by the clustering model. Therefore, a higher FPC represents a better fitted
-    model. 
+    model. On real-world data, local maxima can also be interpreted as one of the optimal solution.
     \b
     The Silhouette Coefficient represents an evaluation of cluster's definition. The score is bounded (-1 to 1) with 1
     as the perfect score and -1 as not a good clustering result. A higher Silhouette Coefficient relates to a model with
@@ -110,9 +116,21 @@ def main(
     It also tends to be generally higher for convex clusters and it uses the centroid distance between clusters therefore
     limiting the distance metric to euclidean space.
     \b
-    Within sum of square 
+    Within cluster Sum of Squared error (WSS) represents the average distance from each point to their cluster centroid.
+    WSS is combined with the elbow method to determine the optimal k number of clusters. 
     \b
-    GAP
+    The GAP statistics is based on the WSS. It relies on computing the difference in cluster compactness between the actual
+    data and simulated data with a null distribution. The optimal k-number of clusters is identified by a maximized GAP
+    statistic (local maxima can also suggest possible solutions.). 
+    \b
+    PARAMETERS
+    ----------
+    Details regarding the parameters can be seen below. Regarding the --m parameter, it defines the degree of fuzziness of
+    the resulting membership matrix. Using --m 1 will returns crisp clusters, whereas --m >1 will returned more and more fuzzy
+    clusters. It is also possible to pre-initialize the c-partitioned matrix from previous membership matrix. If the membership
+    matrix is larger then the k cluster specified for this iteration, columns will be randomly generated to initialize the FCM
+    algorithm. If the k cluster number is larger dans the number of cluster in the membership matrix, new clusters will be
+    randomly initialized as it would be if --init was None. 
     \b
     REFERENCES
     ----------
@@ -151,6 +169,7 @@ def main(
     
     # Decomposing into 2 components if asked. 
     if pca:
+        logging.info("Applying PCA dimensionality reduction.")
         X, variance, chi, kmo = compute_pca(X, 2)
         logging.info("Bartlett's test of sphericity returned a p-value of {} and Keiser-Meyer-Olkin (KMO)"
                      " test returned a value of {}.".format(chi, kmo))
@@ -162,10 +181,16 @@ def main(
         out.to_excel(f'{out_folder}/PCA/transformed_data.xlsx', index=True, header=True)
         
     # Plotting the dendrogram.
+    logging.info("Generating dendrogram.")
     sys.setrecursionlimit(50000)
     plot_dendrogram(X, f'{out_folder}/METRICS/dendrogram.png')
     
+    # Load initialisation matrix if any.
+    if init is not None:
+        init=np.load(init)
+    
     # Computing a range of C-means clustering method. 
+    logging.info("Computing FCM from k=2 to k={}".format(max_cluster))
     cntr, u, d, wss, fpcs, ss, chi, dbi, gap, sk = fuzzyCmeans(X,
                                                                max_cluster=max_cluster,
                                                                m=m,
@@ -176,6 +201,7 @@ def main(
                                                                output=out_folder)
     
     # Compute knee location on Silhouette Score. 
+    logging.info("Plotting validation indicators and outputting final matrices.")
     elbow_wss = compute_knee_location(wss)
     
     # Creating a dataframe to export statistics. 
@@ -215,6 +241,16 @@ def main(
                        title='Parallel Coordinates plot stratified by optimal cluster membership determined by the elbow method.')
     plot_grouped_barplot(df_for_clust, membership, title='Barplot of clusters characteristics using the number of clusters from the elbow method.',
                          output=f'{out_folder}/barplot_elbow.png')
+    
+    # Plot manually selected k-cluster solution.
+    if cluster_solution is not None:
+        membership = np.argmax(u[cluster_solution-2], axis=0)
+        plot_parallel_plot(df_for_clust, membership, mean_values=True, output=f'{out_folder}/parallel_plot_selected.png',
+                           title='Parallel Coordinates plot stratified by manually selected cluster solution.')
+        plot_grouped_barplot(df_for_clust, membership, title='Barplot of clusters characteristics using the manually selected number of clusters',
+                            output=f'{out_folder}/barplot_selected.png')
+        np.save(f'{out_folder}/cluster_membership_selected.npy', u[cluster_solution-2])
+        np.save(f'{out_folder}/cluster_centers_selected.npy', cntr[cluster_solution-2])
     
     # Exporting final fuzzy c-partitioned matrix. 
     np.save(f'{out_folder}/cluster_membership_gap.npy', u[gap_index])

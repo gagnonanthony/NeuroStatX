@@ -158,7 +158,21 @@ def cmeans(data, c, m, error, maxiter, metric='euclidean', init=None, seed=None)
         u0 /= np.ones(
             (c, 1)).dot(np.atleast_2d(u0.sum(axis=0))).astype(np.float64)
         init = u0.copy()
-    u0 = init
+    else:
+        if init.shape[0] > c:
+            # Randomly remove rows.
+            init = np.delete(init, np.random.choice(init.shape[0], size=(init.shape[0] - c), replace=False), axis=0)
+        elif init.shape[0] < c:
+            # Randomly initiate new rows.
+            if seed is not None:
+                np.random.seed(seed=seed)
+            n = data.shape[1]
+            u0 = np.random.rand((c - init.shape[0]), n)
+            u0 /= np.ones(
+                ((c - init.shape[0]), 1)).dot(np.atleast_2d(u0.sum(axis=0))).astype(np.float64)
+            init = np.vstack((init, u0))
+    
+    u0 = init    
     u = np.fmax(u0, np.finfo(np.float64).eps)
 
     # Initialize loop parameters

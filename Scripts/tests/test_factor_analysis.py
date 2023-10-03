@@ -10,7 +10,7 @@ from CCPM.io.download import get_home, download_data, save_files_dict
 from Scripts.CCPM_factor_analysis import app
 
 
-download_data(save_files_dict(), keys=['testing_data.zip'])
+download_data(save_files_dict(), keys=['data.zip'])
 tmp_dir = tempfile.TemporaryDirectory()
 
 runner = CliRunner()
@@ -28,6 +28,6 @@ def test_execution_factor_analysis():
     out_folder = os.path.join(get_home(), 'data/factor_results/')
 
     ret = runner.invoke(app, ['--in-dataset', in_dataset, '--out-folder', out_folder,
-                        '--id-column', 'subjectkey', '-f'])
+                        '--desc-columns', 1, '--id-column', 'subjectkey', '-f'])
 
     assert ret.exit_code == 0

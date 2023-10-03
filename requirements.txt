@@ -28,6 +28,7 @@ pillow==9.5.0
 tableone==0.8.0
 factor_analyzer==0.4.1
 matplotlib==3.7.1
+networkx==3.1
 yellowbrick==1.5
 typer[all]
 adjustText @ git+https://github.com/Phlya/adjustText@master
