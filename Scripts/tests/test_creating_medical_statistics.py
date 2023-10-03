@@ -10,7 +10,7 @@ from CCPM.io.download import get_home, download_data, save_files_dict
 from Scripts.CCPM_creating_medical_statistics import app
 
 
-download_data(save_files_dict(), keys=['testing_data.zip'])
+download_data(save_files_dict(), keys=['data.zip'])
 tmp_dir = tempfile.TemporaryDirectory()
 
 runner = CliRunner()

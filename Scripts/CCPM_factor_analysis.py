@@ -209,7 +209,7 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
         logging.info('Loading {}'.format(in_dataset))
         if len(in_dataset) > 1:
             if id_column is None:
-                exit('Column name for index matching is required when inputting multiple dataframes.')
+                sys.exit('Column name for index matching is required when inputting multiple dataframes.')
             dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
             df = merge_dataframes(dict_df, id_column)
         else:

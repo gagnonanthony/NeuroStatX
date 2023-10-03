@@ -18,7 +18,7 @@ class NetworkLayout(str, Enum):
 
 
 def visualize_network(G, output, 
-                      layout=nx.fruchterman_reingold_layout, 
+                      layout=nx.spring_layout, 
                       weight='weight',
                       centroids_labelling=True, 
                       subjects_labelling=False,

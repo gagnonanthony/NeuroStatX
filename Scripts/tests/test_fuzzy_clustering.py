@@ -9,7 +9,7 @@ from typer.testing import CliRunner
 from CCPM.io.download import get_home, download_data, save_files_dict
 from Scripts.CCPM_fuzzy_clustering import app
 
-download_data(save_files_dict(), keys=['testing_data.zip'])
+download_data(save_files_dict(), keys=['data.zip'])
 tmp_dir = tempfile.TemporaryDirectory()
 
 runner = CliRunner()
