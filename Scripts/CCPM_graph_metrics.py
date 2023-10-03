@@ -63,7 +63,7 @@ def main(
     argument). For more details regarding those algorithms, please see [1]. Details 
     regarding specific operations: if NODE is required, you have to provide a single node
     label (such as 'c1'). If NODES is required, you can provide multiple nodes within 
-    hyphen (such as 'c1 c2 c3'). 
+    quotation marks (such as "c1 c2 c3"). 
     \b
     REFERENCE
     ---------
