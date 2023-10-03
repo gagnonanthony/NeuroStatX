@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import coloredlogs
 import logging
 
 import networkx as nx
@@ -141,6 +142,7 @@ def main(
     
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
+        coloredlogs.install(level=logging.INFO)
 
     assert_input(in_matrix)
     assert_output_dir_exist(overwrite, out_folder, create_dir=True)

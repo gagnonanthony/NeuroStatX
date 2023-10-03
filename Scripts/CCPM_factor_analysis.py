@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Import required libraries.
+import coloredlogs
 import logging
 import os
 import sys
@@ -187,6 +188,7 @@ def main(in_dataset: Annotated[List[str], typer.Option(help='Input dataset(s) to
 
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
+        coloredlogs.install(level=logging.INFO)
 
     if factor_number is not None and use_horn_parallel:
         sys.exit('--factor_number and --use_horn_parallel cannot be used at the same time.')

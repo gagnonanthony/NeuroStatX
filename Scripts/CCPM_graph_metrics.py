@@ -3,6 +3,7 @@
 
 import logging
 import sys
+import coloredlogs
 
 import pandas as pd
 import networkx as nx
@@ -76,6 +77,7 @@ def main(
     
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
+        coloredlogs.install(level=logging.INFO)
         
     if out_file is None:
         out_file = f'{operation[0]}.xlsx'    
