@@ -25,7 +25,7 @@ gdown==4.7.1
 kneed==0.8.5
 fpdf==1.7.2
 detect-delimiter==0.1.1
-pillow==9.5.0
+pillow==10.0.1
 tableone==0.8.0
 factor_analyzer==0.4.1
 matplotlib==3.7.1
