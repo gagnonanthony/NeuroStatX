@@ -119,7 +119,7 @@ def constraint(graph, nodes, weight=None):
     constraint: GRAPH NODES WEIGHT\n
         Will return a dictionary of the constraint for all specified nodes.
     """
-    return nx.constraint(graph, nodes=[nodes], weight=weight)
+    return nx.constraint(graph, nodes=nodes.split(), weight=weight)
 
 
 def effectivesize(graph, nodes, weight=None):
@@ -127,7 +127,7 @@ def effectivesize(graph, nodes, weight=None):
     effectivesize: GRAPH NODES WEIGHT\n
         Will return a dictionary of the effective size for all specified nodes.
     """
-    return nx.effective_size(graph, nodes=[nodes], weight=weight)
+    return nx.effective_size(graph, nodes=nodes.split(), weight=weight)
 
 
 def closenessvitality(graph, nodes, weight=None):

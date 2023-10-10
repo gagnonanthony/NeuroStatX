@@ -100,7 +100,7 @@ def main(
     # Performing operation.
     try:
         logging.info('Running {} on input network...'.format(operation[0].capitalize()))
-        output = OPERATIONS[operation[0]](G, operation[2])
+        output = OPERATIONS[operation[0]](G, *operation[2:])
     except ValueError as msg:
         logging.error('{} operation failed.'.format(
             operation[0].capitalize()))
