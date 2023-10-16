@@ -429,9 +429,14 @@ def main(
                 )
                 nfactors = suggfactor
             else:
-                logging.info("The scree plot and horn's parallel analysis returned different values : {} and {}"
-                             " respectively. Default is taking the value suggested from the scree plot method "
-                             "if the --use_horn_parallel flag is not used.".format(eigenvalues, suggfactor))
+                logging.info(
+                    "The scree plot and horn's parallel analysis returned "
+                    "different values : {} and {} respectively. Default is "
+                    "taking the value suggested from the scree plot method "
+                    "if the --use_horns_parallel flag is not used.".format(
+                        eigenvalues, suggfactor
+                    )
+                )
                 if use_horn_parallel:
                     nfactors = suggfactor
                 elif factor_number is not None:
