@@ -47,8 +47,13 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init, metric)
     """
     
     if n_cluster <= max_clusters:
+        if init is not None:
+            init_mat = init[n_cluster-2]
+        else:
+            init_mat = None
+        
         cntr, u, u0, d, jm, p, fpc = cmeans(
-            X.T, n_cluster, m=m, error=error, maxiter=maxiter, metric=metric, init=init
+            X.T, n_cluster, m=m, error=error, maxiter=maxiter, metric=metric, init=init_mat
         )
         
         cluster_membership = np.argmax(u, axis=0)
@@ -56,7 +61,7 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init, metric)
         ss, chi, dbi = compute_evaluation_metrics(X, cluster_membership, metric=metric)
         wss = compute_sse(X, cntr, u)
         
-        gap, sk = compute_gap_stats(X, wss, nrefs=3, n_cluster=n_cluster, m=m, error=error, metric=metric, maxiter=maxiter, init=init)
+        gap, sk = compute_gap_stats(X, wss, nrefs=3, n_cluster=n_cluster, m=m, error=error, metric=metric, maxiter=maxiter, init=None)
         
         xpts = X[:, 0]
         ypts = X[:, 1]
@@ -89,7 +94,7 @@ def fuzzyCmeans(X, max_cluster=10, m=2, error=1E-6, maxiter=1000, init=None, met
         m (float, optional):            Exponentiation value to apply on the membership function. Defaults to 2.
         error (float, optional):        Stopping criterion. Defaults to 1E-6.
         maxiter (int, optional):        Maximum iteration value. Defaults to 1000.
-        init (2d array, optional):      Initial fuzzy c-partitioned matrix. Defaults to None.
+        init (folder, optional):        Folder containing the c-partitioned matrices for each cluster number. Defaults to None.
         metric (str, optional):         Distance metric to use to compute intra/inter subjects/clusters distance. Defaults to
                                         euclidean.
         output (String, optional):      Output folder. Defaults to './'.

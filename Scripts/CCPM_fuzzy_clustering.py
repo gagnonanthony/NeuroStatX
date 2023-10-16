@@ -58,9 +58,6 @@ def main(
                                           show_default=True,
                                           rich_help_panel='Clustering Options',
                                           case_sensitive=False)] = None,
-        cluster_solution: Annotated[int, typer.Option(help='k value to export and plot solution',
-                                                      show_default=False,
-                                                      rich_help_panel='Clustering Options')] = None,
         metric: Annotated[DistanceMetrics, typer.Option(help='Metric to use to compute distance between original points'
                                                              ' and clusters centroids.',
                                                         show_default=True,
@@ -128,10 +125,14 @@ def main(
     ----------
     Details regarding the parameters can be seen below. Regarding the --m parameter, it defines the degree of fuzziness of
     the resulting membership matrix. Using --m 1 will returns crisp clusters, whereas --m >1 will returned more and more fuzzy
-    clusters. It is also possible to pre-initialize the c-partitioned matrix from previous membership matrix. If the membership
-    matrix is larger then the k cluster specified for this iteration, columns will be randomly generated to initialize the FCM
-    algorithm. If the k cluster number is larger dans the number of cluster in the membership matrix, new clusters will be
-    randomly initialized as it would be if --init was None. 
+    clusters. It is also possible to pre-initialize the c-partitioned matrix from previous membership matrix. If you want to do
+    that, you need to specify a folder containing all membership matrices for each k number (meaning that if you want to perform
+    clustering up to k=10, you need a membership matrices for each of them.). It also must respect this name convention: 
+                    [init_folder]
+                        |-- cluster_membership_1.npy
+                        |-- cluster_membership_2.npy
+                        |-- [...]
+                        └-- cluster_membership_{k}.npy
     \b
     REFERENCES
     ----------
@@ -189,7 +190,9 @@ def main(
     
     # Load initialisation matrix if any.
     if init is not None:
-        init=np.load(init)
+        init_mat = [np.load(f'{init}/clusters_membership_{i}.npy') for i in range(2, max_cluster+1)]
+    else:
+        init_mat = None
     
     # Computing a range of C-means clustering method. 
     logging.info("Computing FCM from k=2 to k={}".format(max_cluster))
@@ -198,7 +201,7 @@ def main(
                                                                m=m,
                                                                error=error,
                                                                maxiter=maxiter,
-                                                               init=init,
+                                                               init=init_mat,
                                                                metric=metric,
                                                                output=out_folder)
     
@@ -230,35 +233,23 @@ def main(
     plot_clustering_results(gap, title='GAP Statistics.', metric='GAP', output=f'{out_folder}/METRICS/gap.png', errorbar=sk,
                             annotation=f'Optimal Number of Clusters: {gap_index+2}')
     
-    # Selecting the best number of cluster.
-    # Using GAP Statistic and elbow method for now as it seems to be the most relevant ones. 
-    # Plotting results in a parallel coordinates plot.
-    membership = np.argmax(u[gap_index], axis=0)
-    plot_parallel_plot(df_for_clust, membership, mean_values=True, output=f'{out_folder}/parallel_plot_gap.png',
-                       title='Parallel Coordinates plot stratified by optimal cluster membership determined by the GAP statistic.')
-    plot_grouped_barplot(df_for_clust, membership, title='Barplot of clusters characteristics using the number of clusters from the GAP statistic.',
-                         output=f'{out_folder}/barplot_gap.png')
-    membership = np.argmax(u[elbow_wss-2], axis=0)
-    plot_parallel_plot(df_for_clust, membership, mean_values=True, output=f'{out_folder}/parallel_plot_elbow.png',
-                       title='Parallel Coordinates plot stratified by optimal cluster membership determined by the elbow method.')
-    plot_grouped_barplot(df_for_clust, membership, title='Barplot of clusters characteristics using the number of clusters from the elbow method.',
-                         output=f'{out_folder}/barplot_elbow.png')
+    # Exporting plots and graphs for each cluster solution. 
+    os.mkdir(f'{out_folder}/MEMBERSHIP/')
+    os.mkdir(f'{out_folder}/PARALLEL_PLOTS/')
+    os.mkdir(f'{out_folder}/CENTROIDS/')
+    os.mkdir(f'{out_folder}/BARPLOTS')
     
-    # Plot manually selected k-cluster solution.
-    if cluster_solution is not None:
-        membership = np.argmax(u[cluster_solution-2], axis=0)
-        plot_parallel_plot(df_for_clust, membership, mean_values=True, output=f'{out_folder}/parallel_plot_selected.png',
-                           title='Parallel Coordinates plot stratified by manually selected cluster solution.')
-        plot_grouped_barplot(df_for_clust, membership, title='Barplot of clusters characteristics using the manually selected number of clusters',
-                            output=f'{out_folder}/barplot_selected.png')
-        np.save(f'{out_folder}/cluster_membership_selected.npy', u[cluster_solution-2])
-        np.save(f'{out_folder}/cluster_centers_selected.npy', cntr[cluster_solution-2])
-    
-    # Exporting final fuzzy c-partitioned matrix. 
-    np.save(f'{out_folder}/cluster_membership_gap.npy', u[gap_index])
-    np.save(f'{out_folder}/cluster_membership_elbow.npy', u[elbow_wss-2])
-    np.save(f'{out_folder}/cluster_centers_gap.npy', cntr[gap_index])
-    np.save(f'{out_folder}/cluster_centers_elbow.npy', cntr[elbow_wss-2])
+    # Iterating and saving every elements.
+    for i in range(len(u)):
+        membership = np.argmax(u[i], axis=0)
+        plot_parallel_plot(df_for_clust, membership, mean_values=True, 
+                           output=f'{out_folder}/PARALLEL_PLOTS/parallel_plot_{i+2}clusters.png',
+                           title=f'Parallel Coordinates plot for {i+2} clusters solution.')
+        plot_grouped_barplot(df_for_clust, membership, title=f'Barplot of {i+2} clusters solution.',
+                             output=f'{out_folder}/BARPLOTS/barplot_{i+2}clusters.png')
+        np.save(f'{out_folder}/MEMBERSHIP/clusters_membership_{i+2}.npy', u[i])
+        np.save(f'{out_folder}/CENTROIDS/clusters_centroids_{i+2}.npy', cntr[i])
+     
     
 if __name__ == '__main__':
     app()
