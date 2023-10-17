@@ -57,3 +57,31 @@ def filter_node_subjects(n):
     """
     
     return 'c' not in n
+
+
+def extract_subject_percentile(mat, percentile):
+    """
+    Function to extract subject 
+
+    Args:
+        mat (Array):            Fuzzy C-partitioned membership matrix.
+        percentile (float):     Percentile value. 
+    Return:
+        label_dict:             Dictionary of binary arrays for each clusters.
+    """
+    
+    # Fetching 1st and 2nd highest membership value.
+    high1st = np.max(mat, axis=0)
+    high2nd = np.partition(mat, -2, axis=0)[-2, :]
+    delta = high1st - high2nd
+    
+    # Computing value for the Xth percentile.
+    value = np.percentile(delta, percentile)
+    
+    # Labelling subjects that are over the Xth percentile value. 
+    label_dict = {}
+    for i in range(mat.shape[0]):
+        label_dict[f'c{i+1}'] = np.where(mat[i, :] > value, i+1, 0)
+    
+    return label_dict
+    
