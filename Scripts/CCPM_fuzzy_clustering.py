@@ -63,10 +63,10 @@ def main(
             rich_help_panel="Essential Files Options",
         ),
     ],
-    max_cluster: Annotated[
+    k: Annotated[
         int,
         typer.Option(
-            help="Maximum number of cluster to fit a model for.",
+            help="Maximum k number of cluster to fit a model for. (Script will iterate until k is met.)",
             show_default=True,
             rich_help_panel="Clustering Options",
         ),
@@ -337,7 +337,8 @@ def main(
 
     # Load initialisation matrix if any.
     if init is not None:
-        init_mat = [np.load(f'{init}/clusters_membership_{i}.npy') for i in range(2, k+1)]
+        init_mat = [np.load(f'{init}/clusters_membership_{i}.npy')
+                    for i in range(2, max_cluster+1)]
     else:
         init_mat = None
     
