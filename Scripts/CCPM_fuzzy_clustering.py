@@ -41,7 +41,7 @@ def main(
                                                        ' to exclude in statistics and descriptive tables.',
                                                   show_default=False,
                                                   rich_help_panel='Essential Files Options')],
-        max_cluster: Annotated[int, typer.Option(help='Maximum number of cluster to fit a model for.',
+        k: Annotated[int, typer.Option(help='Maximum k number of cluster to fit a model for. (Script will iterate until k is met.)',
                                                  show_default=True,
                                                  rich_help_panel='Clustering Options')] = 10,
         m: Annotated[float, typer.Option(help='Exponentiation value to apply on the membership function, will '
@@ -91,7 +91,7 @@ def main(
     FUZZY CLUSTERING
     ----------------
     CCPM_fuzzy_clustering.py is a wrapper script for a Fuzzy C-Means clustering analysis. By design,
-    the script will compute the analysis for k specified cluster (chosen by --max_cluster) and returns
+    the script will compute the analysis for k specified cluster (chosen by --k) and returns
     various evaluation metrics and summary barplot/parallel plot. 
     \b
     EVALUATION METRICS
@@ -134,6 +134,37 @@ def main(
                         |-- [...]
                         └-- cluster_membership_{k}.npy
     \b
+    OUTPUT FOLDER STRUCTURE
+    -----------------------
+    The script creates a default output structure in a destination specified by using --out-folder. Output structure is as follows:
+                    [out_folder]
+                        |-- BARPLOTS
+                        |       |-- barplot_2clusters.png
+                        |       |-- [...]
+                        |       └-- barplot_{k}clusters.png
+                        |-- CENTROIDS
+                        |       |-- clusters_centroids_2.xlsx
+                        |       |-- [...]
+                        |       └-- clusters_centroids_{k}.xlsx
+                        |-- MEMBERSHIP_DF
+                        |       |-- clusters_membership_2.xlsx
+                        |       |-- [...]
+                        |       └-- clusters_membership_{k}.xlsx
+                        |-- MEMBERSHIP_MAT (identical to MEMBERSHIP_DF but in .npy format)
+                        |-- METRICS
+                        |       |-- chi.png
+                        |       |-- [...]
+                        |       └-- wss.png
+                        |-- PARALLEL_PLOTS
+                        |       |-- parallel_plot_2clusters.png
+                        |       |-- [...]
+                        |       |-- parallel_plot_{k}clusters.png
+                        |-- PCA (optional)
+                        |       |-- transformed_data.xlsx
+                        |       └-- variance_explained.xlsx
+                        |-- validation_indices.xlsx
+                        └-- viz_multiple_cluster_nb.png                
+    \b
     REFERENCES
     ----------
     [1]     https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_cmeans.html
@@ -166,7 +197,7 @@ def main(
     descriptive_columns = [n for n in range(0, desc_columns)]
     
     # Creating the array.
-    subid = raw_df[id_column]
+    desc_data = raw_df[raw_df.columns[descriptive_columns]]
     df_for_clust = raw_df.drop(raw_df.columns[descriptive_columns], axis=1, inplace=False).astype('float')
     X = df_for_clust.values
     
@@ -190,14 +221,14 @@ def main(
     
     # Load initialisation matrix if any.
     if init is not None:
-        init_mat = [np.load(f'{init}/clusters_membership_{i}.npy') for i in range(2, max_cluster+1)]
+        init_mat = [np.load(f'{init}/clusters_membership_{i}.npy') for i in range(2, k+1)]
     else:
         init_mat = None
     
     # Computing a range of C-means clustering method. 
-    logging.info("Computing FCM from k=2 to k={}".format(max_cluster))
+    logging.info("Computing FCM from k=2 to k={}".format(k))
     cntr, u, d, wss, fpcs, ss, chi, dbi, gap, sk = fuzzyCmeans(X,
-                                                               max_cluster=max_cluster,
+                                                               max_cluster=k,
                                                                m=m,
                                                                error=error,
                                                                maxiter=maxiter,
@@ -234,7 +265,8 @@ def main(
                             annotation=f'Optimal Number of Clusters: {gap_index+2}')
     
     # Exporting plots and graphs for each cluster solution. 
-    os.mkdir(f'{out_folder}/MEMBERSHIP/')
+    os.mkdir(f'{out_folder}/MEMBERSHIP_MAT/')
+    os.mkdir(f'{out_folder}/MEMBERSHIP_DF/')
     os.mkdir(f'{out_folder}/PARALLEL_PLOTS/')
     os.mkdir(f'{out_folder}/CENTROIDS/')
     os.mkdir(f'{out_folder}/BARPLOTS')
@@ -247,8 +279,18 @@ def main(
                            title=f'Parallel Coordinates plot for {i+2} clusters solution.')
         plot_grouped_barplot(df_for_clust, membership, title=f'Barplot of {i+2} clusters solution.',
                              output=f'{out_folder}/BARPLOTS/barplot_{i+2}clusters.png')
-        np.save(f'{out_folder}/MEMBERSHIP/clusters_membership_{i+2}.npy', u[i])
-        np.save(f'{out_folder}/CENTROIDS/clusters_centroids_{i+2}.npy', cntr[i])
+        
+        # Converting membership arrays to df. 
+        member = pd.DataFrame(u[i].T, index=None, columns=[f"Cluster #{n+1}" for n in range(u[i].shape[0])])
+        centroids = pd.DataFrame(cntr[i], index=[f"Cluster #{n+1}" for n in range(u[i].shape[0])], columns=['x', 'y'])
+        
+        # Appending subject ids and descriptive columns.
+        member_out = pd.concat([desc_data, member], axis=1)
+        member_out.to_excel(f'{out_folder}/MEMBERSHIP_DF/clusters_membership_{i+2}.xlsx', header=True, index=False)
+        centroids.to_excel(f'{out_folder}/CENTROIDS/clusters_centroids_{i+2}.xlsx', header=True, index=True)
+
+        # Saving original matrix.
+        np.save(f'{out_folder}/MEMBERSHIP_MAT/clusters_membership_{i+2}.npy', u[i])
      
     
 if __name__ == '__main__':

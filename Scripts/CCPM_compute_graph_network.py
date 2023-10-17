@@ -3,17 +3,22 @@
 
 import coloredlogs
 import logging
+import sys
 
 import networkx as nx
 import numpy as np
 import typer
+from typing import List
 from typing_extensions import Annotated
 
 from CCPM.io.utils import (assert_input,
-                           assert_output_dir_exist)
+                           assert_output_dir_exist,
+                           load_df_in_any_format)
 from CCPM.network.utils import get_nodes_and_edges
 from CCPM.network.viz import (visualize_network,
-                              NetworkLayout)
+                              membership_distribution,
+                              NetworkLayout,
+                              create_cmap_from_list)
 
 
 # Initializing the app.
@@ -21,7 +26,7 @@ app = typer.Typer(add_completion=False)
 
 @app.command()
 def main(
-        in_matrix: Annotated[str, typer.Option(help='Numpy array containing the fuzzy clustering membership values (.npy).',
+        in_matrix: Annotated[str, typer.Option(help='DataFrame containing the membership values for each subjects.',
                                                show_default=False,
                                                rich_help_panel='Essential Files Options')],
         out_folder: Annotated[str, typer.Option(help='Path of the folder in which the results will be written. '
@@ -33,6 +38,15 @@ def main(
         overwrite: Annotated[bool, typer.Option('-f', '--overwrite', help='If true, force overwriting of existing '
                                                                           'output files.',
                                                 rich_help_panel="Optional parameters")] = False,
+        data_for_label: Annotated[str, typer.Option(help='Variable within the dataframe to use for labelling specific subjects.',
+                                                    show_default=True,
+                                                    rich_help_panel='Label Options')] = None,
+        label_name: Annotated[List[str], typer.Option(help='Variable within the --data-for-label to use for subject nodes labelling.',
+                                                show_default=False,
+                                                rich_help_panel='Label Options')] = None,
+        background_alpha: Annotated[bool, typer.Option(help='If set, background nodes alpha will be set to 0.2 (more transparent).',
+                                                       show_default=True,
+                                                       rich_help_panel='Label Options')] = True,
         layout: Annotated[NetworkLayout, typer.Option(help='Layout algorithm to determine the nodes position.',
                                                       show_default=True,
                                                       show_choices=True,
@@ -115,6 +129,16 @@ def main(
     Spring Layout: Use the Fruchterman-Reingold force-directed algorithm. Suitable for large
                    network with high number of nodes. For details, see [2]. This is the default
                    method. 
+    ** Layout is only computed once and is reused in all other network to reduce the computational burden. **
+    \b
+    LABELLING GRAPH NETWORK NODES
+    -----------------------------
+    It is possible to label specific nodes based on a condition (e.g. a diagnosis, etc.). To do so,
+    use --data-for-label argument to provide a dataframe containing the column(s) to use for labelling.
+    You also need to specify the --label-name in order to use the correct column. It is also possible to
+    provide multiple label name by using --label-name x --label-name y. The script will output multiple
+    graphs for each label name. ** LABEL DATA NEEDS TO BE IN THE SAME ORDER AS THE DATASET PROVIDED DURING
+    CLUSTERING, IF NOT, LABEL AND SUBJECT WILL NOT MATCH **
     \b
     GRAPH NETWORK CUSTOMIZATION
     ---------------------------
@@ -135,7 +159,7 @@ def main(
     \b
     EXAMPLE USAGE
     -------------
-    CCPM_compute_graph_network.py --in-matrix cluster_membership.npy --out-folder output/
+    CCPM_compute_graph_network.py --in-membership cluster_membership.npy --out-folder output/
     ** For large graphs (~10 000 nodes), it might take ~5 mins to run using the spring layout and
        depending on your hardware. **
     """
@@ -149,37 +173,85 @@ def main(
     
     # Loading membership matrix.
     logging.info("Loading membership matrix.")
-    membership_mat = np.load(in_matrix)
+    membership = np.load(in_matrix)
+    
+    # Plotting membership distributions and delta.
+    membership_distribution(membership, output=f'{out_folder}/membership_distribution.png')
     
     # Fetching dataframe of nodes and edges.
-    df, _, _ = get_nodes_and_edges(membership_mat)
+    df, _, _ = get_nodes_and_edges(membership)
     
     # Creating network graph.
     G = nx.from_pandas_edgelist(df, 'node1', 'node2', edge_attr='membership')
     
     # Visualizing and saving network.
     logging.info("Constructing the layout and generating graph.")
-    visualize_network(G, output=f'{out_folder}/graph_network.png',
-                      layout=getattr(nx, layout),
-                      weight='membership',
-                      centroids_labelling=label_centroids,
-                      subjects_labelling=label_subjects,
-                      centroid_node_shape=centroids_size,
-                      centroid_alpha=centroid_alpha,
-                      centroid_node_color=centroid_node_color,
-                      centroid_edge_color=centroid_edge_color,
-                      subject_node_shape=subject_node_size,
-                      subject_alpha=subject_node_alpha,
-                      subject_node_color=subject_node_color,
-                      subject_edge_color=subject_edge_color,
-                      colormap=colormap,
-                      title=title,
-                      legend_title=legend_title)
+    pos = visualize_network(G, output=f'{out_folder}/graph_network.png',
+                            layout=getattr(nx, layout),
+                            weight='membership',
+                            centroids_labelling=label_centroids,
+                            subjects_labelling=label_subjects,
+                            centroid_node_shape=centroids_size,
+                            centroid_alpha=centroid_alpha,
+                            centroid_node_color=centroid_node_color,
+                            centroid_edge_color=centroid_edge_color,
+                            subject_node_shape=subject_node_size,
+                            subject_alpha=subject_node_alpha,
+                            subject_node_color=subject_node_color,
+                            subject_edge_color=subject_edge_color,
+                            colormap=colormap,
+                            title=title,
+                            legend_title=legend_title)
     
     # Saving graph as a .gexf object for easy reloading.
     nx.write_gexf(G, f'{out_folder}/network_graph_file.gexf')
-    
-    
+
+    # Plotting network with custom label. 
+    if data_for_label is not None:
+        if label_name is None:
+            sys.exit('If --data-for-label is provided, you need to specify which column to use with --label-name.')
+            
+        logging.info('Constructing graph(s) with custom labels.')
+        
+        # Loading df. 
+        df_for_label = load_df_in_any_format(data_for_label)
+        
+        assert len(df_for_label[label_name]) == membership.shape[1], 'Label data input shape does not match membership data.'
+
+        # Fetching data for label as array.
+        for label in label_name:
+            labels = df_for_label[label]
+            
+            nodes_cmap = create_cmap_from_list(labels)
+            
+            if background_alpha:
+                sub_alpha = []
+                for i in nodes_cmap:
+                    if type(i) == str:
+                        sub_alpha.append(0.2)
+                    else:
+                        sub_alpha.append(1)
+            else:
+                sub_alpha = np.array([1] * len(nodes_cmap))
+            
+            _ = visualize_network(G, output=f'{out_folder}/graph_network_{label}.png',
+                                    layout=getattr(nx, layout),
+                                    pos=pos,
+                                    weight='membership',
+                                    centroids_labelling=label_centroids,
+                                    subjects_labelling=label_subjects,
+                                    centroid_node_shape=centroids_size,
+                                    centroid_alpha=centroid_alpha,
+                                    centroid_node_color=centroid_node_color,
+                                    centroid_edge_color=centroid_edge_color,
+                                    subject_node_shape=subject_node_size,
+                                    subject_alpha=sub_alpha,
+                                    subject_node_color=nodes_cmap,
+                                    subject_edge_color=subject_edge_color,
+                                    colormap='gray',
+                                    title=f'{title} with {label} subjects colored.',
+                                    legend_title=legend_title)
+           
 if __name__ == '__main__':
     app()
     
