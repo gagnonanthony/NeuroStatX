@@ -57,7 +57,7 @@ def filter_node_subjects(n):
     Returns:
         True or False
     """
-
+    
     return "c" not in n
 
 
