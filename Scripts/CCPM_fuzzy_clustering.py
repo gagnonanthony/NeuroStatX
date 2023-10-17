@@ -344,18 +344,21 @@ def main(
     
     # Computing a range of C-means clustering method. 
     logging.info("Computing FCM from k=2 to k={}".format(k))
-    cntr, u, d, wss, fpcs, ss, chi, dbi, gap, sk = fuzzyCmeans(X,
-                                                               max_cluster=k,
-                                                               m=m,
-                                                               error=error,
-                                                               maxiter=maxiter,
-                                                               init=init_mat,
-                                                               metric=metric,
-                                                               output=out_folder,
-                                                               verbose=verbose)
-    
-    # Compute knee location on Silhouette Score. 
-    logging.info("Plotting validation indicators and outputting final matrices.")
+    cntr, u, d, wss, fpcs, ss, chi, dbi, gap, sk = fuzzyCmeans(
+        X,
+        max_cluster=k,
+        m=m,
+        error=error,
+        maxiter=maxiter,
+        init=init_mat,
+        metric=metric,
+        output=out_folder,
+        verbose=verbose,
+    )
+
+    # Compute knee location on Silhouette Score.
+    logging.info("Plotting validation indicators and outputting final "
+                 "matrices.")
     elbow_wss = compute_knee_location(wss)
 
     # Creating a dataframe to export statistics.

@@ -8,6 +8,7 @@ from matplotlib.pyplot import get_cmap
 from matplotlib.colors import rgb2hex
 import multiprocessing
 import numpy as np
+from p_tqdm import p_map
 import skfuzzy as fuzz
 from p_tqdm import p_map
 

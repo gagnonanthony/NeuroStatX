@@ -46,6 +46,25 @@ def main(
         overwrite: Annotated[bool, typer.Option('-f', '--overwrite', help='If true, force overwriting of existing '
                                                                           'output files.',
                                                 rich_help_panel="Optional parameters")] = False,
+        in_dataset: Annotated[str, typer.Option(help='Input dataset containing membership values for each clusters.',
+                                                      show_default=False,
+                                                      rich_help_panel='Essential Files Options')],
+        id_column: Annotated[str, typer.Option(help="Name of the column containing the subject's ID tag. "
+                                                    "Required for proper handling of IDs.",
+                                               show_default=False,
+                                               rich_help_panel='Essential Files Options')],
+        desc_columns: Annotated[int, typer.Option(help='Number of descriptive columns at the beginning of the dataset.',
+                                                  show_default=False,
+                                                  rich_help_panel='Essential Files Options')],
+        out_folder: Annotated[str, typer.Option(help='Path of the folder in which the results will be written. '
+                                                     'If not specified, current folder and default '
+                                                     'name will be used.',
+                                                rich_help_panel='Essential Files Options')] = './graph_results/',
+        verbose: Annotated[bool, typer.Option('-v', '--verbose', help='If true, produce verbose output.',
+                                              rich_help_panel="Optional parameters")] = False,
+        overwrite: Annotated[bool, typer.Option('-f', '--overwrite', help='If true, force overwriting of existing '
+                                                                          'output files.',
+                                                rich_help_panel="Optional parameters")] = False,
         data_for_label: Annotated[str, typer.Option(help='Variable within the dataframe to use for labelling specific subjects.',
                                                     show_default=True,
                                                     rich_help_panel='Label Options')] = None,
