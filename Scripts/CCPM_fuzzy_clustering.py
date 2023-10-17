@@ -234,7 +234,8 @@ def main(
                                                                maxiter=maxiter,
                                                                init=init_mat,
                                                                metric=metric,
-                                                               output=out_folder)
+                                                               output=out_folder,
+                                                               verbose=verbose)
     
     # Compute knee location on Silhouette Score. 
     logging.info("Plotting validation indicators and outputting final matrices.")

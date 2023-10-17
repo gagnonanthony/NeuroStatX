@@ -167,10 +167,10 @@ def membership_distribution(mat, output='./membership_distribution.png'):
     """
     
     # Fetching 1st highest membership value.
-    high1st = np.max(mat, axis=0)
+    high1st = np.max(mat, axis=1)
     
     # Fetching 2nd highest membership value. 
-    high2nd = np.partition(mat, -2, axis=0)[-2, :]
+    high2nd = np.partition(mat, -2, axis=1)[:, -2]
     
     # Calculating delta.
     delta = high1st - high2nd

@@ -8,6 +8,7 @@ from matplotlib.pyplot import get_cmap
 from matplotlib.colors import rgb2hex
 import multiprocessing
 import numpy as np
+from p_tqdm import p_map
 
 from CCPM.clustering.metrics import compute_evaluation_metrics, compute_sse, compute_gap_stats
 from CCPM.clustering.cluster import cmeans
@@ -61,7 +62,7 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init, metric)
         ss, chi, dbi = compute_evaluation_metrics(X, cluster_membership, metric=metric)
         wss = compute_sse(X, cntr, u)
         
-        gap, sk = compute_gap_stats(X, wss, nrefs=3, n_cluster=n_cluster, m=m, error=error, metric=metric, maxiter=maxiter, init=None)
+        gap, sk = compute_gap_stats(X, wss, nrefs=100, n_cluster=n_cluster, m=m, error=error, metric=metric, maxiter=maxiter, init=None)
         
         xpts = X[:, 0]
         ypts = X[:, 1]
@@ -82,7 +83,7 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init, metric)
         return None
 
 
-def fuzzyCmeans(X, max_cluster=10, m=2, error=1E-6, maxiter=1000, init=None, metric='euclidean', output='./'):
+def fuzzyCmeans(X, max_cluster=10, m=2, error=1E-6, maxiter=1000, init=None, metric='euclidean', output='./', verbose=False):
     """ 
     Fuzzy C-Means clustering function. Iteratively test and report statistics on multiple number
     of clusters. Based on documentation found here : 
@@ -123,7 +124,10 @@ def fuzzyCmeans(X, max_cluster=10, m=2, error=1E-6, maxiter=1000, init=None, met
     )
         
     pool = multiprocessing.Pool()
-    results = pool.map(process_cluster_partial, range(2, num_clusters + 1))
+    if verbose:
+        results = p_map(process_cluster_partial, range(2, num_clusters + 1))
+    else:    
+        results = pool.map(process_cluster_partial, range(2, num_clusters + 1))
     pool.close()
     pool.join()
     

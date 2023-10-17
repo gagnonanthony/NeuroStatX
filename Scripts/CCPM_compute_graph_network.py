@@ -7,6 +7,7 @@ import sys
 
 import networkx as nx
 import numpy as np
+import pandas as pd
 import typer
 from typing import List
 from typing_extensions import Annotated
@@ -26,9 +27,16 @@ app = typer.Typer(add_completion=False)
 
 @app.command()
 def main(
-        in_matrix: Annotated[str, typer.Option(help='DataFrame containing the membership values for each subjects.',
+        in_dataset: Annotated[str, typer.Option(help='Input dataset containing membership values for each clusters.',
+                                                      show_default=False,
+                                                      rich_help_panel='Essential Files Options')],
+        id_column: Annotated[str, typer.Option(help="Name of the column containing the subject's ID tag. "
+                                                    "Required for proper handling of IDs.",
                                                show_default=False,
                                                rich_help_panel='Essential Files Options')],
+        desc_columns: Annotated[int, typer.Option(help='Number of descriptive columns at the beginning of the dataset.',
+                                                  show_default=False,
+                                                  rich_help_panel='Essential Files Options')],
         out_folder: Annotated[str, typer.Option(help='Path of the folder in which the results will be written. '
                                                      'If not specified, current folder and default '
                                                      'name will be used.',
@@ -159,7 +167,8 @@ def main(
     \b
     EXAMPLE USAGE
     -------------
-    CCPM_compute_graph_network.py --in-membership cluster_membership.npy --out-folder output/
+    CCPM_compute_graph_network.py --in-dataset cluster_membership.xlsx --id-column subjectkey --desc-columns 1 
+        --out-folder output/
     ** For large graphs (~10 000 nodes), it might take ~5 mins to run using the spring layout and
        depending on your hardware. **
     """
@@ -168,18 +177,24 @@ def main(
         logging.getLogger().setLevel(logging.INFO)
         coloredlogs.install(level=logging.INFO)
 
-    assert_input(in_matrix)
+    assert_input(in_dataset)
     assert_output_dir_exist(overwrite, out_folder, create_dir=True)
     
     # Loading membership matrix.
-    logging.info("Loading membership matrix.")
-    membership = np.load(in_matrix)
+    logging.info("Loading membership data.")
+    raw_df = load_df_in_any_format(in_dataset)
+    descriptive_columns = [n for n in range(0, desc_columns)]
+    
+    # Creating the array.
+    desc_data = raw_df[raw_df.columns[descriptive_columns]]
+    clean_df = raw_df.drop(raw_df.columns[descriptive_columns], axis=1, inplace=False).astype('float')
+    df_with_ids = pd.concat([desc_data[desc_data.columns[0]], clean_df], axis=1)
     
     # Plotting membership distributions and delta.
-    membership_distribution(membership, output=f'{out_folder}/membership_distribution.png')
+    membership_distribution(clean_df.values, output=f'{out_folder}/membership_distribution.png')
     
     # Fetching dataframe of nodes and edges.
-    df, _, _ = get_nodes_and_edges(membership)
+    df, _, _ = get_nodes_and_edges(df_with_ids)
     
     # Creating network graph.
     G = nx.from_pandas_edgelist(df, 'node1', 'node2', edge_attr='membership')
@@ -216,7 +231,7 @@ def main(
         # Loading df. 
         df_for_label = load_df_in_any_format(data_for_label)
         
-        assert len(df_for_label[label_name]) == membership.shape[1], 'Label data input shape does not match membership data.'
+        assert df_with_ids[id_column].all() == df_for_label[id_column].all(), 'Label and input data IDs does not match.'
 
         # Fetching data for label as array.
         for label in label_name:
