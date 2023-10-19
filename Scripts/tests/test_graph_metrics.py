@@ -111,7 +111,7 @@ def test_constraint():
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ['constraint', in_graph, 'c1 c2 c3', 'membership', '-f'])
+    ret = runner.invoke(app, ['constraint', in_graph, 'c1', 'membership', '-f'])
 
     assert ret.exit_code == 0
 
@@ -120,7 +120,7 @@ def test_effectivesize():
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ['effectivesize', in_graph, 'c1 c2 c3', 'membership', '-f'])
+    ret = runner.invoke(app, ['effectivesize', in_graph, 'c1', 'membership', '-f'])
 
     assert ret.exit_code == 0
 

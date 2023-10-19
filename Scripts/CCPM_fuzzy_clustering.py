@@ -150,6 +150,8 @@ def main(
             rich_help_panel="Optional parameters",
         ),
     ] = False,
+        save_parameters: Annotated[bool, typer.Option('-s', '--save_parameters', help='If true, will save input parameters to .txt file.',
+                                                      rich_help_panel='Optional parameters')] = False,
     overwrite: Annotated[
         bool,
         typer.Option(
