@@ -72,6 +72,8 @@ def main(
                                                 rich_help_panel='Essential Files Options')] = './fuzzy_results/',
         verbose: Annotated[bool, typer.Option('-v', '--verbose', help='If true, produce verbose output.',
                                               rich_help_panel="Optional parameters")] = False,
+        save_parameters: Annotated[bool, typer.Option('-s', '--save_parameters', help='If true, will save input parameters to .txt file.',
+                                                      rich_help_panel='Optional parameters')] = False,
         overwrite: Annotated[bool, typer.Option('-f', '--overwrite', help='If true, force overwriting of existing '
                                                                           'output files.',
                                                 rich_help_panel="Optional parameters")] = False):
@@ -178,9 +180,15 @@ def main(
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
         coloredlogs.install(level=logging.INFO)
-
+        
     assert_input(in_dataset)
-    assert_output_dir_exist(overwrite, out_folder, create_dir=True)
+    assert_output_dir_exist(overwrite, out_folder, create_dir=True)        
+    
+    if save_parameters:
+        parameters = list(locals().items())
+        with open(f'{out_folder}/parameters.txt', 'w+') as f:
+            for param in parameters:
+                f.writelines(str(param))
     
     # Creating substructures for output folder.
     os.mkdir(f'{out_folder}/METRICS/')

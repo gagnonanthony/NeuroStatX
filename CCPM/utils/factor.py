@@ -4,7 +4,6 @@ from enum import Enum
 
 import pandas as pd
 from factor_analyzer import FactorAnalyzer
-import graphviz
 import matplotlib.pyplot as plt
 import numpy as np
 import semopy

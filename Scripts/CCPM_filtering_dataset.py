@@ -47,7 +47,8 @@ def main(
                                                show_default=False,
                                                rich_help_panel='Essential Files Options')],
         desc_columns: Annotated[int, typer.Option(help='Number of descriptive columns at the beginning of the dataset'
-                                                       ' to exclude in statistics and descriptive tables.',
+                                                       ' to exclude in statistics and descriptive tables. (excluding id'
+                                                       '_column)',
                                                   show_default=False,
                                                   rich_help_panel='Essential Files Options')],
         out_folder: Annotated[str, typer.Option(help='Path of the folder in which the results will be written. '
@@ -167,12 +168,12 @@ def main(
         # Plotting heatmap and computing correlation matrix.
         logging.info('Generating correlation matrix and heatmap.')
         if annotate:
-            if len(raw_df.columns) > 15:
+            if len(variable_to_plot.columns) > 20:
                 logging.warning('Due to high number of variables, annotating heatmap is deactivated. Annotation is \n '
-                                'only available for dataset with 10 or less variables.')
+                                'only available for dataset with 20 or less variables.')
             corr_mat = compute_correlation_coefficient(variable_to_plot, out_folder, context=context,
                                                        font_scale=font_scale, cmap=cmap,
-                                                       annot=False if len(raw_df.columns) > 15 else True)
+                                                       annot=False if len(variable_to_plot.columns) > 20 else True)
         else:
             corr_mat = compute_correlation_coefficient(variable_to_plot, out_folder, context=context,
                                                        font_scale=font_scale, cmap=cmap)

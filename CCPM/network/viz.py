@@ -72,7 +72,7 @@ def visualize_network(G, output,
     
     # Computing optimal node's positions.
     if pos is None:
-        pos = layout(G, weight=weight)
+        pos = layout(G, weight=weight, seed=1234)
     
     # Fetching edges widths.
     widths = nx.get_edge_attributes(G, weight)
