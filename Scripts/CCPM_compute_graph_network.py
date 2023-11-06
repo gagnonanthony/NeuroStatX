@@ -12,9 +12,8 @@ import typer
 from typing import List
 from typing_extensions import Annotated
 
-from CCPM.io.utils import (assert_input,
-                           assert_output_dir_exist,
-                           load_df_in_any_format)
+from CCPM.io.utils import assert_input, assert_output_dir_exist,
+                           load_df_in_any_format
 from CCPM.network.utils import get_nodes_and_edges
 from CCPM.network.viz import (visualize_network,
                               membership_distribution,
@@ -24,6 +23,7 @@ from CCPM.network.viz import (visualize_network,
 
 # Initializing the app.
 app = typer.Typer(add_completion=False)
+
 
 @app.command()
 def main(
@@ -116,19 +116,20 @@ def main(
     \b
     GRAPH NETWORK CLUSTERING VISUALIZATION
     --------------------------------------
-    CCPM_compute_graph_network.py is a script computing an undirected weighted graph
-    network from fuzzy clustering c-partitioned membership matrix. It is designed to
-    work seemlessly with CCPM_fuzzy_clustering.py. Mapping membership matrices to a 
-    graph network allows the future use of graph theory statistics such as shortest 
-    path, betweenness centrality, etc. The concept of this script was initially proposed
-    in [1].
+    CCPM_compute_graph_network.py is a script computing an undirected weighted
+    graph network from fuzzy clustering c-partitioned membership matrix. It is
+    designed to work seemlessly with CCPM_fuzzy_clustering.py. Mapping
+    membership matrices to a graph network allows the future use of graph
+    theory statistics such as shortest path, betweenness centrality, etc.
+    The concept of this script was initially proposed in [1].
     \b
     LAYOUT ALGORITHMS
     -----------------
-    In order to generate a graph network, the nodes positions need to be determined in
-    relation with their connections to other nodes (and the weigth of those connections).
-    Those connections are also called edges and contain a weight in the case of a weighted
-    graph network. Possible algorithms to choose from are :
+    In order to generate a graph network, the nodes positions need to be
+    determined in relation with their connections to other nodes (and the
+    weigth of those connections). Those connections are also called edges and
+    contain a weight in the case of a weighted graph network. Possible
+    algorithms to choose from are :
     \b
     Kamada Kawai Layout: Use the Kamada-Kawai path-length cost-function. Not the optimal solution
                          for large network as it is computer intensive. For details, see [2].
@@ -150,17 +151,19 @@ def main(
     \b
     GRAPH NETWORK CUSTOMIZATION
     ---------------------------
-    To customize the graph appearance, please see the Network Visualization Options below. It
-    should be noted that using subjects_labelling will crowd the network if it contains a high
-    number of nodes. Also, centroids are labelled by default 'c1, c2, ...' and subjects 's1, s2,
-    ...'. The script also exports a graph_network_file.gexf. This file can be used to further
+    To customize the graph appearance, please see the Network Visualization
+    Options below. It should be noted that using subjects_labelling will crowd
+    the network if it contains a high number of nodes. Also, centroids are
+    labelled by default 'c1, c2, ...' and subjects 's1, s2, ...'. The script
+    also exports a graph_network_file.gexf. This file can be used to further
     customize the network using other APIs such as GEPHI (see [3]).
     \b
     REFERENCES
     ----------
-    [1] Ariza-Jiménez, L., Villa, L. F., & Quintero, O. L. (2019). Memberships Networks for 
-        High-Dimensional Fuzzy Clustering Visualization., Applied Computer Sciences in Engineering 
-        (Vol. 1052, pp. 263–273). Springer International Publishing. 
+    [1] Ariza-Jiménez, L., Villa, L. F., & Quintero, O. L. (2019). Memberships
+        Networks for High-Dimensional Fuzzy Clustering Visualization., Applied
+        Computer Sciences in Engineering (Vol. 1052, pp. 263–273). Springer
+        International Publishing.
         https://doi.org/10.1007/978-3-030-31019-6_23
     [2] https://networkx.org/documentation/stable/reference/drawing.html
     [3] https://gephi.org/
@@ -172,14 +175,14 @@ def main(
     ** For large graphs (~10 000 nodes), it might take ~5 mins to run using the spring layout and
        depending on your hardware. **
     """
-    
+
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
         coloredlogs.install(level=logging.INFO)
 
     assert_input(in_dataset)
     assert_output_dir_exist(overwrite, out_folder, create_dir=True)
-    
+
     # Loading membership matrix.
     logging.info("Loading membership data.")
     raw_df = load_df_in_any_format(in_dataset)
@@ -192,13 +195,13 @@ def main(
     
     # Plotting membership distributions and delta.
     membership_distribution(clean_df.values, output=f'{out_folder}/membership_distribution.png')
-    
+
     # Fetching dataframe of nodes and edges.
     df, _, _ = get_nodes_and_edges(df_with_ids)
     
     # Creating network graph.
-    G = nx.from_pandas_edgelist(df, 'node1', 'node2', edge_attr='membership')
-    
+    G = nx.from_pandas_edgelist(df, "node1", "node2", edge_attr="membership")
+
     # Visualizing and saving network.
     logging.info("Constructing the layout and generating graph.")
     pos = visualize_network(G, output=f'{out_folder}/graph_network.png',
@@ -269,4 +272,3 @@ def main(
            
 if __name__ == '__main__':
     app()
-    

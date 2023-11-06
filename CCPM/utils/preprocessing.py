@@ -1,7 +1,6 @@
-from factor_analyzer.factor_analyzer import calculate_kmo, calculate_bartlett_sphericity
+from factor_analyzer.factor_analyzer import (calculate_kmo,
+                                             calculate_bartlett_sphericity)
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 from scipy.stats import shapiro
 from sklearn.decomposition import PCA
 import seaborn as sns
@@ -12,7 +11,8 @@ def remove_nans(df):
     """
     Clean up dataset by removing all rows containing NaNs.
     :param df:      Pandas dataframe.
-    :return:        One df containing the removed rows and one df with the complete rows.
+    :return:        One df containing the removed rows and one df with the
+                    complete rows.
     """
     rows_with_nans = df[df.isna().any(axis=1)]
     complete_rows = df.drop(index=rows_with_nans.index)
@@ -20,7 +20,7 @@ def remove_nans(df):
     return rows_with_nans, complete_rows
 
 
-def plot_distributions(df, out_folder, context='poster', font_scale=1):
+def plot_distributions(df, out_folder, context="poster", font_scale=1):
     """
     Script to visualize distribution plots for a complete dataframe.
     :param df:              Pandas dataframe.
@@ -31,24 +31,24 @@ def plot_distributions(df, out_folder, context='poster', font_scale=1):
     """
 
     # Setting plotting parameters.
-    plt.rcParams['figure.figsize'] = [10, 7]
-    plt.rcParams['figure.autolayout'] = True
-    sns.set_style('white')
-    sns.set_context(f'{context}', font_scale)
+    plt.rcParams["figure.figsize"] = [10, 7]
+    plt.rcParams["figure.autolayout"] = True
+    sns.set_style("white")
+    sns.set_context(f"{context}", font_scale)
 
     # Iterating over columns for plotting variables.
     for var in tqdm(df.columns):
         f, axes = plt.subplots(1, 2)
         sns.histplot(data=df, x=var, fill=True, kde=True, ax=axes[0])
         sns.ecdfplot(data=df, x=var, ax=axes[1])
-        plt.savefig(f'{out_folder}/{var}.png')
+        plt.savefig(f"{out_folder}/{var}.png")
         plt.close()
 
 
 def compute_shapiro_wilk_test(df):
     """
-    Function computing the normality statistic using the Shapiro Wilk's test for normality
-    and outputting W and p values.
+    Function computing the normality statistic using the Shapiro Wilk's test
+    for normality and outputting W and p values.
     :param df:      Pandas dataframe.
     :return:        Shapiro-Wilk values (W) and associated p-values.
     """
@@ -65,8 +65,9 @@ def compute_shapiro_wilk_test(df):
     return wilk, pvalues
 
 
-def compute_correlation_coefficient(df, out_folder, context='poster', font_scale=0.2, cmap=None,
-                                    annot=False):
+def compute_correlation_coefficient(
+    df, out_folder, context="poster", font_scale=0.2, cmap=None, annot=False
+):
     """
     Function to compute a correlation matrix for all variables in a dataframe.
     :param df:              Pandas dataframe.
@@ -74,64 +75,76 @@ def compute_correlation_coefficient(df, out_folder, context='poster', font_scale
     :param context:         Style to apply to the plots.
     :param font_scale:      Font scale.
     :param cmap:            Cmap to use in the heatmap.
-    :param annot:           Flag to write correlation values inside the heatmap squares.
+    :param annot:           Flag to write correlation values inside the
+                            heatmap squares.
     :return:
     Correlation matrix with pearson correlation coefficients.
     """
 
     # Setting plotting parameters.
-    plt.rcParams['figure.figsize'] = [20, 15]
-    plt.rcParams['figure.autolayout'] = True
-    sns.set_style('white')
-    sns.set_context(f'{context}', font_scale)
+    plt.rcParams["figure.figsize"] = [20, 15]
+    plt.rcParams["figure.autolayout"] = True
+    sns.set_style("white")
+    sns.set_context(f"{context}", font_scale)
 
     corr_mat = df.corr()
-    sns.heatmap(corr_mat, cmap=cmap, annot=annot, square=True, xticklabels=True, yticklabels=True,
-                cbar=True)
-    plt.savefig(f'{out_folder}/correlation_heatmap.png')
+    sns.heatmap(
+        corr_mat,
+        cmap=cmap,
+        annot=annot,
+        square=True,
+        xticklabels=True,
+        yticklabels=True,
+        cbar=True,
+    )
+    plt.savefig(f"{out_folder}/correlation_heatmap.png")
 
     return corr_mat
 
 
 def merge_dataframes(dict_df, index, repeated_columns=False):
     """
-    Function to merge a variable number of dataframe by matching the values of a specific column (hereby
-    labeled as index.) Index values must appear only once in the dataframe for the function to work.
+    Function to merge a variable number of dataframe by matching the values of
+    a specific column (hereby labeled as index.) Index values must appear only
+    once in the dataframe for the function to work.
     :param dict_df:             Dictionary of pandas dataframe.
-    :param index:               String of the name of the column to use as index (needs to be the same across all dataframes).
-    :param repeated_columns     Flag to use if column name are repeated across dataframe to merge.
+    :param index:               String of the name of the column to use as
+                                index (needs to be the same across all
+                                dataframes).
+    :param repeated_columns     Flag to use if column name are repeated across
+                                dataframe to merge.
     :return:                    Joint large pandas dataframe.
     """
 
     keys = list(dict_df.keys())
     for k in keys:
-        dict_df[k] = dict_df[k].set_index(f'{index}')
+        dict_df[k] = dict_df[k].set_index(f"{index}")
 
     if repeated_columns:
         out = dict_df[keys[0]]
-        for k in keys[1:len(keys)]:
-            out = out.join(dict_df[k], lsuffix='a', rsuffix='b')
+        for k in keys[1: len(keys)]:
+            out = out.join(dict_df[k], lsuffix="a", rsuffix="b")
     else:
-        out = dict_df[keys[0]].join([dict_df[k] for k in keys[1:len(keys)]])
+        out = dict_df[keys[0]].join([dict_df[k] for k in keys[1: len(keys)]])
 
     return out
 
 
 def compute_pca(X, n_components):
     """
-    Function compute PCA decomposition on a dataset. 
-    
+    Function compute PCA decomposition on a dataset.
+
     Args:
         X (Array):                  Data array.
         n_components (int):         Number of components.
-    
+
     Return:
-    
+
     """
     chi_square_value, p_value = calculate_bartlett_sphericity(X)
     kmo_all, kmo_model = calculate_kmo(X)
     pca = PCA(n_components=n_components).fit(X)
     X = pca.transform(X)
     exp_var = pca.explained_variance_ratio_
-    
+
     return X, exp_var, p_value, kmo_model
