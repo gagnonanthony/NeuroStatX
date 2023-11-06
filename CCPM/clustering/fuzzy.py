@@ -10,7 +10,6 @@ import multiprocessing
 import numpy as np
 from p_tqdm import p_map
 import skfuzzy as fuzz
-from p_tqdm import p_map
 
 from CCPM.clustering.metrics import (
     compute_evaluation_metrics,
@@ -63,13 +62,18 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init,
 
     if n_cluster <= max_clusters:
         if init is not None:
-            init_mat = init[n_cluster-2]
+            init_mat = init[n_cluster - 2]
         else:
             init_mat = None
-        
+
         cntr, u, u0, d, jm, p, fpc = fuzz.cmeans(
-            X.T, n_cluster, m=m, error=error, maxiter=maxiter, metric=metric,
-            init=init_mat
+            X.T,
+            n_cluster,
+            m=m,
+            error=error,
+            maxiter=maxiter,
+            metric=metric,
+            init=init_mat,
         )
 
         cluster_membership = np.argmax(u, axis=0)
@@ -134,7 +138,8 @@ def fuzzyCmeans(
     init=None,
     metric="euclidean",
     output="./",
-, verbose=False):
+    verbose=False,
+):
     """
     Fuzzy C-Means clustering function. Iteratively test and report statistics
     on multiple number of clusters. Based on documentation found here :
@@ -150,7 +155,8 @@ def fuzzyCmeans(
         error (float, optional):        Stopping criterion. Defaults to 1E-6.
         maxiter (int, optional):        Maximum iteration value. Defaults to
                                         1000.
-        init (folder, optional):        Folder containing the c-partitioned matrices for each cluster number.
+        init (folder, optional):        Folder containing the c-partitioned
+                                        matrices for each cluster number.
                                         Defaults to None.
         metric (str, optional):         Distance metric to use to compute
                                         intra/inter subjects/clusters distance.
@@ -197,7 +203,7 @@ def fuzzyCmeans(
     pool = multiprocessing.Pool()
     if verbose:
         results = p_map(process_cluster_partial, range(2, num_clusters + 1))
-    else:    
+    else:
         results = pool.map(process_cluster_partial, range(2, num_clusters + 1))
     pool.close()
     pool.join()
@@ -240,7 +246,9 @@ def fuzzyCmeans(
 
             ax.set_title(
                 "Clusters = {0}; FPC = {1:.2f}\nIterations = {iteration}"
-                .format(n_cluster, fpc_, iteration=p),
+                .format(
+                    n_cluster, fpc_, iteration=p
+                ),
                 fontdict={"fontsize": 8},
             )
             ax.axis("off")

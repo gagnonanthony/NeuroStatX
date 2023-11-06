@@ -63,8 +63,8 @@ def main(
         int,
         typer.Option(
             help="Number of descriptive columns at the beginning of the "
-            "dataset to exclude in statistics and descriptive tables. (excluding id'
-                                                       '_column)",
+            "dataset to exclude in statistics and descriptive tables. "
+            "(excluding id_column)",
             show_default=False,
             rich_help_panel="Essential Files Options",
         ),

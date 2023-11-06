@@ -8,8 +8,6 @@ import random
 
 from functools import partial
 import networkx as nx
-import numpy as np
-import pandas as pd
 from p_tqdm import p_map
 
 
@@ -160,15 +158,25 @@ def degree(graph, weight=None):
 
 
 class PathLengthsMethods(str, Enum):
-    Dijkstra = 'dijkstra',
-    BellmanFord = 'bellman-ford',
-    FloydWarshall = 'floyd-warshall',
-    FloydWarshallNumpy = 'floyd-warshall-numpy'
+    Dijkstra = ("dijkstra",)
+    BellmanFord = ("bellman-ford",)
+    FloydWarshall = ("floyd-warshall",)
+    FloydWarshallNumpy = "floyd-warshall-numpy"
 
 
-def weightedpath(graph, df, label_name, id_column, iterations=1000, weight=None, method='dijkstra', verbose=False):
+def weightedpath(
+    graph,
+    df,
+    label_name,
+    id_column,
+    iterations=1000,
+    weight=None,
+    method="dijkstra",
+    verbose=False,
+):
     """
-    Function to compute average weighted shortest path length for a group of nodes.
+    Function to compute average weighted shortest path length for a group of
+    nodes.
 
     Args:
         graph (_type_): _description_
@@ -179,23 +187,30 @@ def weightedpath(graph, df, label_name, id_column, iterations=1000, weight=None,
     group_exclude = df.loc[df[label_name] == 0]
     nodes_exclude = group_exclude[id_column].to_list()
     nodes_include = list(set(list(graph)) - set(nodes_exclude))
-    
-    logging.info('Computing weighted path for the set of nodes.')
+
+    logging.info("Computing weighted path for the set of nodes.")
     sub_G = nx.induced_subgraph(graph, nodes_include)
-    avg_path_length = nx.average_shortest_path_length(sub_G, weight=weight, method=method)
-    
-    # Fetching all possible nodes. 
+    avg_path_length = nx.average_shortest_path_length(
+        sub_G, weight=weight, method=method
+    )
+
+    # Fetching all possible nodes.
     nodes_list = df[id_column].to_list()
-    
+
     # Setting partial function to pass common arguments between iterations.
     generate_null_dist = partial(
-        _weightedpath, graph, nodes_list=nodes_list, sample_size=len(nodes_include), weight=weight, method=method
+        _weightedpath,
+        graph,
+        nodes_list=nodes_list,
+        sample_size=len(nodes_include),
+        weight=weight,
+        method=method,
     )
-    
+
     # Opening multiprocessing pool.
-    logging.info('Computing null distribution.')
+    logging.info("Computing null distribution.")
     pool = multiprocessing.Pool()
-    
+
     # Initiating processing.
     if verbose:
         results = p_map(generate_null_dist, range(0, iterations))
@@ -203,11 +218,13 @@ def weightedpath(graph, df, label_name, id_column, iterations=1000, weight=None,
         results = pool.map(generate_null_dist, range(0, iterations))
     pool.close()
     pool.join()
-    
-    return avg_path_length, results
-    
 
-def _weightedpath(graph, n_iter, nodes_list, sample_size, weight=None, method='dijkstra'):
+    return avg_path_length, results
+
+
+def _weightedpath(
+    graph, n_iter, nodes_list, sample_size, weight=None, method="dijkstra"
+):
     """
     Core worker of weightedpath() function.
 
@@ -217,18 +234,21 @@ def _weightedpath(graph, n_iter, nodes_list, sample_size, weight=None, method='d
         weight (_type_, optional): _description_. Defaults to None.
     """
     # Filtering nodes.
-    random.shuffle(nodes_list)    
+    random.shuffle(nodes_list)
     random_nodes = random.sample(nodes_list, sample_size)
     nodes_exclude = list(set(nodes_list) - set(random_nodes))
-    
+
     # Copying graph.
     orig = graph.copy()
-    
-    # Filtering original graph nodes to remove the ones that were not randomly selected (easier to keep cluster centroids nodes that way.).
-    sub_G = nx.induced_subgraph(orig, list(set(list(orig)) - set(nodes_exclude)))
-    
+
+    # Filtering original graph nodes to remove the ones that were not randomly
+    # selected (easier to keep cluster centroids nodes that way.).
+    sub_G = nx.induced_subgraph(orig,
+                                list(set(list(orig)) - set(nodes_exclude)))
+
     # Computing weighted path length.
-    weighted_avg_path_length = nx.average_shortest_path_length(sub_G, weight=weight, method=method)
-    
+    weighted_avg_path_length = nx.average_shortest_path_length(
+        sub_G, weight=weight, method=method
+    )
+
     return weighted_avg_path_length
-    

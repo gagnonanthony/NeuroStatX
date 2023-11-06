@@ -24,11 +24,12 @@ def test_help():
 
 def test_compute_graph_network():
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_matrix = os.path.join(get_home(), "data/membership.npy")
+    in_matrix = os.path.join(get_home(), "data/clusters_membership_3.xlsx")
     out_folder = os.path.join(get_home(), "data/graph_network/")
 
     ret = runner.invoke(
-        app, ["--in-matrix", in_matrix, "--out-folder", out_folder, "-f"]
+        app, ["--in-dataset", in_matrix, "--out-folder", out_folder,
+              "--id-column", "subjectkey", "--desc-columns", 1, "-f"]
     )
 
     assert ret.exit_code == 0

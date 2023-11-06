@@ -69,8 +69,8 @@ def download_data(files_dict, keys=None):
                 try:
                     z = zipfile.ZipFile(full_path)
                     zipinfos = z.infolist()
-                    root_dir = (pathlib.Path(zipinfos[0].filename).parts[0]
-                                + "/")
+                    root_dir = (pathlib.Path(
+                                zipinfos[0].filename).parts[0] + "/")
                     assert all([s.startswith(root_dir) for s in z.namelist()])
                     with zipfile.ZipFile(full_path, "r") as zip_ref:
                         zip_ref.extractall(ccpm_home)

@@ -137,9 +137,7 @@ def assert_output_dir_exist(overwrite, required, optional=None,
             if not create_dir:
                 sys.exit(
                     "Output directory {} does not exist. Use create_dir = "
-                    "True.".format(
-                        path
-                    )
+                    "True.".format(path)
                 )
             else:
                 os.makedirs(path, exist_ok=True)
@@ -182,8 +180,8 @@ def get_data_dir():
 
     module_path = inspect.getfile(CCPM)
 
-    data_dir = (os.path.join(os.path.dirname(os.path.dirname(module_path))
-                             + "/data/"))
+    data_dir = os.path.join(os.path.dirname(
+                            os.path.dirname(module_path)) + "/data/")
 
     return data_dir
 

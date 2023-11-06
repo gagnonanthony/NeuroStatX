@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import coloredlogs
-import coloredlogs
 import logging
 import os
 import sys
@@ -13,8 +12,7 @@ import typer
 from typing import List
 from typing_extensions import Annotated
 
-from CCPM.io.utils import (load_df_in_any_format,
-                           assert_input,
+from CCPM.io.utils import (load_df_in_any_format, assert_input,
                            assert_output_dir_exist)
 from CCPM.clustering.fuzzy import fuzzyCmeans
 from CCPM.utils.preprocessing import merge_dataframes, compute_pca
@@ -58,7 +56,7 @@ def main(
         int,
         typer.Option(
             help="Number of descriptive columns at the beginning of the "
-                 "dataset to exclude in statistics and descriptive tables.",
+            "dataset to exclude in statistics and descriptive tables.",
             show_default=False,
             rich_help_panel="Essential Files Options",
         ),
@@ -66,7 +64,8 @@ def main(
     k: Annotated[
         int,
         typer.Option(
-            help="Maximum k number of cluster to fit a model for. (Script will iterate until k is met.)",
+            help="Maximum k number of cluster to fit a model for. (Script will"
+            " iterate until k is met.)",
             show_default=True,
             rich_help_panel="Clustering Options",
         ),
@@ -150,8 +149,15 @@ def main(
             rich_help_panel="Optional parameters",
         ),
     ] = False,
-        save_parameters: Annotated[bool, typer.Option('-s', '--save_parameters', help='If true, will save input parameters to .txt file.',
-                                                      rich_help_panel='Optional parameters')] = False,
+    save_parameters: Annotated[
+        bool,
+        typer.Option(
+            "-s",
+            "--save_parameters",
+            help="If true, will save input parameters to .txt file.",
+            rich_help_panel="Optional parameters",
+        ),
+    ] = False,
     overwrite: Annotated[
         bool,
         typer.Option(
@@ -221,11 +227,15 @@ def main(
     \b
     PARAMETERS
     ----------
-    Details regarding the parameters can be seen below. Regarding the --m parameter, it defines the degree of fuzziness of
-    the resulting membership matrix. Using --m 1 will returns crisp clusters, whereas --m >1 will returned more and more fuzzy
-    clusters. It is also possible to pre-initialize the c-partitioned matrix from previous membership matrix. If you want to do
-    that, you need to specify a folder containing all membership matrices for each k number (meaning that if you want to perform
-    clustering up to k=10, you need a membership matrices for each of them.). It also must respect this name convention: 
+    Details regarding the parameters can be seen below. Regarding the
+    --m parameter, it defines the degree of fuzziness of the resulting
+    membership matrix. Using --m 1 will returns crisp clusters, whereas
+    --m >1 will returned more and more fuzzy clusters. It is also possible
+    to pre-initialize the c-partitioned matrix from previous membership matrix.
+    If you want to do that, you need to specify a folder containing all
+    membership matrices for each k number (meaning that if you want to perform
+    clustering up to k=10, you need a membership matrices for each of them.).
+    It also must respect this name convention:
                     [init_folder]
                         |-- cluster_membership_1.npy
                         |-- cluster_membership_2.npy
@@ -234,7 +244,8 @@ def main(
     \b
     OUTPUT FOLDER STRUCTURE
     -----------------------
-    The script creates a default output structure in a destination specified by using --out-folder. Output structure is as follows:
+    The script creates a default output structure in a destination specified
+    by using --out-folder. Output structure is as follows:
                     [out_folder]
                         |-- BARPLOTS
                         |       |-- barplot_2clusters.png
@@ -248,7 +259,8 @@ def main(
                         |       |-- clusters_membership_2.xlsx
                         |       |-- [...]
                         |       └-- clusters_membership_{k}.xlsx
-                        |-- MEMBERSHIP_MAT (identical to MEMBERSHIP_DF but in .npy format)
+                        |-- MEMBERSHIP_MAT (identical to MEMBERSHIP_DF but in
+                                            .npy format)
                         |-- METRICS
                         |       |-- chi.png
                         |       |-- [...]
@@ -261,7 +273,7 @@ def main(
                         |       |-- transformed_data.xlsx
                         |       └-- variance_explained.xlsx
                         |-- validation_indices.xlsx
-                        └-- viz_multiple_cluster_nb.png                
+                        └-- viz_multiple_cluster_nb.png
     \b
     REFERENCES
     ----------
@@ -280,16 +292,16 @@ def main(
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
         coloredlogs.install(level=logging.INFO)
-        
+
     assert_input(in_dataset)
-    assert_output_dir_exist(overwrite, out_folder, create_dir=True)        
+    assert_output_dir_exist(overwrite, out_folder, create_dir=True)
 
     if save_parameters:
         parameters = list(locals().items())
-        with open(f'{out_folder}/parameters.txt', 'w+') as f:
+        with open(f"{out_folder}/parameters.txt", "w+") as f:
             for param in parameters:
                 f.writelines(str(param))
-    
+
     # Creating substructures for output folder.
     os.mkdir(f"{out_folder}/METRICS/")
 
@@ -309,7 +321,9 @@ def main(
 
     # Creating the array.
     desc_data = raw_df[raw_df.columns[descriptive_columns]]
-    df_for_clust = raw_df.drop(raw_df.columns[descriptive_columns], axis=1, inplace=False).astype('float')
+    df_for_clust = raw_df.drop(
+        raw_df.columns[descriptive_columns], axis=1, inplace=False
+    ).astype("float")
     X = df_for_clust.values
 
     # Decomposing into 2 components if asked.
@@ -339,12 +353,14 @@ def main(
 
     # Load initialisation matrix if any.
     if init is not None:
-        init_mat = [np.load(f'{init}/clusters_membership_{i}.npy')
-                    for i in range(2, max_cluster+1)]
+        init_mat = [
+            np.load(f"{init}/clusters_membership_{i}.npy")
+            for i in range(2, k + 1)
+        ]
     else:
         init_mat = None
-    
-    # Computing a range of C-means clustering method. 
+
+    # Computing a range of C-means clustering method.
     logging.info("Computing FCM from k=2 to k={}".format(k))
     cntr, u, d, wss, fpcs, ss, chi, dbi, gap, sk = fuzzyCmeans(
         X,
@@ -419,37 +435,69 @@ def main(
         annotation=f"Optimal Number of Clusters: {dbi_index+2}",
     )
     gap_index = find_optimal_gap(gap, sk)
-    plot_clustering_results(gap, title='GAP Statistics.', metric='GAP', output=f'{out_folder}/METRICS/gap.png', errorbar=sk,
-                            annotation=f'Optimal Number of Clusters: {gap_index+2}')
-    
-    # Exporting plots and graphs for each cluster solution. 
-    os.mkdir(f'{out_folder}/MEMBERSHIP_MAT/')
-    os.mkdir(f'{out_folder}/MEMBERSHIP_DF/')
-    os.mkdir(f'{out_folder}/PARALLEL_PLOTS/')
-    os.mkdir(f'{out_folder}/CENTROIDS/')
-    os.mkdir(f'{out_folder}/BARPLOTS')
-    
+    plot_clustering_results(
+        gap,
+        title="GAP Statistics.",
+        metric="GAP",
+        output=f"{out_folder}/METRICS/gap.png",
+        errorbar=sk,
+        annotation=f"Optimal Number of Clusters: {gap_index+2}",
+    )
+
+    # Exporting plots and graphs for each cluster solution.
+    os.mkdir(f"{out_folder}/MEMBERSHIP_MAT/")
+    os.mkdir(f"{out_folder}/MEMBERSHIP_DF/")
+    os.mkdir(f"{out_folder}/PARALLEL_PLOTS/")
+    os.mkdir(f"{out_folder}/CENTROIDS/")
+    os.mkdir(f"{out_folder}/BARPLOTS")
+
     # Iterating and saving every elements.
     for i in range(len(u)):
         membership = np.argmax(u[i], axis=0)
-        plot_parallel_plot(df_for_clust, membership, mean_values=True, 
-                           output=f'{out_folder}/PARALLEL_PLOTS/parallel_plot_{i+2}clusters.png',
-                           title=f'Parallel Coordinates plot for {i+2} clusters solution.')
-        plot_grouped_barplot(df_for_clust, membership, title=f'Barplot of {i+2} clusters solution.',
-                             output=f'{out_folder}/BARPLOTS/barplot_{i+2}clusters.png')
-        
-        # Converting membership arrays to df. 
-        member = pd.DataFrame(u[i].T, index=None, columns=[f"Cluster #{n+1}" for n in range(u[i].shape[0])])
-        centroids = pd.DataFrame(cntr[i], index=[f"Cluster #{n+1}" for n in range(u[i].shape[0])], columns=['x', 'y'])
-        
+        plot_parallel_plot(
+            df_for_clust,
+            membership,
+            mean_values=True,
+            output=f"{out_folder}/PARALLEL_PLOTS/parallel_plot_{i+2}"
+                   "clusters.png",
+            title=f"Parallel Coordinates plot for {i+2} clusters solution.",
+        )
+        plot_grouped_barplot(
+            df_for_clust,
+            membership,
+            title=f"Barplot of {i+2} clusters solution.",
+            output=f"{out_folder}/BARPLOTS/barplot_{i+2}clusters.png",
+        )
+
+        # Converting membership arrays to df.
+        member = pd.DataFrame(
+            u[i].T,
+            index=None,
+            columns=[f"Cluster #{n+1}" for n in range(u[i].shape[0])],
+        )
+        centroids = pd.DataFrame(
+            cntr[i],
+            index=[f"Cluster #{n+1}" for n in range(u[i].shape[0])],
+            columns=["x", "y"],
+        )
+
         # Appending subject ids and descriptive columns.
         member_out = pd.concat([desc_data, member], axis=1)
-        member_out.to_excel(f'{out_folder}/MEMBERSHIP_DF/clusters_membership_{i+2}.xlsx', header=True, index=False)
-        centroids.to_excel(f'{out_folder}/CENTROIDS/clusters_centroids_{i+2}.xlsx', header=True, index=True)
+        member_out.to_excel(
+            f"{out_folder}/MEMBERSHIP_DF/clusters_membership_{i+2}.xlsx",
+            header=True,
+            index=False,
+        )
+        centroids.to_excel(
+            f"{out_folder}/CENTROIDS/clusters_centroids_{i+2}.xlsx",
+            header=True,
+            index=True,
+        )
 
         # Saving original matrix.
-        np.save(f'{out_folder}/MEMBERSHIP_MAT/clusters_membership_{i+2}.npy', u[i])
-     
-    
-if __name__ == '__main__':
+        np.save(f"{out_folder}/MEMBERSHIP_MAT/clusters_membership_{i+2}.npy",
+                u[i])
+
+
+if __name__ == "__main__":
     app()
