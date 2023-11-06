@@ -498,6 +498,5 @@ def main(
         np.save(f"{out_folder}/MEMBERSHIP_MAT/clusters_membership_{i+2}.npy",
                 u[i])
 
-
 if __name__ == "__main__":
     app()

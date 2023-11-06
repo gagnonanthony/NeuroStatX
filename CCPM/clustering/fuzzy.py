@@ -74,6 +74,7 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init,
             maxiter=maxiter,
             metric=metric,
             init=init_mat,
+
         )
 
         cluster_membership = np.argmax(u, axis=0)
