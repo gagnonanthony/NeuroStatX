@@ -10,42 +10,45 @@ def get_metrics_ops():
     Get a dictionary of all functions related to graph network metrics.
 
     Returns:
-        OrderedDict:    Functions dictonary. 
+        OrderedDict:    Functions dictonary.
     """
-    return OrderedDict([
-        ('eigencentrality', eigencentrality),
-        ('closenesscentrality', closenesscentrality),
-        ('betweennesscentrality', betweennesscentrality),
-        ('informationcentrality', informationcentrality),
-        ('currentflowbc', currentflowbc),
-        ('loadcentrality', loadcentrality),
-        ('harmoniccentrality', harmoniccentrality),
-        ('eccentricity', eccentricity),
-        ('clustering', clustering),
-        ('constraint', constraint),
-        ('effectivesize', effectivesize),
-        ('closenessvitality', closenessvitality),
-        ('degree', degree)
-    ])
-    
+    return OrderedDict(
+        [
+            ("eigencentrality", eigencentrality),
+            ("closenesscentrality", closenesscentrality),
+            ("betweennesscentrality", betweennesscentrality),
+            ("informationcentrality", informationcentrality),
+            ("currentflowbc", currentflowbc),
+            ("loadcentrality", loadcentrality),
+            ("harmoniccentrality", harmoniccentrality),
+            ("eccentricity", eccentricity),
+            ("clustering", clustering),
+            ("constraint", constraint),
+            ("effectivesize", effectivesize),
+            ("closenessvitality", closenessvitality),
+            ("degree", degree),
+        ]
+    )
+
 
 def get_metrics_docs(ops: dict):
     """
-    Function to fetch from a dictionary all functions and join all documentations.
+    Function to fetch from a dictionary all functions and join all
+    documentations.
 
     Args:
-        ops (dict):         Dictionary of functions. 
+        ops (dict):         Dictionary of functions.
     """
     full_doc = []
     for func in ops.values():
         full_doc.append(func.__doc__)
     return "\n".join(full_doc)
-    
-    
+
+
 def eigencentrality(graph, weight=None):
     """
     eigencentrality: GRAPH WEIGHT\n
-        Will return a dictionary of the eigenvector centrality for all nodes. 
+        Will return a dictionary of the eigenvector centrality for all nodes.
     """
     return nx.eigenvector_centrality(graph, max_iter=1000, weight=weight)
 
@@ -71,15 +74,17 @@ def informationcentrality(graph, weight=None):
     informationcentrality: GRAPH WEIGHT\n
         Will return a dictionary of the information centrality for all nodes.
     """
-    return nx.information_centrality(graph, weight=weight, solver='full')
+    return nx.information_centrality(graph, weight=weight, solver="full")
 
 
 def currentflowbc(graph, weight=None):
     """
     currentflowbc: GRAPH WEIGHT\n
-        Will return a dictionary of the current flow betweenness centrality for all nodes.
+        Will return a dictionary of the current flow betweenness centrality
+        for all nodes.
     """
-    return nx.current_flow_betweenness_centrality(graph, weight=weight, solver='full')
+    return nx.current_flow_betweenness_centrality(graph, weight=weight,
+                                                  solver="full")
 
 
 def loadcentrality(graph, weight=None):
@@ -141,6 +146,6 @@ def closenessvitality(graph, nodes, weight=None):
 def degree(graph, weight=None):
     """
     degree: GRAPH WEIGHT\n
-        Will return the degree of the specified node. 
+        Will return the degree of the specified node.
     """
     return graph.degree(weight=weight)
