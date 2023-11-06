@@ -16,20 +16,37 @@ def autolabel(rects, axs):
     for rect in rects:
         height = rect.get_height()
         if height > 0:
-            texts.append(axs.text(rect.get_x() + rect.get_width() / 2., (height * 1.05),
-                                  '%.3f' % float(height), ha='center', va='bottom'))
+            texts.append(
+                axs.text(
+                    rect.get_x() + rect.get_width() / 2.0,
+                    (height * 1.05),
+                    "%.3f" % float(height),
+                    ha="center",
+                    va="bottom",
+                )
+            )
         else:
-            texts.append(axs.text(rect.get_x() + rect.get_width() / 2., (height * 1.05) - 0.15,
-                                  '%.3f' % float(height), ha='center', va='bottom'))
+            texts.append(
+                axs.text(
+                    rect.get_x() + rect.get_width() / 2.0,
+                    (height * 1.05) - 0.15,
+                    "%.3f" % float(height),
+                    ha="center",
+                    va="bottom",
+                )
+            )
 
     # adjust the position of text labels to avoid overlapping
-    adjust_text(texts, ax=axs, add_objects=rects,
-                only_move='y+')
+    adjust_text(texts, ax=axs, add_objects=rects, only_move="y+")
 
 
-def flexible_barplot(values, labels, num_axes, title, filename, xlabel=None, ylabel=None):
+def flexible_barplot(
+    values, labels, num_axes, title, filename, xlabel=None, ylabel=None
+):
     """
-    Function to generate a bar plot with multiple axes in a publication-ready style.
+    Function to generate a bar plot with multiple axes in a publication-ready
+    style.
+
     :param values:
     :param labels:
     :param num_axis:
@@ -55,21 +72,26 @@ def flexible_barplot(values, labels, num_axes, title, filename, xlabel=None, yla
     num_rows, num_cols = determine_layout(num_axes)
 
     # Setting up figure and style.
-    fig, axes = plt.subplots(nrows=num_rows, ncols=num_cols, figsize=(8*num_cols, 6*num_rows))
+    fig, axes = plt.subplots(
+        nrows=num_rows, ncols=num_cols, figsize=(8 * num_cols, 6 * num_rows)
+    )
 
     # Generate each bar plot.
     for i, ax in enumerate(axes.flat):
         if i < num_axes:
             # Set theme for plot.
-            ax.spines['right'].set_visible(False)
-            ax.spines['left'].set_visible(False)
-            ax.spines['bottom'].set_visible(False)
-            ax.spines['top'].set_visible(False)
+            ax.spines["right"].set_visible(False)
+            ax.spines["left"].set_visible(False)
+            ax.spines["bottom"].set_visible(False)
+            ax.spines["top"].set_visible(False)
             ax.yaxis.set_major_locator(MultipleLocator(0.5))
             ax.yaxis.set_minor_locator(MultipleLocator(0.1))
             ax.grid(False)
-            rc('font', **{'family': 'sans-serif', 'sans-serif': ['DejaVu Sans'], 'size': 10})
-
+            rc(
+                "font",
+                **{"family": "sans-serif", "sans-serif": ["DejaVu Sans"],
+                   "size": 10},
+            )
 
             # Getting values
             data = values[i]
@@ -83,7 +105,9 @@ def flexible_barplot(values, labels, num_axes, title, filename, xlabel=None, yla
             ax.set_ylim(-1, 1)
 
             # Plot the bars.
-            bars = ax.bar(x_positions, data, bar_width, align='center', tick_label=labels)
+            bars = ax.bar(
+                x_positions, data, bar_width, align="center", tick_label=labels
+            )
 
             # Adding labels to bars.
             autolabel(bars, ax)
@@ -91,7 +115,7 @@ def flexible_barplot(values, labels, num_axes, title, filename, xlabel=None, yla
             # Setting labels
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
-            ax.set_title(f'{title} : Factor {i + 1}')
+            ax.set_title(f"{title} : Factor {i + 1}")
 
             # Setting tick labels.
             label_format = ""
@@ -99,11 +123,10 @@ def flexible_barplot(values, labels, num_axes, title, filename, xlabel=None, yla
             ax.set_xticks(ax.get_xticks().tolist())
             ax.set_xticklabels([label_format.format(x) for x in ticks_loc])
             ax.set_xticklabels(labels, rotation=45)
-            plt.setp(ax.xaxis.get_majorticklabels(), ha='right')
+            plt.setp(ax.xaxis.get_majorticklabels(), ha="right")
         else:
-            ax.axis('off')
+            ax.axis("off")
 
     plt.tight_layout()
-    plt.savefig(f'{filename}', dpi=300, bbox_inches='tight')
+    plt.savefig(f"{filename}", dpi=300, bbox_inches="tight")
     plt.close()
-

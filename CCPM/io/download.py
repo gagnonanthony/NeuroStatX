@@ -8,10 +8,9 @@ import gdown
 
 
 def save_files_dict():
-    """ Getting dictionary file list from GDrive. """
-    return {'data.zip':
-            '1MDcAPdc1GBjK-L0Mcii-0e1TsjGlQScx'}
-    
+    """Getting dictionary file list from GDrive."""
+    return {"data.zip": "1MDcAPdc1GBjK-L0Mcii-0e1TsjGlQScx"}
+
 
 def download_file_from_GDrive(id, destination):
     """
@@ -24,18 +23,19 @@ def download_file_from_GDrive(id, destination):
 
 
 def get_home():
-    """ Set home directory of CCPM for testing. """
-    if 'CCPM_HOME' in os.environ:
-        ccpm_home = os.environ['CCPM_HOME']
+    """Set home directory of CCPM for testing."""
+    if "CCPM_HOME" in os.environ:
+        ccpm_home = os.environ["CCPM_HOME"]
     else:
-        ccpm_home = os.path.join(os.path.expanduser('~'), '.ccpm')
+        ccpm_home = os.path.join(os.path.expanduser("~"), ".ccpm")
     return ccpm_home
 
 
 def download_data(files_dict, keys=None):
     """
     Function to download and extract data with gdown.
-    Using structure from https://github.com/scilus/scilpy/blob/master/scilpy/io/fetcher.py
+    Using structure from:
+    https://github.com/scilus/scilpy/blob/master/scilpy/io/fetcher.py
     :param files_dict:
     :param keys:
     :return:
@@ -56,26 +56,29 @@ def download_data(files_dict, keys=None):
         full_path_no_ext, ext = os.path.splitext(full_path)
 
         if not os.path.isdir(full_path_no_ext):
-            if ext == '.zip' and not os.path.isdir(full_path_no_ext):
-                logging.warning('Downloading file and extracting {} from id {} to {}'.format(
-                    f, key, ccpm_home
-                ))
+            if ext == ".zip" and not os.path.isdir(full_path_no_ext):
+                logging.warning(
+                    "Downloading file and extracting {} from id {} to {}"
+                    .format(
+                        f, key, ccpm_home
+                    )
+                )
 
                 download_file_from_GDrive(key, full_path)
 
                 try:
                     z = zipfile.ZipFile(full_path)
                     zipinfos = z.infolist()
-                    root_dir = pathlib.Path(
-                        zipinfos[0].filename).parts[0] + '/'
+                    root_dir = (pathlib.Path(zipinfos[0].filename).parts[0]
+                                + "/")
                     assert all([s.startswith(root_dir) for s in z.namelist()])
-                    with zipfile.ZipFile(full_path, 'r') as zip_ref:
+                    with zipfile.ZipFile(full_path, "r") as zip_ref:
                         zip_ref.extractall(ccpm_home)
 
                 except AssertionError:
                     z.extractall(full_path)
             else:
-                raise NotImplementedError('Function was expected a zip file.')
+                raise NotImplementedError("Function was expected a zip file.")
 
         else:
-            logging.warning('Data already downloaded.')
+            logging.warning("Data already downloaded.")
