@@ -213,7 +213,7 @@ def main(
     arguments. Variable names have to be in the same order as the list provided
     in --raw_variables.
     \b
-    --apply_yes_or_no assumes that variables specified in 
+    --apply_yes_or_no assumes that variables specified in
     --categorical_variables have 1 = yes and 0 = no. Please validate that your
     dataset assumes the same values. If it is not the case, please modify your
     dataset before launching this script.
