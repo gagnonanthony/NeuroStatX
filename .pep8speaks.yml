@@ -19,8 +19,8 @@ pycodestyle:  # Valid if scanner.linter is pycodestyle
 
 flake8:  # Valid if scanner.linter is flake8
     max-line-length: 79
-    ignore: [
-      - W605 # Invalid escape sequence]
+    ignore:
+      - W605 # Invalid escape sequence
     exclude: []
     count: False
     show-source: False
