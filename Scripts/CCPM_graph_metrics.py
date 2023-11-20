@@ -3,6 +3,7 @@
 
 import logging
 import sys
+import coloredlogs
 
 import pandas as pd
 import networkx as nx
@@ -102,6 +103,7 @@ def main(
 
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
+        coloredlogs.install(level=logging.INFO)
 
     if out_file is None:
         out_file = f"{operation[0]}.xlsx"
@@ -126,7 +128,8 @@ def main(
     try:
         logging.info("Running {} on input network..."
                      .format(operation[0].capitalize()))
-        output = OPERATIONS[operation[0]](G, operation[2])
+        output = OPERATIONS[operation[0]](G, *operation[2:])
+
     except ValueError as msg:
         logging.error("{} operation failed.".format(operation[0].capitalize()))
         logging.error(msg)

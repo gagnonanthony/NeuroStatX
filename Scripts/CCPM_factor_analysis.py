@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Import required libraries.
+import coloredlogs
 import logging
 import os
 import sys
@@ -304,6 +305,7 @@ def main(
 
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
+        coloredlogs.install(level=logging.INFO)
 
     if factor_number is not None and use_horn_parallel:
         sys.exit(

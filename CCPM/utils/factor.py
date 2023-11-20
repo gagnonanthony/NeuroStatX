@@ -81,10 +81,10 @@ def horn_parallel_analysis(
 
     def fitting_random_data(k, n, m, sumdata):
         fa.fit(np.random.normal(size=(n, m)))
-        sumdata["compeigens"] = (sumdata["compeigens"]
-                                 + fa.get_eigenvalues()[0])
-        sumdata["factoreigens"] = (sumdata["factoreigens"]
-                                   + fa.get_eigenvalues()[1])
+        sumdata["compeigens"] = (
+            sumdata["compeigens"] + fa.get_eigenvalues()[0])
+        sumdata["factoreigens"] = (
+            sumdata["factoreigens"] + fa.get_eigenvalues()[1])
 
         return sumdata
 

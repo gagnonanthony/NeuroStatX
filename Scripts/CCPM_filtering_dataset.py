@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import coloredlogs
 import logging
 import os
 import sys
@@ -62,7 +63,8 @@ def main(
         int,
         typer.Option(
             help="Number of descriptive columns at the beginning of the "
-            "dataset to exclude in statistics and descriptive tables.",
+            "dataset to exclude in statistics and descriptive tables. "
+            "(excluding id_column)",
             show_default=False,
             rich_help_panel="Essential Files Options",
         ),
@@ -183,6 +185,7 @@ def main(
 
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
+        coloredlogs.install(level=logging.INFO)
 
     assert_input(in_dataset)
     assert_output_dir_exist(overwrite, out_folder, create_dir=True)
@@ -245,11 +248,11 @@ def main(
         # Plotting heatmap and computing correlation matrix.
         logging.info("Generating correlation matrix and heatmap.")
         if annotate:
-            if len(raw_df.columns) > 15:
+            if len(variable_to_plot.columns) > 20:
                 logging.warning(
                     "Due to high number of variables, annotating heatmap is "
                     "deactivated. Annotation is "
-                    "only available for dataset with 10 or less variables."
+                    "only available for dataset with 20 or less variables."
                 )
             corr_mat = compute_correlation_coefficient(
                 variable_to_plot,
@@ -257,7 +260,7 @@ def main(
                 context=context,
                 font_scale=font_scale,
                 cmap=cmap,
-                annot=False if len(raw_df.columns) > 15 else True,
+                annot=False if len(variable_to_plot.columns) > 20 else True,
             )
         else:
             corr_mat = compute_correlation_coefficient(

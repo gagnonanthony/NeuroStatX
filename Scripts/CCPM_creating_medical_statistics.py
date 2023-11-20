@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import coloredlogs
 import logging
 import os
 import sys
@@ -228,6 +229,7 @@ def main(
 
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
+        coloredlogs.install(level=logging.INFO)
 
     with Progress(
         SpinnerColumn(),

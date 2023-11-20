@@ -8,6 +8,7 @@ from matplotlib.pyplot import get_cmap
 from matplotlib.colors import rgb2hex
 import multiprocessing
 import numpy as np
+from p_tqdm import p_map
 import skfuzzy as fuzz
 
 from CCPM.clustering.metrics import (
@@ -60,9 +61,20 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init,
     """
 
     if n_cluster <= max_clusters:
+        if init is not None:
+            init_mat = init[n_cluster - 2]
+        else:
+            init_mat = None
+
         cntr, u, u0, d, jm, p, fpc = fuzz.cmeans(
-            X.T, n_cluster, m=m, error=error, maxiter=maxiter, metric=metric,
-            init=init
+            X.T,
+            n_cluster,
+            m=m,
+            error=error,
+            maxiter=maxiter,
+            metric=metric,
+            init=init_mat,
+
         )
 
         cluster_membership = np.argmax(u, axis=0)
@@ -74,13 +86,13 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init,
         gap, sk = compute_gap_stats(
             X,
             wss,
-            nrefs=3,
+            nrefs=100,
             n_cluster=n_cluster,
             m=m,
             error=error,
             metric=metric,
             maxiter=maxiter,
-            init=init,
+            init=None,
         )
 
         xpts = X[:, 0]
@@ -127,6 +139,7 @@ def fuzzyCmeans(
     init=None,
     metric="euclidean",
     output="./",
+    verbose=False,
 ):
     """
     Fuzzy C-Means clustering function. Iteratively test and report statistics
@@ -143,7 +156,8 @@ def fuzzyCmeans(
         error (float, optional):        Stopping criterion. Defaults to 1E-6.
         maxiter (int, optional):        Maximum iteration value. Defaults to
                                         1000.
-        init (2d array, optional):      Initial fuzzy c-partitioned matrix.
+        init (folder, optional):        Folder containing the c-partitioned
+                                        matrices for each cluster number.
                                         Defaults to None.
         metric (str, optional):         Distance metric to use to compute
                                         intra/inter subjects/clusters distance.
@@ -188,7 +202,10 @@ def fuzzyCmeans(
     )
 
     pool = multiprocessing.Pool()
-    results = pool.map(process_cluster_partial, range(2, num_clusters + 1))
+    if verbose:
+        results = p_map(process_cluster_partial, range(2, num_clusters + 1))
+    else:
+        results = pool.map(process_cluster_partial, range(2, num_clusters + 1))
     pool.close()
     pool.join()
 
@@ -230,7 +247,9 @@ def fuzzyCmeans(
 
             ax.set_title(
                 "Clusters = {0}; FPC = {1:.2f}\nIterations = {iteration}"
-                .format(n_cluster, fpc_, iteration=p),
+                .format(
+                    n_cluster, fpc_, iteration=p
+                ),
                 fontdict={"fontsize": 8},
             )
             ax.axis("off")

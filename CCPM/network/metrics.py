@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
+from enum import Enum
+import logging
+import multiprocessing
+import random
 
+from functools import partial
 import networkx as nx
+import numpy as np
+from p_tqdm import p_map
 
 
 def get_metrics_ops():
@@ -124,7 +131,7 @@ def constraint(graph, nodes, weight=None):
     constraint: GRAPH NODES WEIGHT\n
         Will return a dictionary of the constraint for all specified nodes.
     """
-    return nx.constraint(graph, nodes=[nodes], weight=weight)
+    return nx.constraint(graph, nodes=nodes.split(), weight=weight)
 
 
 def effectivesize(graph, nodes, weight=None):
@@ -132,7 +139,7 @@ def effectivesize(graph, nodes, weight=None):
     effectivesize: GRAPH NODES WEIGHT\n
         Will return a dictionary of the effective size for all specified nodes.
     """
-    return nx.effective_size(graph, nodes=[nodes], weight=weight)
+    return nx.effective_size(graph, nodes=nodes.split(), weight=weight)
 
 
 def closenessvitality(graph, nodes, weight=None):
@@ -149,3 +156,127 @@ def degree(graph, weight=None):
         Will return the degree of the specified node.
     """
     return graph.degree(weight=weight)
+
+
+class PathLengthsMethods(str, Enum):
+    Dijkstra = ("dijkstra",)
+    BellmanFord = ("bellman-ford",)
+    FloydWarshall = ("floyd-warshall",)
+    FloydWarshallNumpy = "floyd-warshall-numpy"
+
+
+def weightedpath(
+    graph,
+    df,
+    label_name,
+    id_column,
+    iterations=1000,
+    weight=None,
+    method="dijkstra",
+    distribution=None,
+    processes=4,
+    verbose=False,
+):
+    """
+    Function to compute the average weighted shortest path length for a group
+    of nodes. The function will also compute the p-value between the group of
+    nodes and the randomly generated null distribution.
+
+    Args:
+        graph (Networkx.graph):                 Networkx graph object.
+        df (pandas.DataFrame):                  Dataframe containing the nodes
+        label_name (str):                       Name of the column containing
+                                                the group label.
+        id_column (str):                        Name of the column containing
+                                                the nodes IDs.
+        iterations (int, optional):             Number of iterations to run.
+                                                Defaults to 1000.
+        weight (str, optional):                 Edge attributes to use as
+                                                weight. Defaults to None.
+        method (str, optional):                 Method to use for path
+                                                computation. Defaults to
+                                                "dijkstra".
+        distribution (pd.DataFrame, optional):  Pre-computed distribution.
+                                                Defaults to None.
+        verbose (bool, optional):               Verbose flag. Defaults to
+                                                False.
+
+    Returns:
+        avg_path_length (float):                Average path length.
+        dist (list):                            Null distribution.
+        pvalue (float):                         P-value.
+    """
+    # Setting lists.
+    group_exclude = df.loc[df[label_name] == 0]
+    nodes_exclude = group_exclude[id_column].to_list()
+    nodes_include = [node for node in list(graph) if node not in nodes_exclude]
+
+    logging.info("Computing weighted path for the set of nodes.")
+    sub_G = nx.induced_subgraph(graph, nodes_include)
+    avg_path_length = nx.average_shortest_path_length(
+        sub_G, weight=weight, method=method
+    )
+
+    # Fetching all possible nodes.
+    nodes_list = df[id_column].to_list()
+
+    # Setting partial function to pass common arguments between iterations.
+    if distribution is None:
+        generate_null_dist = partial(
+            _weightedpath,
+            graph,
+            nodes_list=nodes_list,
+            sample_size=len(nodes_include),
+            weight=weight,
+            method=method,
+        )
+
+        # Opening multiprocessing pool.
+        logging.info("Computing null distribution.")
+        pool = multiprocessing.Pool(processes=processes)
+
+        # Initiating processing.
+        if verbose:
+            dist = p_map(generate_null_dist, range(0, iterations))
+        else:
+            dist = pool.map(generate_null_dist, range(0, iterations))
+        pool.close()
+        pool.join()
+    else:
+        dist = distribution[label_name].values
+
+    # Compute p-value.
+    pvalue = (
+        (np.sum(np.array(dist) >= avg_path_length) + 1) / (iterations + 1)
+    )
+
+    return avg_path_length, dist, pvalue
+
+
+def _weightedpath(
+    graph, n_iter, nodes_list, sample_size, weight=None, method="dijkstra"
+):
+    """
+    Core worker of weightedpath() function.
+    """
+
+    # Filtering nodes.
+    random.shuffle(nodes_list)
+    random_nodes = random.sample(nodes_list, sample_size)
+    nodes_exclude = list(set(nodes_list) - set(random_nodes))
+
+    # Copying graph.
+    # orig = graph.copy()
+
+    # Filtering original graph nodes to remove the ones that were not randomly
+    # selected (easier to keep cluster centroids nodes that way.).
+    # sub_G = nx.induced_subgraph(orig,
+    #                            list(set(list(orig)) - set(nodes_exclude)))
+    sub_G = graph.subgraph(list(set(graph) - set(nodes_exclude)))
+
+    # Computing weighted path length.
+    weighted_avg_path_length = nx.average_shortest_path_length(
+        sub_G, weight=weight, method=method
+    )
+
+    return weighted_avg_path_length
