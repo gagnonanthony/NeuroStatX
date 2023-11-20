@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -7,7 +7,8 @@ import tempfile
 from typer.testing import CliRunner
 
 from CCPM.io.download import get_home, download_data, save_files_dict
-from Scripts.CCPM_fuzzy_clustering import app
+from Scripts.CCPM_compute_weighted_path import app
+
 
 download_data(save_files_dict(), keys=["data.zip"])
 tmp_dir = tempfile.TemporaryDirectory()
@@ -21,24 +22,29 @@ def test_help():
     assert ret.exit_code == 0
 
 
-def test_execution_fuzzy():
+def test_compute_weighted_path():
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_dataset = os.path.join(get_home(), "data/clustering_data.xlsx")
-    out_folder = os.path.join(get_home(), "data/Fuzzy_Clustering/")
+    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+    data_label = os.path.join(get_home(), "data/labels.xlsx")
+    out_folder = os.path.join(get_home(), "data/weighted_path/")
 
     ret = runner.invoke(
         app,
         [
-            "--out-folder",
-            out_folder,
-            "--in-dataset",
-            in_dataset,
-            "--desc-columns",
-            1,
+            "--in-graph",
+            in_graph,
+            "--data-for-label",
+            data_label,
             "--id-column",
             "subjectkey",
-            "--k",
-            3,
+            "--label-name",
+            "diagnosis",
+            "--out-folder",
+            out_folder,
+            "--iterations",
+            10,
+            "--processes",
+            1,
             "-f",
         ],
     )

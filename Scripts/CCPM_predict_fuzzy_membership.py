@@ -169,7 +169,8 @@ def main(
     Details regarding the parameters can be seen below. Regarding the
     --m parameter, it defines the degree of fuzziness of the resulting
     membership matrix. Using --m 1 will returns crisp clusters, whereas
-    --m >1 will returned more and more fuzzy clusters.
+    --m >1 will returned more and more fuzzy clusters. It is recommended
+    to use the same m value as used during training.
     \b
     EXAMPLE USAGE
     -------------

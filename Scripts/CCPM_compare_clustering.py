@@ -114,6 +114,45 @@ def main(
                   Children Cognitive Profile Mapping Toolbox©
     =============================================================================
     \b
+    CCPM_compare_clustering.py is a script that compares clustering results
+    from multiple solutions using the Adjusted Rand Index (ARI) and produces a
+    heatmap of the results.
+    \b
+    ADJUSTED RAND INDEX
+    -------------------
+    The Adjusted Rand Index (ARI) is a measure of similarity between two
+    clustering results. It relies on comparing the predicted labels to the
+    ground truth labels (i.e. the true clustering). The ARI is a number
+    between -1 and 1, where 1 means that the two clustering results are
+    identical, 0 means that the two clustering results are independent
+    (as good as random labelling) and -1 means that the two clustering
+    results are completely different. The ARI is an extension of the Rand
+    Index (RI) that takes into account the fact that the RI is expected to
+    be higher for large number of clusters.
+    \b
+    REFERENCES
+    ----------
+    [1] Hubert, L., & Arabie, P. (1985). Comparing partitions. Journal of
+    classification, 2(1), 193-218.
+    [2] Rand, W. M. (1971). Objective criteria for the evaluation of
+    clustering methods. Journal of the American Statistical Association,
+    66(336), 846-850.
+    [3] D. Steinley, Properties of the Hubert-Arabie adjusted Rand index,
+    Psychological Methods 2004
+    [4]
+    https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_rand_score.html
+    \b
+    EXAMPLE USAGE
+    -------------
+    CCPM_compare_clustering.py --in_dataset dataset1.csv \
+        --in_dataset dataset2.csv \
+        --in_dataset dataset3.csv \
+        --id_column ID \
+        --desc_columns 1 \
+        --out_folder ./ \
+        --columns_name dataset1 dataset2 dataset3 \
+        --title "ARI Heatmap" \
+        --verbose
     """
 
     if verbose:
@@ -133,7 +172,7 @@ def main(
     # Loading all datasets into a dictionary.
     assert len(in_dataset) >= 2, "At least 2 datasets are required for "
     "                            comparison."
-    dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
+    dict_df = {i: load_df_in_any_format(df) for i, df in enumerate(in_dataset)}
 
     # Dropping desc column.
     descriptive_columns = [n for n in range(0, desc_columns)]
@@ -151,8 +190,8 @@ def main(
     axes = fig.add_subplot(111)
 
     # Exporting symmetric matrix.
-    if columns_name is None:
-        columns_name = [i for i in range(0, len(in_dataset))]
+    if len(columns_name) == 0:
+        columns_name = [f'{i+1}' for i in range(0, len(in_dataset))]
     mat = pd.DataFrame(ari, columns=columns_name,
                        index=columns_name)
     mat.to_excel(f'{out_folder}/ari_matrix.xlsx', index=True, header=True)

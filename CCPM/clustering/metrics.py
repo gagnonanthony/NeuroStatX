@@ -203,10 +203,13 @@ def find_optimal_gap(gap, sk):
         optimal:                    Optimal k value.
     """
 
-    for k in range(len(gap)):
-        if gap[k] >= (gap[k + 1] - sk[k + 1]):
-            optimal = k
-            break
+    for i in range(len(gap)):
+        if i + 1 in range(len(gap)):
+            if gap[i] >= (gap[i + 1] - sk[i + 1]):
+                optimal = i
+                break
+        else:
+            optimal = i
 
     return optimal
 

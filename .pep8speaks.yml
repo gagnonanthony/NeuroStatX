@@ -6,7 +6,8 @@ scanner:
 
 pycodestyle:  # Valid if scanner.linter is pycodestyle
     max-line-length: 79
-    ignore: []  # Errors and warnings to ignore
+    ignore:
+        - W605  # Invalid escape sequence
     exclude: []  # File path patterns to exclude
     count: False
     first: False
@@ -20,7 +21,7 @@ pycodestyle:  # Valid if scanner.linter is pycodestyle
 flake8:  # Valid if scanner.linter is flake8
     max-line-length: 79
     ignore:
-      - W605 # Invalid escape sequence
+        - W605 # Invalid escape sequence
     exclude: []
     count: False
     show-source: False

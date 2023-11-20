@@ -174,16 +174,37 @@ def weightedpath(
     weight=None,
     method="dijkstra",
     distribution=None,
+    processes=4,
     verbose=False,
 ):
     """
-    Function to compute average weighted shortest path length for a group of
-    nodes.
+    Function to compute the average weighted shortest path length for a group
+    of nodes. The function will also compute the p-value between the group of
+    nodes and the randomly generated null distribution.
 
     Args:
-        graph (_type_): _description_
-        nodes (_type_): _description_
-        weight (_type_, optional): _description_. Defaults to None.
+        graph (Networkx.graph):                 Networkx graph object.
+        df (pandas.DataFrame):                  Dataframe containing the nodes
+        label_name (str):                       Name of the column containing
+                                                the group label.
+        id_column (str):                        Name of the column containing
+                                                the nodes IDs.
+        iterations (int, optional):             Number of iterations to run.
+                                                Defaults to 1000.
+        weight (str, optional):                 Edge attributes to use as
+                                                weight. Defaults to None.
+        method (str, optional):                 Method to use for path
+                                                computation. Defaults to
+                                                "dijkstra".
+        distribution (pd.DataFrame, optional):  Pre-computed distribution.
+                                                Defaults to None.
+        verbose (bool, optional):               Verbose flag. Defaults to
+                                                False.
+
+    Returns:
+        avg_path_length (float):                Average path length.
+        dist (list):                            Null distribution.
+        pvalue (float):                         P-value.
     """
     # Setting lists.
     group_exclude = df.loc[df[label_name] == 0]
@@ -212,7 +233,7 @@ def weightedpath(
 
         # Opening multiprocessing pool.
         logging.info("Computing null distribution.")
-        pool = multiprocessing.Pool()
+        pool = multiprocessing.Pool(processes=processes)
 
         # Initiating processing.
         if verbose:
@@ -237,12 +258,8 @@ def _weightedpath(
 ):
     """
     Core worker of weightedpath() function.
-
-    Args:
-        subgraph (_type_): _description_
-        nodes (_type_): _description_
-        weight (_type_, optional): _description_. Defaults to None.
     """
+
     # Filtering nodes.
     random.shuffle(nodes_list)
     random_nodes = random.sample(nodes_list, sample_size)
