@@ -3,7 +3,7 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.cm import ScalarMappable
-from matplotlib.colors import Normalize
+import matplotlib
 import seaborn as sns
 
 from CCPM.network.utils import filter_node_centroids, filter_node_subjects
@@ -171,15 +171,17 @@ def visualize_network(
     nx.draw_networkx_labels(G, pos, labels=labels, font_color="black", ax=ax)
 
     # Adding colorbar, titles, etc.
-    cmappable = ScalarMappable(Normalize(0, 1), getattr(plt.cm, colormap))
-    plt.colorbar(cmappable, ax=ax, location="right", shrink=0.5)
+    cmappable = ScalarMappable(matplotlib.colors.Normalize(0, 1),
+                               getattr(plt.cm, colormap))
+    cbar = plt.colorbar(cmappable, ax=ax, location="right", shrink=0.5)
 
     plt.box(False)
     ax.set_title(title)
-    # ax.legend(title=legend_title)
+    cbar.ax.set_title(legend_title)
 
     plt.tight_layout()
     plt.savefig(output)
+    plt.close()
 
     return pos
 
@@ -285,13 +287,23 @@ def create_cmap_from_list(array):
         cmap:               List containing all colors.
     """
 
-    cmap = plt.cm.tab10(np.linspace(0, 1, 10))
+    if array.dtype == "float64":
+        cmap = plt.cm.plasma(np.linspace(0, 1, len(array)))
 
-    nodes_cmap = []
-    for i in array:
-        if i == 0:
-            nodes_cmap.append("black")
-        else:
+        ranks = array.argsort().argsort()
+
+        nodes_cmap = []
+        for i in ranks:
             nodes_cmap.append(cmap[i])
+
+    else:
+        cmap = plt.cm.tab10(np.linspace(0, 1, 10))
+
+        nodes_cmap = []
+        for i in array:
+            if i == 0:
+                nodes_cmap.append("black")
+            else:
+                nodes_cmap.append(cmap[i])
 
     return nodes_cmap

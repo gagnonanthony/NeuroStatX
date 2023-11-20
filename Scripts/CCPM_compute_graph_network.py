@@ -104,7 +104,7 @@ def main(
     background_alpha: Annotated[
         bool,
         typer.Option(
-            help="If set, background nodes alpha will be set to 0.2 (more "
+            help="If set, background nodes alpha will be set to 0.1 (more "
             "transparent).",
             show_default=True,
             rich_help_panel="Label Options",
@@ -389,8 +389,8 @@ def main(
             if background_alpha:
                 sub_alpha = []
                 for i in nodes_cmap:
-                    if i is str:
-                        sub_alpha.append(0.2)
+                    if isinstance(i, str):
+                        sub_alpha.append(0.1)
                     else:
                         sub_alpha.append(1)
             else:

@@ -6,6 +6,7 @@ from sklearn.metrics import (
     silhouette_score,
     calinski_harabasz_score,
     davies_bouldin_score,
+    adjusted_rand_score
 )
 import skfuzzy as fuzz
 
@@ -208,3 +209,27 @@ def find_optimal_gap(gap, sk):
             break
 
     return optimal
+
+
+def compute_rand_index(dict):
+    """
+    Compute the adjusted Rand Index from a list of fuzzy membership matrices
+    using sklearn.metrics.adjusted_rand_score. A defuzzification step is
+    required since this method applies only to crisp clusters.
+
+    Args:
+        dict (dictionnary):             Dictonnary containing all dataframes.
+
+    Return:
+        Ndarray                         Symmetric ndarray.
+    """
+
+    ari = []
+    keys = list(dict.keys())
+    for k in keys:
+        for k2 in keys:
+            val1 = dict[k].values.argmax(axis=1)
+            val2 = dict[k2].values.argmax(axis=1)
+            ari.append(adjusted_rand_score(val1, val2))
+
+    return np.array(ari).reshape(len(keys), len(keys))

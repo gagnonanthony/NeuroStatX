@@ -8,6 +8,7 @@ import random
 
 from functools import partial
 import networkx as nx
+import numpy as np
 from p_tqdm import p_map
 
 
@@ -172,6 +173,7 @@ def weightedpath(
     iterations=1000,
     weight=None,
     method="dijkstra",
+    distribution=None,
     verbose=False,
 ):
     """
@@ -186,7 +188,7 @@ def weightedpath(
     # Setting lists.
     group_exclude = df.loc[df[label_name] == 0]
     nodes_exclude = group_exclude[id_column].to_list()
-    nodes_include = list(set(list(graph)) - set(nodes_exclude))
+    nodes_include = [node for node in list(graph) if node not in nodes_exclude]
 
     logging.info("Computing weighted path for the set of nodes.")
     sub_G = nx.induced_subgraph(graph, nodes_include)
@@ -198,28 +200,36 @@ def weightedpath(
     nodes_list = df[id_column].to_list()
 
     # Setting partial function to pass common arguments between iterations.
-    generate_null_dist = partial(
-        _weightedpath,
-        graph,
-        nodes_list=nodes_list,
-        sample_size=len(nodes_include),
-        weight=weight,
-        method=method,
+    if distribution is None:
+        generate_null_dist = partial(
+            _weightedpath,
+            graph,
+            nodes_list=nodes_list,
+            sample_size=len(nodes_include),
+            weight=weight,
+            method=method,
+        )
+
+        # Opening multiprocessing pool.
+        logging.info("Computing null distribution.")
+        pool = multiprocessing.Pool()
+
+        # Initiating processing.
+        if verbose:
+            dist = p_map(generate_null_dist, range(0, iterations))
+        else:
+            dist = pool.map(generate_null_dist, range(0, iterations))
+        pool.close()
+        pool.join()
+    else:
+        dist = distribution[label_name].values
+
+    # Compute p-value.
+    pvalue = (
+        (np.sum(np.array(dist) >= avg_path_length) + 1) / (iterations + 1)
     )
 
-    # Opening multiprocessing pool.
-    logging.info("Computing null distribution.")
-    pool = multiprocessing.Pool()
-
-    # Initiating processing.
-    if verbose:
-        results = p_map(generate_null_dist, range(0, iterations))
-    else:
-        results = pool.map(generate_null_dist, range(0, iterations))
-    pool.close()
-    pool.join()
-
-    return avg_path_length, results
+    return avg_path_length, dist, pvalue
 
 
 def _weightedpath(
@@ -239,12 +249,13 @@ def _weightedpath(
     nodes_exclude = list(set(nodes_list) - set(random_nodes))
 
     # Copying graph.
-    orig = graph.copy()
+    # orig = graph.copy()
 
     # Filtering original graph nodes to remove the ones that were not randomly
     # selected (easier to keep cluster centroids nodes that way.).
-    sub_G = nx.induced_subgraph(orig,
-                                list(set(list(orig)) - set(nodes_exclude)))
+    # sub_G = nx.induced_subgraph(orig,
+    #                            list(set(list(orig)) - set(nodes_exclude)))
+    sub_G = graph.subgraph(list(set(graph) - set(nodes_exclude)))
 
     # Computing weighted path length.
     weighted_avg_path_length = nx.average_shortest_path_length(

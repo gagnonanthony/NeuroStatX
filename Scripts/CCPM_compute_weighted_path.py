@@ -90,6 +90,16 @@ def main(
             rich_help_panel="Computational Options",
         ),
     ] = PathLengthsMethods.Dijkstra,
+    distribution: Annotated[
+        str,
+        typer.Option(
+            help="Pre-computed null distribution, needs to be an .xlsx file"
+            "containing label name as --label-name.",
+            show_choices=False,
+            show_default=True,
+            rich_help_panel="Computational Options",
+        ),
+    ] = None,
     verbose: Annotated[
         bool,
         typer.Option(
@@ -177,12 +187,15 @@ def main(
 
     # Loading dataset and generating list of nodes to include.
     df = pd.read_excel(data_for_label)
+    if distribution is not None:
+        dist = pd.read_excel(distribution)
 
+    null_dst = []
     # Compute weigted path metric.
     for var in label_name:
         logging.info("Computing average weighted path for variable : {}"
                      .format(var))
-        avg_weighted_path, null_dist = weightedpath(
+        avg_weighted_path, null_dist, pvalue = weightedpath(
             G,
             df,
             label_name=var,
@@ -190,8 +203,10 @@ def main(
             iterations=iterations,
             weight=weight,
             method=method,
+            distribution=dist,
             verbose=True,
         )
+        null_dst.append(null_dist)
 
         # Plotting distribution.
         plt.rcParams["figure.figsize"] = [12, 7]
@@ -207,9 +222,30 @@ def main(
         ax.set_xlabel("Average weighted path metric.")
         ax.axvline(x=avg_weighted_path, ymin=0, ymax=1)
 
+        # Annotating graph with p-value.
+        ax.annotate(
+            "p = {:.3f}".format(pvalue),
+            xy=((0.75 * ax.get_xlim()[1]), (0.8 * ax.get_ylim()[1])),
+            fontsize=20,
+            ha="center",
+            va="center",
+        )
+
         plt.tight_layout()
         plt.savefig(f"{out_folder}/results_{var}.png")
         plt.close()
+
+    out = pd.DataFrame(
+        [item for row in null_dst for item in row],
+        columns=label_name)
+    out.to_excel(f"{out_folder}/null_distributions.xlsx",
+                 header=True, index=False)
+
+    # Export metric with pvalue.
+    stats = pd.DataFrame([[avg_weighted_path], [pvalue]],
+                         columns=['Statistics'],
+                         index=['Average weighted path', 'p-value'])
+    stats.to_excel(f"{out_folder}/statistics.xlsx", header=True, index=True)
 
 
 if __name__ == "__main__":

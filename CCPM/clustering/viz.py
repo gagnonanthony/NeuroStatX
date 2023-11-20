@@ -196,7 +196,7 @@ def plot_parallel_plot(
         final_df = df.iloc[indexes]
 
     # Setting color palette.
-    cmap = get_cmap("plasma", len(np.unique(labels)))
+    cmap = get_cmap("nipy_spectral", len(np.unique(labels)))
     colors = [rgb2hex(cmap(i)) for i in range(cmap.N)]
 
     fig = plt.figure(figsize=(15, 7))

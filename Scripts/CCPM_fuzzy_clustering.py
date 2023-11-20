@@ -14,6 +14,7 @@ from typing_extensions import Annotated
 
 from CCPM.io.utils import (load_df_in_any_format, assert_input,
                            assert_output_dir_exist)
+from CCPM.io.viz import flexible_barplot
 from CCPM.clustering.fuzzy import fuzzyCmeans
 from CCPM.utils.preprocessing import merge_dataframes, compute_pca
 from CCPM.clustering.viz import (
@@ -102,14 +103,6 @@ def main(
             show_default=True,
             rich_help_panel="Clustering Options",
             case_sensitive=False,
-        ),
-    ] = None,
-    cluster_solution: Annotated[
-        int,
-        typer.Option(
-            help="k value to export and plot solution",
-            show_default=False,
-            rich_help_panel="Clustering Options",
         ),
     ] = None,
     metric: Annotated[
@@ -329,7 +322,7 @@ def main(
     # Decomposing into 2 components if asked.
     if pca:
         logging.info("Applying PCA dimensionality reduction.")
-        X, variance, chi, kmo = compute_pca(X, 2)
+        X, variance, components, chi, kmo = compute_pca(X, 2)
         logging.info(
             "Bartlett's test of sphericity returned a p-value of {} and "
             "Keiser-Meyer-Olkin (KMO)"
@@ -342,9 +335,20 @@ def main(
             f"{out_folder}/PCA/variance_explained.xlsx", index=True,
             header=True
         )
+        components_df = pd.DataFrame(components, columns=df_for_clust.columns)
+        components_df.to_excel(f"{out_folder}/PCA/components.xlsx", index=True,
+                               header=True)
         out = pd.DataFrame(X, columns=["Component #1", "Component #2"])
         out.to_excel(f"{out_folder}/PCA/transformed_data.xlsx", index=True,
                      header=True)
+
+        flexible_barplot(
+            components,
+            df_for_clust.columns,
+            2,
+            title="Loadings values for the two components.",
+            filename=f"{out_folder}/PCA/barplot_loadings.png",
+            ylabel="Loading value")
 
     # Plotting the dendrogram.
     logging.info("Generating dendrogram.")

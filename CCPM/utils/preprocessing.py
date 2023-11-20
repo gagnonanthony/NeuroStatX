@@ -146,5 +146,6 @@ def compute_pca(X, n_components):
     pca = PCA(n_components=n_components).fit(X)
     X = pca.transform(X)
     exp_var = pca.explained_variance_ratio_
+    components = pca.components_
 
-    return X, exp_var, p_value, kmo_model
+    return X, exp_var, components, p_value, kmo_model
