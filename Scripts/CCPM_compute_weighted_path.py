@@ -274,14 +274,15 @@ def main(
     out = pd.DataFrame(
         [item for row in null_dst for item in row],
         columns=label_name)
-    out.to_excel(f"{out_folder}/null_distributions.xlsx",
+    out.to_excel(f"{out_folder}/null_distributions_{var}.xlsx",
                  header=True, index=False)
 
     # Export metric with pvalue.
     stats = pd.DataFrame([[avg_weighted_path], [pvalue]],
                          columns=['Statistics'],
                          index=['Average weighted path', 'p-value'])
-    stats.to_excel(f"{out_folder}/statistics.xlsx", header=True, index=True)
+    stats.to_excel(f"{out_folder}/statistics_{var}.xlsx", header=True,
+                   index=True)
 
 
 if __name__ == "__main__":
