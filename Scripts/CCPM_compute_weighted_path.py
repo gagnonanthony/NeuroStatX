@@ -225,7 +225,6 @@ def main(
     else:
         dist = None
 
-    null_dst = []
     # Compute weigted path metric.
     for var in label_name:
         logging.info("Computing average weighted path for variable : {}"
@@ -242,7 +241,6 @@ def main(
             processes=processes,
             verbose=True,
         )
-        null_dst.append(null_dist)
 
         # Plotting distribution.
         plt.rcParams["figure.figsize"] = [12, 7]
@@ -271,17 +269,18 @@ def main(
         plt.savefig(f"{out_folder}/results_{var}.png")
         plt.close()
 
-    out = pd.DataFrame(
-        [item for row in null_dst for item in row],
-        columns=label_name)
-    out.to_excel(f"{out_folder}/null_distributions.xlsx",
-                 header=True, index=False)
+        out = pd.DataFrame(
+            null_dist,
+            columns=[var])
+        out.to_excel(f"{out_folder}/null_distributions_{var}.xlsx",
+                     header=True, index=False)
 
-    # Export metric with pvalue.
-    stats = pd.DataFrame([[avg_weighted_path], [pvalue]],
-                         columns=['Statistics'],
-                         index=['Average weighted path', 'p-value'])
-    stats.to_excel(f"{out_folder}/statistics.xlsx", header=True, index=True)
+        # Export metric with pvalue.
+        stats = pd.DataFrame([[avg_weighted_path], [pvalue]],
+                             columns=['Statistics'],
+                             index=['Average weighted path', 'p-value'])
+        stats.to_excel(f"{out_folder}/statistics_{var}.xlsx", header=True,
+                       index=True)
 
 
 if __name__ == "__main__":
