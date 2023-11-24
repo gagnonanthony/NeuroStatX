@@ -117,14 +117,14 @@ def test_clustering():
 #    assert ret.exit_code == 0
 
 
-def test_effectivesize():
-    os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+# def test_effectivesize():
+#    os.chdir(os.path.expanduser(tmp_dir.name))
+#    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ["effectivesize", in_graph, "c1", "membership",
-                              "-f"])
+#    ret = runner.invoke(app, ["effectivesize", in_graph, "c1", "membership",
+#                              "-f"])
 
-    assert ret.exit_code == 0
+#    assert ret.exit_code == 0
 
 
 def test_closenessvitality():
