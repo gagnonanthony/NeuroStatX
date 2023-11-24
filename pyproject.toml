@@ -32,13 +32,6 @@ tableone = "^0.8.0"
 statannotations = {git = "https://github.com/gagnonanthony/statannotations.git"}
 adjusttext = {git = "https://github.com/Phlya/adjustText.git"}
 
-[tool.semantic_release]
-version_variable = [
-    "CCPM/version.py:__version__",
-    "pyproject.toml:version"
-]
-build_command = "pip install poetry && poetry build"
-
 [tool.poetry.scripts]
 CCPM_compute_graph_network = 'Scripts.CCPM_compute_graph_network:app'
 CCPM_compare_clustering = 'Scripts.CCPM_compare_clustering:app' 
