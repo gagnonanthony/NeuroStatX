@@ -4,9 +4,7 @@ import shutil
 import sys
 
 from detect_delimiter import detect
-from fpdf import FPDF
 import pandas as pd
-from PIL import Image
 
 
 """
@@ -184,94 +182,3 @@ def get_data_dir():
                             os.path.dirname(module_path)) + "/data/")
 
     return data_dir
-
-
-class PDF(FPDF):
-    """
-    Class object to initialize reports to output recommendation in pdf
-    format.
-    """
-
-    def header(self):
-        """
-        Function to automatically generate the header for pdf report (with
-        logo).
-        :return:    Header.
-        """
-        path = os.path.join(get_data_dir() + "CCPM.png")
-        self.image(path, 10, 8, 33)
-        self.ln(20)
-
-    def footer(self):
-        """
-        Function to set footer for the pdf report.
-        :return:    Footer.
-        """
-        self.set_y(-15)
-        self.set_font("Arial", "I", 8)
-        self.cell(0, 10, "Page " + str(self.page_no()), 0, 0, "C")
-
-    def chapter_title(self, num, label):
-        """
-        Function to add a title for a new chapter.
-        :param num:     Chapter Number.
-        :param label:   Chapter Label.
-        :return:        Chapter's string formatted for the pdf report.
-        """
-        self.set_font("Arial", "B", 14)
-        self.set_fill_color(200, 220, 255)
-        self.cell(0, 6, f"{num} : {label}", 0, 1, "L")
-        self.ln(4)
-
-    def chapter_body(self, string):
-        """
-        Function to add a text in the chapter's body.
-        :param string:  String to add.
-        :return:        String formatted for the pdf report.
-        """
-        self.set_font("Times", "", 12)
-        self.multi_cell(0, 5, string)
-        self.ln()
-
-    def print_chapter(self, num, title, string, image=None):
-        """
-        Function to print the complete chapter and add it to the report.
-        :param num:     Chapter Number.
-        :param title:   Chapter Title.
-        :param string:  String to include in the chapter's body.
-        :param image:   Image to add in the chapter's body.
-        :return:        Pdf page.
-        """
-        pdf_size = {"P": {"w": 210, "h": 297}, "L": {"w": 297, "h": 210}}
-
-        if image:
-            cover = Image.open(image)
-            width, height = cover.size
-
-            # Convert to mm since it is the default of pyFPDF.
-            width, height = float(width * 0.264583), float(height * 0.264583)
-
-            # Set orientation of the page depending on the image size.
-            orientation = "P" if width < height else "L"
-
-            # Validate the image size and ensure it fits inside the page.
-            width = (
-                width
-                if width < pdf_size[orientation]["w"] - 100
-                else pdf_size[orientation]["w"] - 100
-            )
-            height = (
-                height
-                if height < pdf_size[orientation]["h"] - 100
-                else pdf_size[orientation]["h"] - 100
-            )
-
-        self.add_page(orientation=orientation)
-        self.chapter_title(num, title)
-        self.chapter_body(string)
-
-        if image:
-            if width > height:
-                self.image(image, h=height)
-            else:
-                self.image(image, w=width)
