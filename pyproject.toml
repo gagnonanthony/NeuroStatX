@@ -49,6 +49,7 @@ CCPM_predict_fuzzy_membership = 'Scripts.CCPM_predict_fuzzy_membership:app'
 coverage = "^7.3.2"
 pytest = "^7.4.3"
 flake8 = "^6.1.0"
+coverage-badge = "^1.1.0"
 
 [build-system]
 requires = ["poetry-core"]
