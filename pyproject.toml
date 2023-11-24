@@ -44,6 +44,11 @@ CCPM_fuzzy_clustering = 'Scripts.CCPM_fuzzy_clustering:app'
 CCPM_graph_metrics = 'Scripts.CCPM_graph_metrics:app'
 CCPM_predict_fuzzy_membership = 'Scripts.CCPM_predict_fuzzy_membership:app'
 
+[tool.poetry.group.dev.dependencies]
+coverage = "^7.3.2"
+pytest = "^7.4.3"
+flake8 = "^6.1.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
