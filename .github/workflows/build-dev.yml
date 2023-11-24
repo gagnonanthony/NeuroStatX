@@ -43,7 +43,7 @@ jobs:
           poetry run flake8 . --count --ignore=W605 --show-source --statistics
       - name: Pytest
         run: |
-          poetry run coverage run -m pytest --verbose && \
+          poetry run coverage --data-file=coverage.xml run -m pytest --verbose && \
           poetry run coverage report -m && \
           poetry run coverage-badge -f -o coverage.svg
       - name: Upload coverage reports to Codecov
