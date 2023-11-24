@@ -13,7 +13,6 @@ from factor_analyzer.factor_analyzer import calculate_kmo
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from rich.progress import Progress, SpinnerColumn, TextColumn
 import seaborn as sns
 import semopy
 from sklearn.preprocessing import StandardScaler
@@ -25,14 +24,12 @@ from CCPM.io.utils import (
     assert_input,
     assert_output_dir_exist,
     load_df_in_any_format,
-    PDF,
 )
 from CCPM.io.viz import flexible_barplot
 from CCPM.utils.preprocessing import merge_dataframes
 from CCPM.utils.factor import (
     RotationTypes,
     MethodTypes,
-    FormattedTextPrompt,
     horn_parallel_analysis,
     apply_efa_only,
     apply_efa_and_cfa,
@@ -313,320 +310,247 @@ def main(
             "same time."
         )
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        transient=False,
-    ) as progress:
-        task = progress.add_task(description="Loading dataset(s)...",
-                                 total=None)
+    logging.info(
+        "Validating input files and creating output folder {}"
+        .format(out_folder)
+    )
+    assert_input(in_dataset)
+    assert_output_dir_exist(overwrite, out_folder, create_dir=True)
+
+    if not use_only_efa:
+        os.makedirs(f"{out_folder}/efa/")
+        os.makedirs(f"{out_folder}/cfa/")
+
+    # Loading dataset.
+    logging.info("Loading {}".format(in_dataset))
+    if len(in_dataset) > 1:
+        if id_column is None:
+            sys.exit(
+                "Column name for index matching is required when inputting"
+                " multiple dataframes."
+            )
+        dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
+        df = merge_dataframes(dict_df, id_column)
+    else:
+        df = load_df_in_any_format(in_dataset[0])
+    descriptive_columns = [n for n in range(0, desc_columns)]
+
+    # Imputing missing values (or not).
+    if mean:
+        logging.info("Imputing missing values using the mean method.")
+        for column in df.columns:
+            df[f"{column}"].fillna(df[f"{column}"].mean(), inplace=True)
+    elif median:
+        logging.info("Imputing missing values using the median method.")
+        for column in df.columns:
+            df[f"{column}"].fillna(df[f"{column}"].median(), inplace=True)
+    else:
         logging.info(
-            "Validating input files and creating output folder {}"
-            .format(out_folder)
+            "No methods selected for imputing missing values. "
+            "Removing them."
         )
-        assert_input(in_dataset)
-        assert_output_dir_exist(overwrite, out_folder, create_dir=True)
+        df.dropna(inplace=True)
 
-        if not use_only_efa:
-            os.makedirs(f"{out_folder}/efa/")
-            os.makedirs(f"{out_folder}/cfa/")
+    record_id = df[id_column]
+    desc_col = df[df.columns[descriptive_columns]]
+    df.drop(df.columns[descriptive_columns], axis=1, inplace=True)
 
-        # Loading dataset.
-        logging.info("Loading {}".format(in_dataset))
-        if len(in_dataset) > 1:
-            if id_column is None:
-                sys.exit(
-                    "Column name for index matching is required when inputting"
-                    " multiple dataframes."
-                )
-            dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
-            df = merge_dataframes(dict_df, id_column)
-        else:
-            df = load_df_in_any_format(in_dataset[0])
-        descriptive_columns = [n for n in range(0, desc_columns)]
+    # Scaling the dataset.
+    scaled_df = pd.DataFrame(StandardScaler().fit_transform(df),
+                             columns=df.columns)
 
-        progress.update(task, completed=True, description="[green]Dataset(s) "
-                        "loaded.")
+    # Requirement for factorial analysis.
+    chi_square_value, p_value = calculate_bartlett_sphericity(scaled_df)
+    kmo_all, kmo_model = calculate_kmo(scaled_df)
+    logging.info(
+        "Bartlett's test of sphericity returned a p-value of {} and "
+        "Keiser-Meyer-Olkin (KMO)"
+        "test returned a value of {}.".format(p_value, kmo_model)
+    )
 
-        task = progress.add_task(description="Processing of dataset(s)...",
-                                 total=None)
-        # Imputing missing values (or not).
-        if mean:
-            logging.info("Imputing missing values using the mean method.")
-            for column in df.columns:
-                df[f"{column}"].fillna(df[f"{column}"].mean(), inplace=True)
-        elif median:
-            logging.info("Imputing missing values using the median method.")
-            for column in df.columns:
-                df[f"{column}"].fillna(df[f"{column}"].median(), inplace=True)
+    # Fit the data in the model
+    if kmo_model > 0.6 and p_value < 0.05:
+        logging.info(
+            "Dataset passed the Bartlett's test and KMO test. Proceeding "
+            "with factorial analysis."
+        )
+        fa = FactorAnalyzer(rotation=None, method=method)
+        fa.fit(scaled_df)
+        ev, v = fa.get_eigenvalues()
+
+        # Plot scree plot to determine the optimal number of factors using
+        # the Kaiser's method. (eigenvalues > 1)
+        plt.scatter(range(1, df.shape[1] + 1), ev)
+        plt.plot(range(1, df.shape[1] + 1), ev)
+        sns.set_style("whitegrid")
+        plt.title("Scree Plot of the eigenvalues for each factor")
+        plt.xlabel("Factors")
+        plt.ylabel("Eigenvalues")
+        plt.grid()
+        plt.savefig(f"{out_folder}/scree_plot.png")
+        plt.close()
+
+        # Horn's parallel analysis.
+        suggfactor, suggcomponent = horn_parallel_analysis(
+            scaled_df.values, out_folder, rotation=None, method=method
+        )
+
+        # Validating the results from scree plot and horn's parallel
+        # analysis.
+        eigenvalues = sum(map(lambda a: a > 1, ev))
+        if suggfactor == eigenvalues:
+            logging.info(
+                "Both the scree plot and horn's parallel analysis suggests"
+                " the same number of factors : "
+                "{} . Proceeding with this number for the final analysis."
+                .format(suggfactor)
+            )
+            nfactors = suggfactor
         else:
             logging.info(
-                "No methods selected for imputing missing values. "
-                "Removing them."
-            )
-            df.dropna(inplace=True)
-
-        record_id = df[id_column]
-        desc_col = df[df.columns[descriptive_columns]]
-        df.drop(df.columns[descriptive_columns], axis=1, inplace=True)
-
-        # Scaling the dataset.
-        scaled_df = pd.DataFrame(StandardScaler().fit_transform(df),
-                                 columns=df.columns)
-
-        # Requirement for factorial analysis.
-        chi_square_value, p_value = calculate_bartlett_sphericity(scaled_df)
-        kmo_all, kmo_model = calculate_kmo(scaled_df)
-        logging.info(
-            "Bartlett's test of sphericity returned a p-value of {} and "
-            "Keiser-Meyer-Olkin (KMO)"
-            "test returned a value of {}.".format(p_value, kmo_model)
-        )
-        progress.update(
-            task, completed=True, description="[green]Dataset(s) processed."
-        )
-
-        task1 = progress.add_task(
-            description="Performing factorial analysis and generating plots.",
-            total=None,
-        )
-        # Fit the data in the model
-        if kmo_model > 0.6 and p_value < 0.05:
-            logging.info(
-                "Dataset passed the Bartlett's test and KMO test. Proceeding "
-                "with factorial analysis."
-            )
-            fa = FactorAnalyzer(rotation=None, method=method)
-            fa.fit(scaled_df)
-            ev, v = fa.get_eigenvalues()
-
-            # Plot scree plot to determine the optimal number of factors using
-            # the Kaiser's method. (eigenvalues > 1)
-            plt.scatter(range(1, df.shape[1] + 1), ev)
-            plt.plot(range(1, df.shape[1] + 1), ev)
-            sns.set_style("whitegrid")
-            plt.title("Scree Plot of the eigenvalues for each factor")
-            plt.xlabel("Factors")
-            plt.ylabel("Eigenvalues")
-            plt.grid()
-            plt.savefig(f"{out_folder}/scree_plot.png")
-            plt.close()
-
-            # Horn's parallel analysis.
-            suggfactor, suggcomponent = horn_parallel_analysis(
-                scaled_df.values, out_folder, rotation=None, method=method
-            )
-
-            # Validating the results from scree plot and horn's parallel
-            # analysis.
-            eigenvalues = sum(map(lambda a: a > 1, ev))
-            if suggfactor == eigenvalues:
-                logging.info(
-                    "Both the scree plot and horn's parallel analysis suggests"
-                    " the same number of factors : "
-                    "{} . Proceeding with this number for the final analysis."
-                    .format(suggfactor)
+                "The scree plot and horn's parallel analysis returned "
+                "different values : {} and {} respectively. Default is "
+                "taking the value suggested from the scree plot method "
+                "if the --use_horns_parallel flag is not used.".format(
+                    eigenvalues, suggfactor
                 )
+            )
+            if use_horn_parallel:
                 nfactors = suggfactor
+            elif factor_number is not None:
+                nfactors = factor_number
             else:
-                logging.info(
-                    "The scree plot and horn's parallel analysis returned "
-                    "different values : {} and {} respectively. Default is "
-                    "taking the value suggested from the scree plot method "
-                    "if the --use_horns_parallel flag is not used.".format(
-                        eigenvalues, suggfactor
-                    )
-                )
-                if use_horn_parallel:
-                    nfactors = suggfactor
-                elif factor_number is not None:
-                    nfactors = factor_number
-                else:
-                    nfactors = eigenvalues
+                nfactors = eigenvalues
 
-            # Perform the factorial analysis.
-            if use_only_efa:
-                efa = apply_efa_only(
-                    scaled_df, rotation=rotation, nfactors=nfactors,
-                    method=method
-                )
-            else:
-                efa, cfa = apply_efa_and_cfa(
-                    scaled_df,
-                    nfactors=nfactors,
-                    rotation=rotation,
-                    method=method,
-                    threshold=threshold,
-                    random_state=random_state,
-                    train_size=train_dataset_size,
-                )
-
-            columns = [f"Factor {i}" for i in range(1, nfactors + 1)]
-
-            # Export EFA and CFA transformed data.
-            efa_out = pd.DataFrame(
-                efa.transform(scaled_df), index=record_id, columns=columns
+        # Perform the factorial analysis.
+        if use_only_efa:
+            efa = apply_efa_only(
+                scaled_df, rotation=rotation, nfactors=nfactors,
+                method=method
             )
-            if use_only_efa:
-                efa_out.to_excel(f"{out_folder}/scores.xlsx", header=True,
-                                 index=True)
-            else:
-                efa_out.to_excel(
-                    f"{out_folder}/efa/scores.xlsx", header=True, index=True
-                )
-
-                # Export scores from CFA analysis.
-                cfa_scores = cfa.predict_factors(scaled_df)
-                scores = pd.concat([desc_col, cfa_scores], axis=1)
-                scores.to_excel(
-                    f"{out_folder}/cfa/scores.xlsx", header=True, index=False
-                )
-
-            # Plot correlation matrix between all raw variables.
-            corr = pd.DataFrame(efa.corr_, index=df.columns,
-                                columns=df.columns)
-            mask = np.triu(np.ones_like(corr, dtype=bool))
-            f, ax = plt.subplots(figsize=(11, 9))
-            ax = sns.heatmap(
-                corr,
-                mask=mask,
-                cmap="BrBG",
-                vmax=1,
-                vmin=-1,
-                center=0,
-                square=True,
-                annot=True,
-                linewidth=0.5,
-                fmt=".1f",
-                annot_kws={"size": 8},
-            )
-            ax.set_title("Correlation Heatmap of raw {} variables."
-                         .format(test_name))
-            plt.tight_layout()
-            plt.savefig(f"{out_folder}/Heatmap.png")
-            plt.close()
-
-            # Plot EFA loadings in a barplot.
-            efa_loadings = pd.DataFrame(
-                efa.loadings_, columns=columns, index=df.columns
-            )
-            efa_data_to_plot = [efa_loadings[i].values
-                                for i in efa_loadings.columns]
-            if use_only_efa:
-                flexible_barplot(
-                    efa_data_to_plot,
-                    efa_loadings.index,
-                    nfactors,
-                    title="Loadings values for the EFA",
-                    filename=f"{out_folder}/barplot_loadings.png",
-                    ylabel="Loading value",
-                )
-            else:
-                flexible_barplot(
-                    efa_data_to_plot,
-                    efa_loadings.index,
-                    nfactors,
-                    title="Loadings values for the EFA",
-                    filename=f"{out_folder}/efa/barplot_loadings.png",
-                    ylabel="Loading value",
-                )
-
-                # Export table with all estimate from the CFA analysis.
-                stats = cfa.inspect(mode="list", what="est",
-                                    information="expected")
-                stats.to_excel(
-                    f"{out_folder}/cfa/statistics.xlsx", header=True,
-                    index=False
-                )
-
-            # Export EFA loadings for all variables.
-            eigen_table = pd.DataFrame(
-                efa.get_eigenvalues()[0],
-                index=[f"Factor {i}" for i in range(1, len(df.columns) + 1)],
-                columns=["Eigenvalues"],
-            )
-            if use_only_efa:
-                eigen_table.to_excel(
-                    f"{out_folder}/eigenvalues.xlsx", header=True, index=True
-                )
-                efa_loadings.to_excel(
-                    f"{out_folder}/loadings.xlsx", header=True, index=True
-                )
-            else:
-                eigen_table.to_excel(
-                    f"{out_folder}/efa/eigenvalues.xlsx", header=True,
-                    index=True
-                )
-                efa_loadings.to_excel(
-                    f"{out_folder}/efa/loadings.xlsx", header=True, index=True
-                )
-
-                semopy.semplot(cfa, f"{out_folder}/cfa/semplot.png",
-                               plot_covs=True)
-                semopy.report(cfa, f"{out_folder}/cfa/Detailed_CFA_Report")
-
         else:
-            print(
-                f"In order to perform a factorial analysis, the Bartlett's "
-                f"test p-value needs to be significant \n"
-                f" (<0.05) and the Keiser-Meyer-Olkin (KMO) Test needs to "
-                f"return a value greater than 0.6. Current\n "
-                f" results : Bartlett's p-value = {p_value} and KMO value = "
-                f"{kmo_model}."
+            efa, cfa = apply_efa_and_cfa(
+                scaled_df,
+                nfactors=nfactors,
+                rotation=rotation,
+                method=method,
+                threshold=threshold,
+                random_state=random_state,
+                train_size=train_dataset_size,
             )
 
-        if report:
-            task2 = progress.add_task(description="Generating report...")
+        columns = [f"Factor {i}" for i in range(1, nfactors + 1)]
 
-            pdf = PDF()
-            pdf.alias_nb_pages()
-            pdf.set_font("Arial", "", 12)
-
-            pdf.print_chapter(
-                1,
-                "Heatmap",
-                string=FormattedTextPrompt.heatmap,
-                image=f"{out_folder}/Heatmap.png",
-            )
-            pdf.print_chapter(
-                2,
-                "Scree Plot",
-                string=FormattedTextPrompt.screeplot,
-                image=f"{out_folder}/scree_plot.png",
-            )
-            if use_only_efa:
-                pdf.print_chapter(
-                    3,
-                    "Variables Loadings",
-                    string=FormattedTextPrompt.loadings,
-                    image=f"{out_folder}/barplot_loadings.png",
-                )
-            else:
-                pdf.print_chapter(
-                    3,
-                    "Variables Loadings",
-                    string=FormattedTextPrompt.loadings,
-                    image=f"{out_folder}/efa/barplot_loadings.png",
-                )
-
-            pdf.print_chapter(
-                4,
-                "SEMplot showing relation between latent variables and "
-                "indicators.",
-                string=FormattedTextPrompt.semplot,
-                image=f"{out_folder}/cfa/semplot.png",
-            )
-            pdf.output(f"{out_folder}/report_factorial_analysis.pdf")
-
-            progress.update(
-                task2, completed=True, description="[green]Report generated."
+        # Export EFA and CFA transformed data.
+        efa_out = pd.DataFrame(
+            efa.transform(scaled_df), index=record_id, columns=columns
+        )
+        if use_only_efa:
+            efa_out.to_excel(f"{out_folder}/scores.xlsx", header=True,
+                             index=True)
+        else:
+            efa_out.to_excel(
+                f"{out_folder}/efa/scores.xlsx", header=True, index=True
             )
 
-        progress.update(
-            task1,
-            completed=True,
-            description="[green]Analysis completed. Enjoy your results ! "
-            ":beer:",
+            # Export scores from CFA analysis.
+            cfa_scores = cfa.predict_factors(scaled_df)
+            scores = pd.concat([desc_col, cfa_scores], axis=1)
+            scores.to_excel(
+                f"{out_folder}/cfa/scores.xlsx", header=True, index=False
+            )
+
+        # Plot correlation matrix between all raw variables.
+        corr = pd.DataFrame(efa.corr_, index=df.columns,
+                            columns=df.columns)
+        mask = np.triu(np.ones_like(corr, dtype=bool))
+        f, ax = plt.subplots(figsize=(11, 9))
+        ax = sns.heatmap(
+            corr,
+            mask=mask,
+            cmap="BrBG",
+            vmax=1,
+            vmin=-1,
+            center=0,
+            square=True,
+            annot=True,
+            linewidth=0.5,
+            fmt=".1f",
+            annot_kws={"size": 8},
+        )
+        ax.set_title("Correlation Heatmap of raw {} variables."
+                     .format(test_name))
+        plt.tight_layout()
+        plt.savefig(f"{out_folder}/Heatmap.png")
+        plt.close()
+
+        # Plot EFA loadings in a barplot.
+        efa_loadings = pd.DataFrame(
+            efa.loadings_, columns=columns, index=df.columns
+        )
+        efa_data_to_plot = [efa_loadings[i].values
+                            for i in efa_loadings.columns]
+        if use_only_efa:
+            flexible_barplot(
+                efa_data_to_plot,
+                efa_loadings.index,
+                nfactors,
+                title="Loadings values for the EFA",
+                filename=f"{out_folder}/barplot_loadings.png",
+                ylabel="Loading value",
+            )
+        else:
+            flexible_barplot(
+                efa_data_to_plot,
+                efa_loadings.index,
+                nfactors,
+                title="Loadings values for the EFA",
+                filename=f"{out_folder}/efa/barplot_loadings.png",
+                ylabel="Loading value",
+            )
+
+            # Export table with all estimate from the CFA analysis.
+            stats = cfa.inspect(mode="list", what="est",
+                                information="expected")
+            stats.to_excel(
+                f"{out_folder}/cfa/statistics.xlsx", header=True,
+                index=False
+            )
+
+        # Export EFA loadings for all variables.
+        eigen_table = pd.DataFrame(
+            efa.get_eigenvalues()[0],
+            index=[f"Factor {i}" for i in range(1, len(df.columns) + 1)],
+            columns=["Eigenvalues"],
+        )
+        if use_only_efa:
+            eigen_table.to_excel(
+                f"{out_folder}/eigenvalues.xlsx", header=True, index=True
+            )
+            efa_loadings.to_excel(
+                f"{out_folder}/loadings.xlsx", header=True, index=True
+            )
+        else:
+            eigen_table.to_excel(
+                f"{out_folder}/efa/eigenvalues.xlsx", header=True,
+                index=True
+            )
+            efa_loadings.to_excel(
+                f"{out_folder}/efa/loadings.xlsx", header=True, index=True
+            )
+
+            semopy.semplot(cfa, f"{out_folder}/cfa/semplot.png",
+                           plot_covs=True)
+            semopy.report(cfa, f"{out_folder}/cfa/Detailed_CFA_Report")
+
+    else:
+        print(
+            f"In order to perform a factorial analysis, the Bartlett's "
+            f"test p-value needs to be significant \n"
+            f" (<0.05) and the Keiser-Meyer-Olkin (KMO) Test needs to "
+            f"return a value greater than 0.6. Current\n "
+            f" results : Bartlett's p-value = {p_value} and KMO value = "
+            f"{kmo_model}."
         )
 
 

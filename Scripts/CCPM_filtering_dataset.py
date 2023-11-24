@@ -8,6 +8,7 @@ import sys
 
 from enum import Enum
 import pandas as pd
+from strenum import StrEnum
 import typer
 from typing import List
 from typing_extensions import Annotated
@@ -26,7 +27,7 @@ from CCPM.utils.preprocessing import (
 )
 
 
-class ContextChoices(str, Enum):
+class ContextChoices(StrEnum, Enum):
     paper = "paper"
     poster = "poster"
     talk = "talk"
@@ -274,48 +275,6 @@ def main(
     corr_mat.to_excel(
         f"{out_folder}/correlation_coefficient.xlsx", header=True, index=True
     )
-
-    # Generating basic recommendations. TODO: Set up a easy to interpret
-    # report with useful distribution infos.
-
-
-#    if report:
-#        logging.info('Generating the report...')
-#        pdf = PDF()
-#        pdf.alias_nb_pages()
-#        pdf.set_font('Times', '', 12)
-#
-#        wilk_value = description_df.loc['Wilk',]
-#        with open('basic_stats.txt', 'w') as f:
-#            for i in range(0, len(wilk_value)):
-#                if wilk_value[i] < args.wilk_threshold:
-#                    f.write(f"Variable {wilk_value.index[i]} present a W < "
-#                             "0.95 ({round(wilk_value[i], 2)}), you may "
-#                            f"need to inspect the histogram and ecdf plots to"
-#                             " determine the suitability "
-#                            f"for parametric test. \n")
-#
-#        pdf.print_chapter(1, 'Normality concerns : ', 'basic_stats.txt')
-#        os.remove('basic_stats.txt')
-#
-#        with open('correlation_stats.txt', 'w') as f:
-#            corr = np.triu(corr_mat.to_numpy(), 1)
-#            for i in range(0, corr.shape[0]):
-#                for j in range(0, corr.shape[1]):
-#                    if corr[i, j] > args.corr_threshold:
-#                        f.write(f"Variables {description_df.columns[i]} and "
-#                                 "{description_df.columns[j]} "
-#                                f"present a high pearson correlation "
-#                                 "coefficient > 0.8 ({round(corr[i, j], 3)})."
-#                                 " It may"
-#                                f" be interesting to evaluate the need of "
-#                                 "keeping both variables since they carry "
-#                                f"similar information. \n")
-#
-#        pdf.print_chapter(2, 'Correlation concerns : ',
-#                          'correlation_stats.txt')
-#        os.remove('correlation_stats.txt')
-#        pdf.output(f'{out_folder}/report.pdf', 'F')
 
 
 if __name__ == "__main__":
