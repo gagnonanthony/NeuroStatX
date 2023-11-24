@@ -8,6 +8,7 @@ import sys
 
 from enum import Enum
 import pandas as pd
+from strenum import StrEnum
 import typer
 from typing import List
 from typing_extensions import Annotated
@@ -26,7 +27,7 @@ from CCPM.utils.preprocessing import (
 )
 
 
-class ContextChoices(str, Enum):
+class ContextChoices(StrEnum, Enum):
     paper = "paper"
     poster = "poster"
     talk = "talk"

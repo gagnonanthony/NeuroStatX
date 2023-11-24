@@ -31,6 +31,7 @@ coloredlogs = "^15.0.1"
 tableone = "^0.8.0"
 statannotations = {git = "https://github.com/gagnonanthony/statannotations.git"}
 adjusttext = {git = "https://github.com/Phlya/adjustText.git"}
+strenum = "^0.4.15"
 
 [tool.poetry.scripts]
 CCPM_compute_graph_network = 'Scripts.CCPM_compute_graph_network:app'
