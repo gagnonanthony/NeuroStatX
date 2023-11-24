@@ -29,6 +29,8 @@ networkx = "^3.2.1"
 adjustText = "^0.8"
 typer = "^0.9.0"
 coloredlogs = "^15.0.1"
+tableone = "^0.8.0"
+statannotations = {git = "https://github.com/gagnonanthony/statannotations.git"}
 
 [tool.semantic_release]
 version_variable = [

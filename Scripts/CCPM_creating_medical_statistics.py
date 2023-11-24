@@ -6,7 +6,6 @@ import logging
 import os
 import sys
 
-from rich.progress import Progress, SpinnerColumn, TextColumn
 from tableone import TableOne
 import typer
 from typing import List
@@ -231,66 +230,55 @@ def main(
         logging.getLogger().setLevel(logging.INFO)
         coloredlogs.install(level=logging.INFO)
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        transient=False,
-    ) as progress:
-        task = progress.add_task(description="Running script...", total=None)
-        assert_input(in_dataset)
-        assert_output(overwrite, output)
+    assert_input(in_dataset)
+    assert_output(overwrite, output)
 
-        # Loading dataframe.
-        logging.info("Loading dataset(s)...")
-        if len(in_dataset) > 1:
-            if id_column is None:
-                sys.exit(
-                    "Column name for index matching is required when "
-                    "inputting multiple dataframe."
-                )
-            dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
-            raw_df = merge_dataframes(dict_df, id_column)
-        else:
-            raw_df = load_df_in_any_format(in_dataset[0])
-
-        # Changing binary response for yes or no in categorical variables.
-        logging.info("Changing binary values to yes or no...")
-        if apply_yes_or_no:
-            assert len(categorical_variables) > 0, (
-                "To change values to yes or no, the argument "
-                "--categorical_variables must be provided."
+    # Loading dataframe.
+    logging.info("Loading dataset(s)...")
+    if len(in_dataset) > 1:
+        if id_column is None:
+            sys.exit(
+                "Column name for index matching is required when "
+                "inputting multiple dataframe."
             )
-            raw_df = binary_to_yes_no(raw_df, categorical_variables)
+        dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
+        raw_df = merge_dataframes(dict_df, id_column)
+    else:
+        raw_df = load_df_in_any_format(in_dataset[0])
 
-        # Changing column names.
-        logging.info("Changing column names...")
-        col_index = get_column_indices(raw_df, categorical_variables)
-        new_df = rename_columns(raw_df, raw_variables, variable_names)
-        new_cat_names = list(new_df.columns[col_index])
-
-        # Creating descriptive table.
-        logging.info("Creating table...")
-        mytable = TableOne(new_df, columns=variable_names,
-                           categorical=new_cat_names)
-
-        # Exporting table in desired output format.
-        logging.info("Exporting table...")
-        _, ext = os.path.splitext(output)
-        if ext == ".csv":
-            mytable.to_csv(output)
-        elif ext == ".xlsx":
-            mytable.to_excel(output)
-        elif ext == ".html":
-            mytable.to_html(output)
-        elif ext == ".json":
-            mytable.to_json(output)
-        elif ext == ".tex":
-            mytable.to_latex(output)
-
-        progress.update(
-            task, completed=True, description="[green]Table generated. "
-                                              "Have fun! :beer:"
+    # Changing binary response for yes or no in categorical variables.
+    logging.info("Changing binary values to yes or no...")
+    if apply_yes_or_no:
+        assert len(categorical_variables) > 0, (
+            "To change values to yes or no, the argument "
+            "--categorical_variables must be provided."
         )
+        raw_df = binary_to_yes_no(raw_df, categorical_variables)
+
+    # Changing column names.
+    logging.info("Changing column names...")
+    col_index = get_column_indices(raw_df, categorical_variables)
+    new_df = rename_columns(raw_df, raw_variables, variable_names)
+    new_cat_names = list(new_df.columns[col_index])
+
+    # Creating descriptive table.
+    logging.info("Creating table...")
+    mytable = TableOne(new_df, columns=variable_names,
+                       categorical=new_cat_names)
+
+    # Exporting table in desired output format.
+    logging.info("Exporting table...")
+    _, ext = os.path.splitext(output)
+    if ext == ".csv":
+        mytable.to_csv(output)
+    elif ext == ".xlsx":
+        mytable.to_excel(output)
+    elif ext == ".html":
+        mytable.to_html(output)
+    elif ext == ".json":
+        mytable.to_json(output)
+    elif ext == ".tex":
+        mytable.to_latex(output)
 
 
 if __name__ == "__main__":
