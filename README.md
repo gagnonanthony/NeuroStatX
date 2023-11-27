@@ -1,6 +1,6 @@
 [![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![coverage](https://raw.githubusercontent.com/gagnonanthony/CCPM/main/coverage.svg)
+[![codecov](https://codecov.io/gh/gagnonanthony/CCPM/graph/badge.svg?token=7P0QUI6B8U)](https://codecov.io/gh/gagnonanthony/CCPM)
 
 ![CCPM](https://user-images.githubusercontent.com/79757265/225111405-0a5e9a60-4702-4aa7-89fc-d353124dfb63.png)
 
