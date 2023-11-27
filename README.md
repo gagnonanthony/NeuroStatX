@@ -1,46 +1,58 @@
 [![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![coverage](https://raw.githubusercontent.com/gagnonanthony/CCPM/main/coverage.svg)
+[![codecov](https://codecov.io/gh/gagnonanthony/CCPM/graph/badge.svg?token=7P0QUI6B8U)](https://codecov.io/gh/gagnonanthony/CCPM)
 
 ![CCPM](https://user-images.githubusercontent.com/79757265/225111405-0a5e9a60-4702-4aa7-89fc-d353124dfb63.png)
 
 CCPM is a small toolbox to evaluate cognitive profile based on cognitive and behavioral data. 
 
-Installation
-============
-To install this library, please do the following commands (virtual python
-environment are recommended (e.g. virtualenv)) :
+## Installation
 
-``git clone https://github.com/gagnonanthony/CCPM.git``
+This library uses *poetry* to manage dependencies. To install it, use pipx with
+the following command:
 
-``cd CCPM``
+```
+pip install pipx
+pipx ensurepath
+pipx install poetry
+```
 
-``pip install -r requirements.txt``
+> [!WARNING]
+> Poetry is creating is own virtual environment by default. Therefore, be sure
+> to deactivate all of your virtual environment before continuing on with the
+> installation.
 
-Temporarily, install semopy separately due to the legacy use of sklearn (an upcoming PR in pip will allow
-to ignore package dependencies directly in requirements.txt). Similar case for statannotations. 
+To install CCPM and all of its dependencies, run this set of commands:
 
-``pip install semopy==2.3.9 --no-deps``
+```
+git clone https://github.com/gagnonanthony/CCPM.git
+cd CCPM/
+poetry install
+```
 
-``pip install statannotations==0.5.0 --no-deps``
+> [!NOTE]
+> The `poetry install` command will install all required dependencies as well
+> as setting up a virtual environment. To access the library environment, use:
+> `poetry shell`. This will activate the project's python environment in your
+> current shell.
+> To access your environment from other directories, use this command (from
+> within the project directory):
+```
+ENVPATH=$(poetry env info --path)
+echo 'export ENVPATH=$ENVPATH' >> ~/.bashrc
+```
+> Restart your terminal. You should now be able to activate the poetry
+> environment by using: `source $ENVPATH/bin/activate` from anywhere.
 
-``pip install -e .``
+> [!IMPORTANT]
+> ## INSTALLING GRAPHVIZ
+> Graphviz is an external dependencies required to visualize semplot from the
+> semopy package used within CCPM. If you do not have Graphviz installed on
+> your machine, please run the following if you are on Linux `sudo apt get graphviz`
+> or `brew install graphviz` if you are on MacOS. 
 
-Installing Graphviz
-===================
-In order to correctly use the visualisation function of ``semopy``, it
-is suggested to install Graphviz in your base system.
+## License
 
-_FOR MAC USERS:_
-
-``brew install graphviz``
-
-_FOR LINUX USERS:_
-
-``sudo apt get graphviz``
-
-License
-============
 ``CCPM`` is licensed under the terms of the MIT license. See the file
 "LICENSE" for information on the history of this software, terms & conditions
 for usage, and a DISCLAIMER OF ALL WARRANTIES.
