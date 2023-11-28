@@ -132,7 +132,7 @@ def flexible_barplot(
     plt.close()
 
 
-def generate_coef_plot(df, cinterval, pval, coefname, varname, output):
+def generate_coef_plot(df, permutation, pval, coefname, varname, output):
     """
     Function to generate a coefficient plot.
 
@@ -142,24 +142,32 @@ def generate_coef_plot(df, cinterval, pval, coefname, varname, output):
         varname (_type_): _description_
         output (_type_): _description_
     """
-    # Compute confidence interval from permutation testing.
-    ci = abs(0.1 * np.std(cinterval, axis=0) / np.mean(cinterval, axis=0))
+    # Compute standard deviation from permutation testing.
+    stdev = np.std(permutation, axis=0)
+
+    # Creating list of colors.
+    colors = []
+    for p, c in zip(pval, df[coefname]):
+        if p < 0.05 and c > 0:
+            colors.append('green')
+        elif p < 0.05 and c < 0:
+            colors.append('red')
+        else:
+            colors.append('black')
 
     fig, ax = plt.subplots(figsize=(12, 7))
-    df.plot(x=varname, y=coefname, kind="bar", ax=ax,
-            color='none', legend=False)
+    bar = ax.bar(x=varname, height=coefname, data=df, color='none')
     ax.set_ylabel("Coefficient")
     ax.set_xlabel("Variables")
+    ax.bar_label(bar, color='black', fontsize=15, label_type='edge',
+                 labels=['*' if p < 0.05 else '' for p in pval],
+                 padding=3)
+    ax.axhline(y=0, color="lightgrey", linestyle="--", linewidth=1)
     ax.scatter(x=np.arange(df.shape[0]), marker="s", s=20, y=df[coefname],
-               color="black")
-    for i, p in zip(ax.patches, pval):
-        if p < 0.05:
-            ax.text(i.get_x() + i.get_width() / 2.,
-                    i.get_y(),
-                    "*", fontsize=10, horizontalalignment="center")
-    ax.axhline(y=0, color="black", linestyle="--", linewidth=1)
-    ax.fill_between(df[varname], -ci, ci, alpha=0.2, color="lightgreen")
-    ax.xaxis.set_ticks_position("none")
+               color=colors)
+    ax.fill_between(df[varname], -stdev, stdev, alpha=0.2, color="lightgreen")
+    ax.set_xticklabels(df[varname], fontdict={'fontsize': 5, 'rotation': 90,
+                                              'horizontalalignment': 'center'})
 
     plt.tight_layout()
     plt.savefig(f"{output}")

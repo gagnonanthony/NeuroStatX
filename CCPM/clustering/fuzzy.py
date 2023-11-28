@@ -202,7 +202,7 @@ def fuzzyCmeans(
         metric=metric,
     )
 
-    multiprocessing.set_start_method("spawn")
+    multiprocessing.set_start_method("spawn", force=True)
     pool = multiprocessing.Pool(processes=processes)
     if verbose:
         results = p_map(process_cluster_partial,

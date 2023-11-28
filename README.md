@@ -36,18 +36,19 @@ poetry install
 > `poetry shell`. This will activate the project's python environment in your
 > current shell.
 > To access your environment from other directories, use this command (from
-> within the project directory):
+> within the project directory), you might need to modify ~/.bashrc to your 
+> specific login shell (ex: MacOS sometimes uses zsh, so ~/.zshrc):
 ```
 ENVPATH=$(poetry env info --path)
-echo 'export ENVPATH=$ENVPATH' >> ~/.bashrc
+echo "export CCPMPATH=${ENVPATH}" >> ~/.bashrc
 ```
 > Restart your terminal. You should now be able to activate the poetry
 > environment by using: `source $ENVPATH/bin/activate` from anywhere.
 
 > [!IMPORTANT]
-> ## INSTALLING GRAPHVIZ
+> ## Installing Graphviz
 > Graphviz is an external dependencies required to visualize semplot from the
-> semopy package used within CCPM. If you do not have Graphviz installed on
+> ``semopy`` package used within CCPM. If you do not have Graphviz installed on
 > your machine, please run the following if you are on Linux `sudo apt get graphviz`
 > or `brew install graphviz` if you are on MacOS. 
 

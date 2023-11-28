@@ -44,12 +44,15 @@ CCPM_filtering_dataset = 'Scripts.CCPM_filtering_dataset:app'
 CCPM_fuzzy_clustering = 'Scripts.CCPM_fuzzy_clustering:app'
 CCPM_graph_metrics = 'Scripts.CCPM_graph_metrics:app'
 CCPM_predict_fuzzy_membership = 'Scripts.CCPM_predict_fuzzy_membership:app'
+CCPM_set_nodes_attributes = 'Scripts.CCPM_set_nodes_attributes:app'
+CCPM_plsr = 'Scripts.CCPM_plsr:app'
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^7.3.2"
 pytest = "^7.4.3"
 flake8 = "^6.1.0"
 coverage-badge = "^1.1.0"
+ipykernel = "^6.27.1"
 
 [build-system]
 requires = ["poetry-core"]

@@ -13,10 +13,11 @@ from sklearn.utils import indexable, check_random_state
 from sklearn.utils.metaestimators import _safe_split
 from sklearn.utils.parallel import Parallel, delayed
 from sklearn.model_selection._validation import _shuffle
+from strenum import StrEnum
 from tqdm import tqdm
 
 
-class ScoringMethod(str, Enum):
+class ScoringMethod(StrEnum, Enum):
     accuracy = "accuracy"
     balanced_accuracy = "balanced_accuracy"
     top_k_accuracy = "top_k_accuracy"
@@ -168,7 +169,7 @@ def _permutation_scorer(estimator,
         X_test, y_test = _safe_split(estimator, X, Y, test, train)
         estimator.fit(X_train, y_train, **fit_params)
         avg_score.append(scorer(estimator, X_test, y_test))
-        coefficients.append(estimator.coef_)
+        coefficients.append(estimator.coef_.T)
 
     return np.mean(avg_score), np.mean(np.array(coefficients), axis=0)
 
@@ -216,7 +217,7 @@ def permutation_test(estimator,
     perm_score = np.array(perm_score)
     perm_coef = np.array(perm_coef)
     score_pvalue = (np.sum(perm_score >= score[0]) + 1) / (n_permutations + 1)
-    coef_pvalue = (np.sum(perm_coef >= score[1],
+    coef_pvalue = (np.sum(abs(perm_coef) >= abs(score[1]),
                           axis=0) + 1) / (n_permutations + 1)
 
     return score, perm_score, score_pvalue, perm_coef, coef_pvalue

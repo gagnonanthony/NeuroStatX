@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from enum import Enum
+from strenum import StrEnum
 
 
-class DistanceMetrics(str, Enum):
+class DistanceMetrics(StrEnum, Enum):
     braycurtis = ("braycurtis",)
     canberra = ("canberra",)
     chebyshev = ("chebyshev",)

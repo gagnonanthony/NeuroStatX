@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 from matplotlib.cm import ScalarMappable
 import matplotlib
 import seaborn as sns
+from strenum import StrEnum
 
 from CCPM.network.utils import filter_node_centroids, filter_node_subjects
 
 
-class NetworkLayout(str, Enum):
+class NetworkLayout(StrEnum, Enum):
     KamadaKawai = ("kamada_kawai_layout",)
     Spectral = ("spectral_layout",)
     Spring = "spring_layout"

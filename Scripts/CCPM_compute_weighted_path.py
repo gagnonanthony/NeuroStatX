@@ -242,32 +242,34 @@ def main(
             verbose=True,
         )
 
-        # Plotting distribution.
-        plt.rcParams["figure.figsize"] = [12, 7]
-        plt.rcParams["figure.autolayout"] = True
-        sns.set_style("white")
-        sns.set_context("poster", 0.5)
+        with plt.rc_context(
+            {"font.size": 10, "font.weight": "bold",
+             "axes.titleweight": "bold"}
+        ):
+            sns.set_style("white")
+            sns.set_context("poster", 0.5)
 
-        fig = plt.figure(figsize=(12, 7))
-        ax = fig.add_subplot()
+            fig = plt.figure(figsize=(12, 7))
+            ax = fig.add_subplot()
 
-        # Plotting 1st highest membership value.
-        sns.histplot(data=null_dist, stat="density", bins=50, kde=True, ax=ax)
-        ax.set_xlabel("Average weighted path metric.")
-        ax.axvline(x=avg_weighted_path, ymin=0, ymax=1)
+            # Plotting 1st highest membership value.
+            sns.histplot(data=null_dist, stat="density", bins=50, kde=True,
+                         ax=ax)
+            ax.set_xlabel("Average weighted path metric.")
+            ax.axvline(x=avg_weighted_path, ymin=0, ymax=1)
 
-        # Annotating graph with p-value.
-        ax.annotate(
-            "p = {:.3f}".format(pvalue),
-            xy=((0.75 * ax.get_xlim()[1]), (0.8 * ax.get_ylim()[1])),
-            fontsize=20,
-            ha="center",
-            va="center",
-        )
+            # Annotating graph with p-value.
+            ax.annotate(
+                "p = {:.3f}".format(pvalue),
+                xy=((0.75 * ax.get_xlim()[1]), (0.8 * ax.get_ylim()[1])),
+                fontsize=20,
+                ha="center",
+                va="center",
+            )
 
-        plt.tight_layout()
-        plt.savefig(f"{out_folder}/results_{var}.png")
-        plt.close()
+            plt.tight_layout()
+            plt.savefig(f"{out_folder}/results_{var}.png")
+            plt.close()
 
         out = pd.DataFrame(
             null_dist,

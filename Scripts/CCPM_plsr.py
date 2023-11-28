@@ -165,7 +165,20 @@ def main(
     statistically significant. The script will compute the p-value for the
     permutation testing using the R2 score by default. However, the user can
     also choose multiple scores to compute the p-value. The available scores
-    can be seen in [1].
+    can be seen in [1]. The equation used to compute the single-tailed p-value
+    is:
+        \b
+        p-value = ∑(score_perm >= score) / (nb_permutations)
+    \b
+    COEFFICIENT SIGNIFICANCE
+    ------------------------
+    The script will also compute the p-value for the coefficients using the
+    permutation testing. The p-value for the coefficients is computed by
+    comparing the coefficients obtained from the PLSR model with the
+    coefficients obtained from the permutation testing. The equation used to
+    compute the two-tailed p-value is:
+        \b
+        p-value = ∑(abs(coef_perm) >= abs(coef)) / (nb_permutations)
     \b
     REFERENCES
     ----------
@@ -242,7 +255,7 @@ def main(
     # Exporting statistics.
     logging.info("Exporting statistics.")
     coef = {
-        f'coef{i+1}': plsr.coef_[:, i] for i in range(0, plsr.coef_.shape[1])}
+        f'coef{i+1}': plsr.coef_[i, :] for i in range(0, plsr.coef_.shape[0])}
     coef['varname'] = attr_df.columns
     coef_df = pd.DataFrame(coef)
     coef_df.to_excel(f"{out_folder}/Coefficients/coef_df.xlsx")
@@ -303,7 +316,8 @@ def main(
                 coef_pval[:, i],
                 coefname=f'coef{i+1}',
                 varname='varname',
-                output=f"{out_folder}/Coefficients/coef_plot_cluster_{i}.png")
+                output=f"{out_folder}/Coefficients/coef_plot_cluster_{i+1}.png"
+            )
 
 
 if __name__ == "__main__":

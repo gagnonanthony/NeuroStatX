@@ -25,7 +25,7 @@ def test_help():
 def test_set_nodes_attributes():
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
-    in_df = os.path.join(get_home(), "data/clusters_membership_3.xlsx")
+    in_df = os.path.join(get_home(), "data/clustering_data.xlsx")
     out_file = os.path.join(get_home(), "data/graph_with_attributes.gexf")
 
     ret = runner.invoke(
@@ -36,7 +36,11 @@ def test_set_nodes_attributes():
             "--in-dataset",
             in_df,
             "--labels",
-            "Cluster #1",
+            "gestage",
+            "--labels",
+            "age",
+            "--labels",
+            "iq",
             "--id-column",
             "subjectkey",
             "--out-file",

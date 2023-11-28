@@ -147,6 +147,7 @@ def main(
     if len(labels) == 1:
         filename, ext = os.path.splitext(labels[0])
         if ext == '.txt':
+            print('yeah')
             with open(labels[0], 'r') as f:
                 labels = f.read().splitlines()
 
