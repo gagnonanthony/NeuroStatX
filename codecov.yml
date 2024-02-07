@@ -1,2 +1,31 @@
-ignore:
-  - "Scripts/tests/*”
+coverage:
+  status:
+    project:
+      default:
+        target: 75%
+        threshold: 2%
+        branches: 
+          - main
+        if_ci_failed: error
+        only_pulls: false
+    patch:
+      default:
+        target: 90%
+        branches: 
+          - main
+        if_ci_failed: error
+        only_pulls: false
+
+component_management:
+  individual_components:
+    - component_id: ccpm_scripts
+      name: Scripts
+      paths:
+        - Scripts/
+    - component_id: ccpm_library
+      name: Library
+      paths:
+        - CCPM/
+
+comment:
+  layout: "condensed_header, diff, components"
