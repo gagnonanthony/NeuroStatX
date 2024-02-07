@@ -434,22 +434,11 @@ files = [
     {file = "coverage-7.4.1.tar.gz", hash = "sha256:1ed4b95480952b1a26d863e546fa5094564aa0065e1e5f0d4d0041f293251d04"},
 ]
 
+[package.dependencies]
+tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.11.0a6\" and extra == \"toml\""}
+
 [package.extras]
 toml = ["tomli"]
-
-[[package]]
-name = "coverage-badge"
-version = "1.1.0"
-description = "Generate coverage badges for Coverage.py."
-optional = false
-python-versions = "*"
-files = [
-    {file = "coverage-badge-1.1.0.tar.gz", hash = "sha256:c824a106503e981c02821e7d32f008fb3984b2338aa8c3800ec9357e33345b78"},
-    {file = "coverage_badge-1.1.0-py2.py3-none-any.whl", hash = "sha256:e365d56e5202e923d1b237f82defd628a02d1d645a147f867ac85c58c81d7997"},
-]
-
-[package.dependencies]
-coverage = "*"
 
 [[package]]
 name = "cycler"
@@ -1901,6 +1890,24 @@ tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
+name = "pytest-cov"
+version = "4.1.0"
+description = "Pytest plugin for measuring coverage."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytest-cov-4.1.0.tar.gz", hash = "sha256:3904b13dfbfec47f003b8e77fd5b589cd11904a21ddf1ab38a64f204d6a10ef6"},
+    {file = "pytest_cov-4.1.0-py3-none-any.whl", hash = "sha256:6ba70b9e97e69fcc3fb45bfeab2d0a138fb65c4d0d6a41ef33983ad114be8c3a"},
+]
+
+[package.dependencies]
+coverage = {version = ">=5.2.1", extras = ["toml"]}
+pytest = ">=4.6"
+
+[package.extras]
+testing = ["fields", "hunter", "process-tests", "pytest-xdist", "six", "virtualenv"]
+
+[[package]]
 name = "python-dateutil"
 version = "2.8.2"
 description = "Extensions to the standard Python datetime module"
@@ -2692,4 +2699,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "d554141eb3099d454334e2ca4760c0baa2da85e58da604be5c8bfe7f00f7b327"
+content-hash = "f66b661100217e1d73f2507a5ca6e64bb035fe9f00bf29adc8c9df751c657542"

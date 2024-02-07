@@ -1,4 +1,4 @@
-name: Build & Development
+name: Continuous Integration
 
 on:
   pull_request:
@@ -11,10 +11,27 @@ on:
       - 'setup.py'
       - '!.github/**'
       - '.github/workflows/*.yml'
+  push:
+    branches:
+      - main
 
 jobs:
-  build:
+  Linting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setting up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name : Install flake8
+        run: |
+          pip install flake8
+      - name: Lint with flake8
+        run: |
+          flake8 . --count --ignore=W605 --show-source --statistics
 
+  Building:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -38,20 +55,34 @@ jobs:
       - name: Install CCPM & dependencies
         run: |
           poetry install --with=dev
-      - name: Lint with flake8
+
+  Testing:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Graphviz
+        uses: tlylt/install-graphviz@v1.0.0
+      - name: Setting up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+            version: 1.7.1
+            virtualenvs-create: true
+            installer-parallel: true
+      - name: Install CCPM & dependencies
         run: |
-          poetry run flake8 . --count --ignore=W605 --show-source --statistics
+          poetry install --with=dev
       - name: Pytest
         run: |
-          poetry run coverage run -m pytest --verbose && \
-          poetry run coverage report -m && \
-          poetry run coverage xml && \
-          poetry run coverage-badge -f -o coverage.svg
-
-  coverage:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
+          poetry shell
+          pytest --cov=CCPM --cov-report=xml
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
         env:
