@@ -73,9 +73,7 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init,
             error=error,
             maxiter=maxiter,
             metric=metric,
-            init=init_mat,
-
-        )
+            init=init_mat)
 
         cluster_membership = np.argmax(u, axis=0)
 
@@ -139,6 +137,7 @@ def fuzzyCmeans(
     init=None,
     metric="euclidean",
     output="./",
+    processes=4,
     verbose=False,
 ):
     """
@@ -163,6 +162,8 @@ def fuzzyCmeans(
                                         intra/inter subjects/clusters distance.
                                         Defaults to euclidean.
         output (String, optional):      Output folder. Defaults to './'.
+        processes (int, optional):      Number of processes to use for
+                                        multiprocessing. Defaults to 4.
 
     Returns:
         cntr:                           List of cluster centroids arrays for
@@ -201,7 +202,8 @@ def fuzzyCmeans(
         metric=metric,
     )
 
-    pool = multiprocessing.Pool()
+    multiprocessing.set_start_method("spawn", force=True)
+    pool = multiprocessing.Pool(processes=processes)
     if verbose:
         results = p_map(process_cluster_partial, range(2, num_clusters + 1))
     else:

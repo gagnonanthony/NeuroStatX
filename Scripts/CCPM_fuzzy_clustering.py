@@ -133,6 +133,14 @@ def main(
             rich_help_panel="Essential Files Options",
         ),
     ] = "./fuzzy_results/",
+    processes: Annotated[
+        int,
+        typer.Option(
+            help="Number of processes to use to compute the null distribution",
+            show_default=True,
+            rich_help_panel="Computational Options",
+        ),
+    ] = 4,
     verbose: Annotated[
         bool,
         typer.Option(
@@ -375,6 +383,7 @@ def main(
         init=init_mat,
         metric=metric,
         output=out_folder,
+        processes=processes,
         verbose=verbose,
     )
 

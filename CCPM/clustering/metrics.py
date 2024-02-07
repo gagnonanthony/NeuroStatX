@@ -210,6 +210,7 @@ def find_optimal_gap(gap, sk):
                 break
         else:
             optimal = i
+            break
 
     return optimal
 

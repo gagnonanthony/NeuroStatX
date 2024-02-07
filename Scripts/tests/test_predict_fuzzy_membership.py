@@ -39,7 +39,7 @@ def test_execution_predict_fuzzy():
             "--in-dataset",
             in_dataset,
             "--desc-columns",
-            1,
+            4,
             "--id-column",
             "subjectkey",
             "-f",

@@ -34,7 +34,7 @@ def test_execution_fuzzy():
             "--in-dataset",
             in_dataset,
             "--desc-columns",
-            1,
+            4,
             "--id-column",
             "subjectkey",
             "--k",
