@@ -130,3 +130,45 @@ def flexible_barplot(
     plt.tight_layout()
     plt.savefig(f"{filename}", dpi=300, bbox_inches="tight")
     plt.close()
+
+
+def generate_coef_plot(df, permutation, pval, coefname, varname, output):
+    """
+    Function to generate a coefficient plot.
+
+    Args:
+        df (_type_): _description_
+        coefname (_type_): _description_
+        varname (_type_): _description_
+        output (_type_): _description_
+    """
+    # Compute standard deviation from permutation testing.
+    stdev = np.std(permutation, axis=0)
+
+    # Creating list of colors.
+    colors = []
+    for p, c in zip(pval, df[coefname]):
+        if p < 0.05 and c > 0:
+            colors.append('green')
+        elif p < 0.05 and c < 0:
+            colors.append('red')
+        else:
+            colors.append('black')
+
+    fig, ax = plt.subplots(figsize=(12, 7))
+    bar = ax.bar(x=varname, height=coefname, data=df, color='none')
+    ax.set_ylabel("Coefficient")
+    ax.set_xlabel("Variables")
+    ax.bar_label(bar, color='black', fontsize=15, label_type='edge',
+                 labels=['*' if p < 0.05 else '' for p in pval],
+                 padding=3)
+    ax.axhline(y=0, color="lightgrey", linestyle="--", linewidth=1)
+    ax.scatter(x=np.arange(df.shape[0]), marker="s", s=20, y=df[coefname],
+               color=colors)
+    ax.fill_between(df[varname], -stdev, stdev, alpha=0.2, color="lightgreen")
+    ax.set_xticklabels(df[varname], fontdict={'fontsize': 5, 'rotation': 90,
+                                              'horizontalalignment': 'center'})
+
+    plt.tight_layout()
+    plt.savefig(f"{output}")
+    plt.close()

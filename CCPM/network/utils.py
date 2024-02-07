@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import networkx as nx
 import numpy as np
 import pandas as pd
 
@@ -91,3 +92,83 @@ def extract_subject_percentile(mat, percentile):
         label_dict[f"c{i+1}"] = np.where(mat[i, :] > value, i + 1, 0)
 
     return label_dict
+
+
+def construct_attributes_dict(df, labels, id_column):
+    """
+    Function to construct a dictionary of nodes' attributes from a DataFrame.
+
+    Args:
+        df (pd.DataFrame):      Pandas DataFrame containing nodes' attributes.
+        labels (List):          List of labels to add as nodes' attributes.
+        id_column (str):        Name of the column containing the subject's ID
+                                tag.
+
+    Returns:
+        attributes_dict:        Dictionary of nodes' attributes.
+    """
+
+    # Set index to id_column.
+    df.set_index(id_column, inplace=True)
+
+    # Keeping only columns specified in labels.
+    data_to_add = df[labels]
+
+    # Transform to dictionary.
+    attributes_dict = data_to_add.to_dict(orient="index")
+
+    return attributes_dict
+
+
+def fetch_attributes_df(G, attributes=None):
+    """
+    Function to fetch nodes' attributes from a graph as a DataFrame.
+
+    Args:
+        G (NetworkX Graph):     NetworkX Graph object.
+        attributes (List):      List of attributes to fetch.
+
+    Returns:
+        df: pd.DataFrame        Pandas DataFrame containing nodes' attributes.
+    """
+
+    # Filter out nodes that are not subjects.
+    sub_node = nx.subgraph_view(G, filter_node_subjects)
+    d = {n: G.nodes[n] for n in sub_node}
+
+    # Filter for selected attributes.
+    if len(attributes) > 0:
+        d = {k: {k2: v2 for k2, v2 in v.items() if k2 in attributes}
+             for k, v in d.items()}
+    else:
+        d = {k: {k2: v2 for k2, v2 in v.items() if k2 != 'label'}
+             for k, v in d.items()}
+
+    # Create df.
+    df = pd.DataFrame.from_dict(d, orient="index")
+
+    return df
+
+
+def fetch_edge_data(G, weight='membership'):
+    """
+    Function to fetch edge's data from a graph as a DataFrame.
+
+    Args:
+        G (_type_): _description_
+        weight (str, optional): _description_. Defaults to 'membership'.
+    """
+
+    # Fetch the number of cluster.
+    cntr_node = nx.subgraph_view(G, filter_node_centroids)
+    sub_node = nx.subgraph_view(G, filter_node_subjects)
+
+    # Get adjacency matrix.
+    adj = np.delete(
+        nx.to_numpy_array(G, weight=weight),
+        [i for i in range(1, len(cntr_node) + 1)],
+        axis=0)
+    df = pd.DataFrame(adj[:, 1:(len(cntr_node) + 1)], index=sub_node,
+                      columns=cntr_node)
+
+    return df
