@@ -1,4 +1,7 @@
 version: 2
+registries: "*"
+    password: ${{ secrets.CODECOV_TOKEN }}
+
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -7,4 +10,3 @@ updates:
       - "Github Actions Update"
     schedule:
       interval: "daily"
-    password: ${{ secrets.CODECOV_TOKEN }}
