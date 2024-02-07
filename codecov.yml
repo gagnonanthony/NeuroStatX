@@ -1,2 +1,17 @@
-ignore:
-  - "Scripts/tests/*”
+coverage:
+  status:
+    project:
+      default:
+        target: 75%
+        threshold: 2%
+        branches: 
+          - main
+        if_ci_failed: error
+        only_pulls: false
+    patch:
+      default:
+        target: 90%
+        branches: 
+          - master
+        if_ci_failed: error
+        only_pulls: false
