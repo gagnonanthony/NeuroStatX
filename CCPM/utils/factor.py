@@ -8,9 +8,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import semopy
 from sklearn.model_selection import train_test_split
+from strenum import StrEnum
 
 
-class RotationTypes(str, Enum):
+class RotationTypes(StrEnum, Enum):
     promax = "promax"
     oblimin = "oblimin"
     varimax = "varimax"
@@ -20,7 +21,7 @@ class RotationTypes(str, Enum):
     equamax = "equamax"
 
 
-class MethodTypes(str, Enum):
+class MethodTypes(StrEnum, Enum):
     minres = "minres"
     ml = "ml"
     principal = "principal"

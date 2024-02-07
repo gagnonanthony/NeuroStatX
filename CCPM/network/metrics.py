@@ -233,6 +233,7 @@ def weightedpath(
 
         # Opening multiprocessing pool.
         logging.info("Computing null distribution.")
+        multiprocessing.set_start_method("spawn", force=True)
         pool = multiprocessing.Pool(processes=processes)
 
         # Initiating processing.
