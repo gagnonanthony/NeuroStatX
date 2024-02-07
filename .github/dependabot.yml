@@ -7,5 +7,4 @@ updates:
       - "Github Actions Update"
     schedule:
       interval: "daily"
-
-password: ${{ secrets.CODECOV_TOKEN }}
+    password: ${{ secrets.CODECOV_TOKEN }}
