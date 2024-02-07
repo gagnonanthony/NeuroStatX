@@ -12,6 +12,20 @@ coverage:
       default:
         target: 90%
         branches: 
-          - master
+          - main
         if_ci_failed: error
         only_pulls: false
+
+component_management:
+  individual_components:
+    - component_id: ccpm_scripts
+      name: Scripts
+      paths:
+        - Scripts/
+    - component_id: ccpm_library
+      name: Library
+      paths:
+        - CCPM/
+
+comment:
+  layout: "condensed_header, diff, components"

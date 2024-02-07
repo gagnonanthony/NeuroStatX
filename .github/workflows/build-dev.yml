@@ -47,8 +47,12 @@ jobs:
           poetry run coverage report -m && \
           poetry run coverage xml && \
           poetry run coverage-badge -f -o coverage.svg
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        
