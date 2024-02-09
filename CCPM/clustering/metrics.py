@@ -65,7 +65,7 @@ def compute_knee_location(lst, direction="decreasing"):
     return elbow
 
 
-def compute_sse(X, cntr, umat):
+def compute_sse(X, cntr, labels):
     """
     Function to compute within cluster sum of square error (WSS).
     Adapted from :
@@ -74,43 +74,16 @@ def compute_sse(X, cntr, umat):
     Args:
         X (Array):          Original data (S, N)
         cntr (Array):       Centroid points (N, F)
-        umat (Array):       Membership array (S, N)
+        labels (Array):     Discrete labels (S,)
 
     Returns:
         WSS:                Within Sum-of-Squares Error (WSS)
     """
 
-    labels = np.argmax(umat, axis=0)
-
     WSS = 0
     for k in np.unique(labels):
         data_k = X[labels == k]
         WSS += np.sum([np.abs(data_k - cntr[k]) ** 2])
-
-    return WSS
-
-
-def compute_sse_from_dmat(dmat, umat):
-    """
-    ** Not to be used for now **
-    Function to compute within cluster sum of square error (WSS). It uses the
-    precomputed distance matrix from cmeans().
-
-    Args:
-        dmat (Array):       Distance matrix (S, N)
-        umat (Array):       Membership matrix (S, N)
-
-    Returns:
-        WSS:             Within Sum-of-Squares Error (WSS)
-    """
-
-    min_dist = np.min(dmat, axis=0)
-    labels = np.argmax(umat, axis=0)
-
-    WSS = 0
-    for k in np.unique(labels):
-        data_k = min_dist[labels == k]
-        WSS += (data_k**2).sum()
 
     return WSS
 
@@ -174,7 +147,8 @@ def compute_gap_stats(
             init=init,
         )
 
-        refDisps[i] = compute_sse(randomRef, cntr, u)
+        labels = np.argmax(u, axis=0)
+        refDisps[i] = compute_sse(randomRef, cntr, labels)
 
     gap = np.mean(np.log(refDisps)) - np.log(wss)
 
