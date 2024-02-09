@@ -52,6 +52,9 @@ pytest-cov = "^4.1.0"
 flake8 = "^6.1.0"
 ipykernel = "^6.27.1"
 
+[tool.pytest.ini_options]
+pythonpath = "CCPM"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
