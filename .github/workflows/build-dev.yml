@@ -81,7 +81,7 @@ jobs:
           poetry install --with=dev
       - name: Pytest
         run: |
-          poetry run pytest --cov=CCPM,Scripts --cov-report=xml
+          poetry run pytest --cov=./ --cov-report=xml
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
         env:
