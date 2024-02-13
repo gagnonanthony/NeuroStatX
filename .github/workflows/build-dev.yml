@@ -79,7 +79,9 @@ jobs:
       - name: Install CCPM & dependencies
         run: |
           poetry install --with=dev
-          wget -O ${GITHUB_WORKSPACE}/.cache/gdown/cookies.txt "https://www.dropbox.com/scl/fi/v2xzm8yrnaonaludeuthq/cookies.txt?rlkey=gy5qlhhbsj3fmf87lm0snfxs0&dl=0"
+          # Weird workaround to get gdown to work.
+          poetry run gdown -V
+          wget -O ~/.cache/gdown/cookies.txt "https://www.dropbox.com/scl/fi/v2xzm8yrnaonaludeuthq/cookies.txt?rlkey=gy5qlhhbsj3fmf87lm0snfxs0&dl=0"
       - name: Pytest
         run: |
           poetry run pytest --cov=./ --cov-report=xml
