@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ccpm"
+name = "CCPM"
 version = "0.1.0"
 description = "Children Cognitive Profiles Mapping Toolbox (CCPM)"
 authors = ["Anthony Gagnon <anthony.gagnon7@usherbrooke.ca>"]
