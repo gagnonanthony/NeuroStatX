@@ -79,7 +79,8 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init,
 
         ss, chi, dbi = compute_evaluation_metrics(X, cluster_membership,
                                                   metric=metric)
-        wss = compute_sse(X, cntr, u)
+        labels = np.argmax(u, axis=0)
+        wss = compute_sse(X, cntr, labels)
 
         gap, sk = compute_gap_stats(
             X,

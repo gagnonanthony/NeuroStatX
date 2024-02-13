@@ -152,7 +152,8 @@ def fetch_attributes_df(G, attributes=None):
 
 def fetch_edge_data(G, weight='membership'):
     """
-    Function to fetch edge's data from a graph as a DataFrame.
+    Function to fetch edge's data from a graph as a DataFrame. This method
+    works only if the graph as been created via this package.
 
     Args:
         G (_type_): _description_
