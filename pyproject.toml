@@ -31,6 +31,7 @@ tableone = "^0.8.0"
 statannotations = {git = "https://github.com/gagnonanthony/statannotations.git"}
 adjusttext = "^1.0.4"
 strenum = "^0.4.15"
+cyclopts = "^2.2.0"
 
 [tool.poetry.scripts]
 CCPM_compute_graph_network = 'Scripts.CCPM_compute_graph_network:app'
@@ -51,6 +52,14 @@ pytest = "^7.4.0"
 pytest-cov = "^4.1.0"
 flake8 = "^6.1.0"
 ipykernel = "^6.27.1"
+
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.5.3"
+mkdocs-material = {extras = ["imaging"], version = "^9.5.9"}
+mkdocs-dracula-theme = "^1.0.7"
+mkdocs-git-revision-date-localized-plugin = "^1.2.4"
+mkapi = "^2.1.0"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
