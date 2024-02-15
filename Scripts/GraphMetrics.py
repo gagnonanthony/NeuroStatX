@@ -5,9 +5,9 @@ import logging
 import sys
 import coloredlogs
 
+from cyclopts import App, Parameter, Group
 import pandas as pd
 import networkx as nx
-import typer
 from typing_extensions import Annotated
 from typing import List
 
@@ -19,67 +19,51 @@ OPERATIONS = get_metrics_ops()
 __doc__ = get_metrics_docs(OPERATIONS)
 
 # Initializing the app.
-app = typer.Typer(add_completion=False)
+app = App(default_parameter=Parameter(negative=()))
 
 
-@app.command()
-def main(
+@app.default()
+def GraphMetrics(
     operation: Annotated[
         List[str],
-        typer.Argument(
+        Parameter(
             help=__doc__,
             show_choices=True,
             show_default=False,
-            rich_help_panel="Operations Options",
+            group=Group("Arguments"),
         ),
     ],
     out_file: Annotated[
         str,
-        typer.Option(
-            help="Path and name of the file containing the metrics for each "
-            "nodes. Default is : ./{operation_name}.xlsx",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ] = None,
     verbose: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-v",
             "--verbose",
-            help="If true, produce verbose output.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     overwrite: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-f",
             "--overwrite",
-            help="If true, force overwriting of existing " "output files.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
 ):
-    """
-    \b
-    =============================================================================
-                ________    ________   ________     ____     ____
-               /    ____|  /    ____| |   ___  \   |    \___/    |
-              /   /       /   /       |  |__|   |  |             |
-             |   |       |   |        |   _____/   |   |\___/|   |
-              \   \_____  \   \_____  |  |         |   |     |   |
-               \________|  \________| |__|         |___|     |___|
-                  Children Cognitive Profile Mapping Toolbox©
-    =============================================================================
-    \b
-    GRAPH NETWORK METRICS
+    """GRAPH NETWORK METRICS
     ---------------------
-    CCPM_graph_metrics.py is a wrapper script that allows the user to compute
+    GraphMetrics is a wrapper script that allows the user to compute
     various network metrics on an existing graph network. Depending on your
     hardware and the metric you want to compute, the script could be running
     for ~10 mins for a large graph (~10 000 nodes).
-    \b
+
     AVAILABLE METRICS
     -----------------
     Available metrics come from the Networkx implemented algorithms. As of now,
@@ -89,16 +73,27 @@ def main(
     is required, you have to provide a single node label (such as 'c1'). If
     NODES is required, you can provide multiple nodes within quotation marks
     (such as "c1 c2 c3").
-    \b
+
     REFERENCE
     ---------
     [1]
     https://networkx.org/documentation/stable/reference/algorithms/index.html#
-    \b
+
     EXAMPLE USAGE
     -------------
-    CCPM_graph_metrics.py --out-folder output/ eigencentrality graph.gexf
-        membership
+    GraphMetrics --out-folder output/ eigencentrality graph.gexf membership
+
+    Parameters
+    ----------
+    operation : List[str]
+        Operation to perform on the graph network.
+    out_file : str, optional
+        Path and name of the file containing the metrics for each nodes.
+        Default is : ./operation_name.xlsx
+    verbose : bool, optional
+        If true, produce verbose output.
+    overwrite : bool, optional
+        If true, force overwriting of existing output files.
     """
 
     if verbose:

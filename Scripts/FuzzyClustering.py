@@ -6,9 +6,9 @@ import logging
 import os
 import sys
 
+from cyclopts import App, Parameter
 import numpy as np
 import pandas as pd
-import typer
 from typing import List
 from typing_extensions import Annotated
 
@@ -28,166 +28,127 @@ from CCPM.clustering.distance import DistanceMetrics
 
 
 # Initializing the app.
-app = typer.Typer(add_completion=False)
+app = App(default_parameter=Parameter(negative=()))
 
 
-@app.command()
-def main(
+@app.default()
+def FuzzyClustering(
     in_dataset: Annotated[
         List[str],
-        typer.Option(
-            help="Input dataset(s) to filter. If multiple files are"
-            "provided as input, will be merged according to "
-            "the subject id columns.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     id_column: Annotated[
         str,
-        typer.Option(
-            help="Name of the column containing the subject's ID tag. "
-            "Required for proper handling of IDs and "
-            "merging multiple datasets.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     desc_columns: Annotated[
         int,
-        typer.Option(
-            help="Number of descriptive columns at the beginning of the "
-            "dataset to exclude in statistics and descriptive tables.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     k: Annotated[
         int,
-        typer.Option(
-            help="Maximum k number of cluster to fit a model for. (Script will"
-            " iterate until k is met.)",
+        Parameter(
             show_default=True,
-            rich_help_panel="Clustering Options",
+            group="Clustering Options",
         ),
     ] = 10,
     m: Annotated[
         float,
-        typer.Option(
-            help="Exponentiation value to apply on the membership function, "
-            "will determined the degree of fuzziness of the membership matrix",
+        Parameter(
             show_default=True,
-            rich_help_panel="Clustering Options",
+            group="Clustering Options",
         ),
     ] = 2,
     error: Annotated[
         float,
-        typer.Option(
-            help="Error threshold for convergence stopping criterion.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Clustering Options",
+            group="Clustering Options",
         ),
     ] = 1e-6,
     maxiter: Annotated[
         int,
-        typer.Option(
-            help="Maximum number of iterations to perform.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Clustering Options",
+            group="Clustering Options",
         ),
     ] = 1000,
     init: Annotated[
         str,
-        typer.Option(
-            help="Initial fuzzy c-partitioned matrix",
+        Parameter(
             show_default=True,
-            rich_help_panel="Clustering Options",
-            case_sensitive=False,
+            group="Clustering Options",
         ),
     ] = None,
     metric: Annotated[
         DistanceMetrics,
-        typer.Option(
-            help="Metric to use to compute distance between original points"
-            " and clusters centroids.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Clustering Options",
+            group="Clustering Options",
         ),
     ] = DistanceMetrics.euclidean,
     pca: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "--pca",
-            help="If set, will perform PCA decomposition to 2 components "
-            "before clustering",
             show_default=True,
-            rich_help_panel="Clustering Options",
+            group="Clustering Options",
         ),
     ] = False,
     out_folder: Annotated[
         str,
-        typer.Option(
-            help="Path of the folder in which the results will be written. "
-            "If not specified, current folder and default "
-            "name will be used (e.g. = ./output/).",
-            rich_help_panel="Essential Files Options",
+        Parameter(
+            group="Essential Files Options",
         ),
     ] = "./fuzzy_results/",
     processes: Annotated[
         int,
-        typer.Option(
-            help="Number of processes to use to compute the null distribution",
+        Parameter(
             show_default=True,
-            rich_help_panel="Computational Options",
+            group="Computational Options",
         ),
     ] = 4,
     verbose: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-v",
             "--verbose",
-            help="If true, produce verbose output.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     save_parameters: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-s",
             "--save_parameters",
-            help="If true, will save input parameters to .txt file.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     overwrite: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-f",
             "--overwrite",
-            help="If true, force overwriting of existing " "output files.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
 ):
-    """
-    \b
-    =============================================================================
-                ________    ________   ________     ____     ____
-               /    ____|  /    ____| |   ___  \   |    \___/    |
-              /   /       /   /       |  |__|   |  |             |
-             |   |       |   |        |   _____/   |   |\___/|   |
-              \   \_____  \   \_____  |  |         |   |     |   |
-               \________|  \________| |__|         |___|     |___|
-                  Children Cognitive Profile Mapping Toolbox©
-    =============================================================================
-    \b
-    FUZZY CLUSTERING
+    """FUZZY CLUSTERING
     ----------------
     CCPM_fuzzy_clustering.py is a wrapper script for a Fuzzy C-Means
     clustering analysis. By design, the script will compute the analysis for
     k specified cluster (chosen by --k) and returns various
     evaluation metrics and summary barplot/parallel plot.
-    \b
+
     EVALUATION METRICS
     ------------------
     The fuzzy partition coefficient (FPC) is a metric defined between 0 and 1
@@ -195,37 +156,37 @@ def main(
     described by the clustering model. Therefore, a higher FPC represents a
     better fitted model. On real-world data, local maxima can also be
     interpreted as one of the optimal solution.
-    \b
+
     The Silhouette Coefficient represents an evaluation of cluster's
     definition. The score is bounded (-1 to 1) with 1 as the perfect score and
     -1 as not a good clustering result. A higher Silhouette Coefficient relates
     to a model with better defined clusters (therefore a better model). It
     tends to have higher score with cluster generated from density-
     based methods.
-    \b
+
     The Calinski-Harabasz Index (or the Variance Ratio Criterion) can be used
     when no known labels are available. It represents the density and
     separation of clusters. Although it tends to be higher for cluster
     generated from density-based methods. A higher Calinski-Harabasz Index
     relates to better defined clusters.
-    \b
+
     Davies-Bouldin Index is reported for all cluster-models. A lower DBI
     relates to a model with better cluster separation. It represents a measure
     of similarity between clusters and is solely based on quantities and
     features of the dataset. It also tends to be generally higher for
     convex clusters and it uses the centroid distance between clusters
     therefore limiting the distance metric to euclidean space.
-    \b
+
     Within cluster Sum of Squared error (WSS) represents the average distance
     from each point to their cluster centroid. WSS is combined with the elbow
     method to determine the optimal k number of clusters.
-    \b
+
     The GAP statistics is based on the WSS. It relies on computing the
     difference in cluster compactness between the actual data and simulated
     data with a null distribution. The optimal k-number of clusters is
     identified by a maximized GAP statistic (local maxima can also suggest
     possible solutions.).
-    \b
+
     PARAMETERS
     ----------
     Details regarding the parameters can be seen below. Regarding the
@@ -237,16 +198,20 @@ def main(
     membership matrices for each k number (meaning that if you want to perform
     clustering up to k=10, you need a membership matrices for each of them.).
     It also must respect this name convention:
+    ::
+
                     [init_folder]
                         |-- cluster_membership_1.npy
                         |-- cluster_membership_2.npy
                         |-- [...]
                         └-- cluster_membership_{k}.npy
-    \b
+
     OUTPUT FOLDER STRUCTURE
     -----------------------
     The script creates a default output structure in a destination specified
     by using --out-folder. Output structure is as follows:
+    ::
+
                     [out_folder]
                         |-- BARPLOTS
                         |       |-- barplot_2clusters.png
@@ -260,8 +225,7 @@ def main(
                         |       |-- clusters_membership_2.xlsx
                         |       |-- [...]
                         |       └-- clusters_membership_{k}.xlsx
-                        |-- MEMBERSHIP_MAT (identical to MEMBERSHIP_DF but in
-                                            .npy format)
+                        |-- MEMBERSHIP_MAT (in .npy format)
                         |-- METRICS
                         |       |-- chi.png
                         |       |-- [...]
@@ -275,19 +239,62 @@ def main(
                         |       └-- variance_explained.xlsx
                         |-- validation_indices.xlsx
                         └-- viz_multiple_cluster_nb.png
-    \b
+
     REFERENCES
     ----------
-    [1]
-    https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_cmeans.html
+    [1] https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_cmeans.html
+
     [2]
     https://scikit-learn.org/stable/modules/clustering.html#clustering-performance-evaluation
+
     [3]
     https://towardsdatascience.com/cheat-sheet-to-implementing-7-methods-for-selecting-optimal-number-of-clusters-in-python-898241e1d6ad
+
     [4]
     https://towardsdatascience.com/how-to-determine-the-right-number-of-clusters-with-code-d58de36368b1
-    [5]     https://github.com/scikit-fuzzy/scikit-fuzzy
 
+    [5] https://github.com/scikit-fuzzy/scikit-fuzzy
+
+    Parameters
+    ----------
+    in_dataset : List[str]
+        Input dataset(s) to filter. If multiple files are provided as input,
+        will be merged according to the subject id columns.
+    id_column : str
+        Name of the column containing the subject's ID tag. Required for
+        proper handling of IDs and merging multiple datasets.
+    desc_columns : int
+        Number of descriptive columns at the beginning of the dataset to
+        exclude in statistics and descriptive tables.
+    k : int, optional
+        Maximum k number of cluster to fit a model for. (Script will iterate
+        until k is met.)
+    m : float, optional
+        Exponentiation value to apply on the membership function, will
+        determined the degree of fuzziness of the membership matrix
+    error : float, optional
+        Error threshold for convergence stopping criterion.
+    maxiter : int, optional
+        Maximum number of iterations to perform.
+    init : str, optional
+        Initial fuzzy c-partitioned matrix
+    metric : DistanceMetrics, optional
+        Metric to use to compute distance between original points and clusters
+        centroids.
+    pca : bool, optional
+        If set, will perform PCA decomposition to 2 components before
+        clustering.
+    out_folder : str, optional
+        Path of the folder in which the results will be written. If not
+        specified, current folder and default name will be used.
+    processes : int, optional
+        Number of processes to launch in parallel.
+    verbose : bool, optional
+        If true, produce verbose output.
+    save_parameters : bool, optional
+        If true, will save input parameters to .txt file.
+    overwrite : bool, optional
+        If true, force overwriting of existing output files.
     """
 
     if verbose:

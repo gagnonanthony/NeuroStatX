@@ -7,6 +7,7 @@ import logging
 import os
 import sys
 
+from cyclopts import App, Parameter
 from factor_analyzer import FactorAnalyzer
 from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity
 from factor_analyzer.factor_analyzer import calculate_kmo
@@ -16,7 +17,6 @@ import pandas as pd
 import seaborn as sns
 import semopy
 from sklearn.preprocessing import StandardScaler
-import typer
 from typing import List
 from typing_extensions import Annotated
 
@@ -37,219 +37,137 @@ from CCPM.utils.factor import (
 
 
 # Initializing the app.
-app = typer.Typer(add_completion=False)
+app = App(default_parameter=Parameter(negative=()))
 
 
-@app.command()
-def main(
+@app.default()
+def FactorAnalysis(
     in_dataset: Annotated[
         List[str],
-        typer.Option(
-            help="Input dataset(s) to use in the factorial analysis. "
-            "If multiple files are provided as input,"
-            " will be merged according to the subject id columns."
-            "For multiple inputs, use this: --in-dataset df1 "
-            "--in-dataset df2 [...]",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     id_column: Annotated[
         str,
-        typer.Option(
-            help="Name of the column containing the subject's ID tag. "
-            "Required for proper handling of IDs and "
-            "merging multiple datasets.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     desc_columns: Annotated[
         int,
-        typer.Option(
-            help="Number of descriptive columns at the beginning of the "
-            "dataset to exclude in statistics and descriptive tables.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     out_folder: Annotated[
         str,
-        typer.Option(
-            help="Path of the folder in which the results will be written. "
-            "If not specified, current folder and default"
-            "name will be used (e.g. = ./output/).",
-            rich_help_panel="Essential Files Options",
+        Parameter(
+            group="Essential Files Options",
         ),
     ] = "./output/",
     test_name: Annotated[
         str,
-        typer.Option(
-            help="Provide the name of the test the variables come from. Will "
-            "be used in the titles if provided.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ] = "",
     rotation: Annotated[
         RotationTypes,
-        typer.Option(
-            help="\b Select the type of rotation to apply on your data.\n"
-            "List of possible rotations: \n"
-            "varimax: Orthogonal Rotation \n"
-            "promax: Oblique Rotation \n"
-            "oblimin: Oblique Rotation \n"
-            "oblimax: Orthogonal Rotation \n"
-            "quartimin: Oblique Rotation \n"
-            "quartimax: Orthogonal Rotation \n"
-            "equamax: Orthogonal Rotation",
-            rich_help_panel="Factorial Analysis parameters",
-            case_sensitive=False,
+        Parameter(
+            group="Factorial Analysis parameters",
         ),
     ] = RotationTypes.promax,
     method: Annotated[
         MethodTypes,
-        typer.Option(
-            help="\b Select the method for fitting the data. \n"
-            "List of possible methods: \n"
-            "minres: Minimal Residual \n"
-            "ml: Maximum Likelihood Factor \n"
-            "principal: Principal Component",
-            rich_help_panel="Factorial Analysis parameters",
-            case_sensitive=False,
+        Parameter(
+            group="Factorial Analysis parameters",
         ),
     ] = MethodTypes.minres,
     factor_number: Annotated[
         int,
-        typer.Option(
+        Parameter(
             "--factor_number",
-            help="If set, the script will use this number as the final "
-            "number of factors.",
-            rich_help_panel="Factorial Analysis parameters",
+            group="Factorial Analysis parameters",
         ),
     ] = None,
     use_horn_parallel: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "--use_horn_parallel",
-            help="If set, will use the suggested "
-            "number of factors from the Horns "
-            "parallel analysis in a case where"
-            " values differ between the Kaiser"
-            " criterion "
-            "and Horns parallel analysis.",
-            rich_help_panel="Factorial Analysis parameters",
+            group="Factorial Analysis parameters",
         ),
     ] = False,
     use_only_efa: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "--use_only_efa",
-            help="If set, the script will not perform the"
-            " default 2 steps factor analysis "
-            "(exploratory factor analysis + confirmatory"
-            " factor analysis on 2 distinct subset of "
-            "the data) but will simply do an exploratory"
-            " factor analysis on the complete dataset.",
-            rich_help_panel="Factorial Analysis parameters",
+            group="Factorial Analysis parameters",
         ),
     ] = False,
     train_dataset_size: Annotated[
         float,
-        typer.Option(
+        Parameter(
             "--train_dataset_size",
-            help="Specify the proportion of the "
-            "input dataset to use as "
-            "training dataset in the EFA. "
-            "(value from 0 to 1)",
-            rich_help_panel="Factorial Analysis parameters",
+            group="Factorial Analysis parameters",
         ),
     ] = 0.5,
     threshold: Annotated[
         float,
-        typer.Option(
+        Parameter(
             "--threshold",
-            help="Threshold to use to determine variables"
-            " to include for each factor in CFA analysis."
-            " (ex: if set to 0.40, only variables with "
-            "loadings higher than 0.40 will be assigned to a "
-            "factor in the CFA.",
-            rich_help_panel="Factorial Analysis parameters",
+            group="Factorial Analysis parameters",
         ),
     ] = 0.40,
     random_state: Annotated[
         int,
-        typer.Option(
+        Parameter(
             "--random_state",
-            help="Random State value to use for" " reproducibility.",
-            rich_help_panel="Factorial Analysis parameters",
+            group="Factorial Analysis parameters",
         ),
     ] = 1234,
     mean: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "--mean",
-            help="Impute missing values in the original dataset based on the "
-            "column mean.",
-            rich_help_panel="Imputing parameters",
+            group="Imputing parameters",
         ),
     ] = False,
     median: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "--median",
-            help="Impute missing values in the original dataset based "
-            "on the column median.",
-            rich_help_panel="Imputing parameters",
+            group="Imputing parameters",
         ),
     ] = False,
     verbose: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-v",
             "--verbose",
-            help="If true, produce verbose output.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     overwrite: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-f",
             "--overwrite",
-            help="If true, force overwriting of existing " "output files.",
-            rich_help_panel="Optional parameters",
-        ),
-    ] = False,
-    report: Annotated[
-        bool,
-        typer.Option(
-            "-r",
-            "--report",
-            help="If true, will generate a pdf report named "
-            "report_factor_analysis.pdf",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
 ):
-    """
-    \b
-    =============================================================================
-                ________    ________   ________     ____     ____
-               /    ____|  /    ____| |   ___  \   |    \___/    |
-              /   /       /   /       |  |__|   |  |             |
-             |   |       |   |        |   _____/   |   |\___/|   |
-              \   \_____  \   \_____  |  |         |   |     |   |
-               \________|  \________| |__|         |___|     |___|
-                  Children Cognitive Profile Mapping Toolbox©
-    =============================================================================
-    FACTORIAL ANALYSIS
+    """FACTORIAL ANALYSIS
     ------------------
-    CCPM_factor_analysis.py is a script that can be used to perform an
+    FactorAnalysis is a script that can be used to perform an
     exploratory factorial analysis (EFA) and a confirmatory factorial analysis
     (CFA). A user can decide if he wants to perform only EFA or both
     sequentially.
-    \b
+
     EXPLORATORY VS CONFIRMATORY FACTORIAL ANALYSIS
     ----------------------------------------------
     In the case of performing only an EFA (use the flag --use_only_efa), the
@@ -257,47 +175,102 @@ def main(
     (see --use_horn_parallel) to determine the optimal number of factors to
     extract from the data. Then the final EFA model will be fitted using the
     provided rotation and method.
-    \b
+
     If --use_only_efa is not selected, the script will perform subsequently an
     EFA and a CFA. The selection of the appropriate number of factors will be
     done on the full input dataset. However, the fitting of the EFA model will
     be performed on the selected proportion of the input data to use as a
     training data (see --train_dataset_size). The parameters surrounding the
     fitting of the final EFA is identical to what is described above.
-    \b
+
     Following the EFA, resulting loadings will be assigned to a latent factor
     based on the supplied threshold value. A CFA model will then be build using
     this structure and fitted to the data. Statistics of goodness of fit such
     as Chi-square, RMSEA, CFI and NFI will be computed and exported as a table
     and into a html report. A good reference to understand those metrics can be
     accessed in [1].
-    \b
+
     Both method can be used to derive factor scores. Since there is no clear
     consensus surrounding which is preferred (see [2]) the script will output
     both factor scores. As shown in [3], both methods highly correlate with one
     another. It then comes down to the user's preference.
-    \b
+
     INPUT SPECIFICATIONS
     --------------------
     Dataset should contain only subject's ID and variables that will be
     included in factorial analysis. Rows with missing values will be removed by
     default, please select the mean or median option to impute missing data
     (be cautious when doing this).
-    \b
+
     REFERENCES
     ----------
     [1] Costa, V., & Sarmento, R. Confirmatory Factor Analysis.
-        https://arxiv.org/ftp/arxiv/papers/1905/1905.05598.pdf
+    https://arxiv.org/ftp/arxiv/papers/1905/1905.05598.pdf
+
     [2]
     https://stats.stackexchange.com/questions/346499/whether-to-use-efa-or-cfa-to-predict-latent-variables-scores
+
     [3] https://github.com/gagnonanthony/CCPM/pull/11
-    \b
+
     EXAMPLE USAGE
     -------------
-    CCPM_factor_analysis --in-dataset df --id-column IDs
-                         --out-folder results_FA/ --test-name EXAMPLE
-                         --rotation promax --method ml --threshold 0.4
-                         --train_dataset_size 0.8 -v -f
+    FactorAnalysis --in-dataset df --id-column IDs --out-folder results_FA/
+    --test-name EXAMPLE --rotation promax --method ml --threshold 0.4
+    --train_dataset_size 0.8 -v -f
+
+    Parameters
+    ----------
+    in_dataset : List[str]
+        Input dataset(s) to use in the factorial analysis. If multiple files
+        are provided as input, will be merged according to the subject id
+        columns. For multiple inputs, use this: --in-dataset df1 --in-dataset
+        df2 [...]
+    id_column : str
+        Name of the column containing the subject's ID tag. Required for proper
+        handling of IDs and merging multiple datasets.
+    desc_columns : int
+        Number of descriptive columns at the beginning of the dataset to
+        exclude in statistics and descriptive tables.
+    out_folder : str, optional
+        Path of the folder in which the results will be written. If not
+        specified, current folder and default name will be used (e.g. =
+        ./output/).
+    test_name : str, optional
+        Provide the name of the test the variables come from. Will be used in
+        the titles if provided.
+    rotation : RotationTypes, optional
+        Select the type of rotation to apply on your data.
+    method : MethodTypes, optional
+        Select the method for fitting the data.
+    factor_number : int, optional
+        If set, the script will use this number as the final number of factors.
+    use_horn_parallel : bool, optional
+        If set, will use the suggested number of factors from the Horns
+        parallel analysis in a case where values differ between the Kaiser
+        criterion and Horns parallel analysis.
+    use_only_efa : bool, optional
+        If set, the script will not perform the default 2 steps factor
+        analysis (exploratory factor analysis + confirmatory factor analysis
+        on 2 distinct subset of the data) but will simply do an exploratory
+        factor analysis on the complete dataset.
+    train_dataset_size : float, optional
+        Specify the proportion of the input dataset to use as training dataset
+        in the EFA. (value from 0 to 1)
+    threshold : float, optional
+        Threshold to use to determine variables to include for each factor
+        in CFA analysis. (ex: if set to 0.40, only variables with loadings
+        higher than 0.40 will be assigned to a factor in the CFA.
+    random_state : int, optional
+        Random State value to use for reproducibility.
+    mean : bool, optional
+        Impute missing values in the original dataset based on the column mean.
+    median : bool, optional
+        Impute missing values in the original dataset based on the column
+        median.
+    verbose : bool, optional
+        If true, produce verbose output.
+    overwrite : bool, optional
+        If true, force overwriting of existing output files.
     """
 
     if verbose:

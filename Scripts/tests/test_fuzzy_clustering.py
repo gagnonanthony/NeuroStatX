@@ -4,43 +4,32 @@
 import os
 import tempfile
 
-from typer.testing import CliRunner
-
 from CCPM.io.download import get_home, download_data, save_files_dict
-from Scripts.CCPM_fuzzy_clustering import app
+
 
 download_data(save_files_dict(), keys=["data.zip"])
 tmp_dir = tempfile.TemporaryDirectory()
 
-runner = CliRunner()
+
+def test_help(script_runner):
+    ret = script_runner.run(["FuzzyClustering", "-h"])
+
+    assert ret.success
 
 
-def test_help():
-    ret = runner.invoke(app, ["--help"])
-
-    assert ret.exit_code == 0
-
-
-def test_execution_fuzzy():
+def test_execution_fuzzy(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_dataset = os.path.join(get_home(), "data/clustering_data.xlsx")
     out_folder = os.path.join(get_home(), "data/Fuzzy_Clustering/")
 
-    ret = runner.invoke(
-        app,
-        [
-            "--out-folder",
-            out_folder,
-            "--in-dataset",
-            in_dataset,
-            "--desc-columns",
-            4,
-            "--id-column",
-            "subjectkey",
-            "--k",
-            3,
-            "-f",
-        ],
+    ret = script_runner.run([
+        "FuzzyClustering",
+        "--out-folder", out_folder,
+        "--in-dataset", in_dataset,
+        "--desc-columns", 4,
+        "--id-column", "subjectkey",
+        "--k", 3,
+        "-f"]
     )
 
-    assert ret.exit_code == 0
+    assert ret.success

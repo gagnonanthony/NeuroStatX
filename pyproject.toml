@@ -27,30 +27,30 @@ matplotlib = "^3.8.2"
 networkx = "^3.2.1"
 typer = {extras = ["all"], version = "^0.9.0"}
 coloredlogs = "^15.0.1"
-tableone = "^0.8.0"
 statannotations = {git = "https://github.com/gagnonanthony/statannotations.git"}
 adjusttext = "^1.0.4"
 strenum = "^0.4.15"
+cyclopts = "^2.2.0"
+openpyxl = "^3.1.2"
 
 [tool.poetry.scripts]
-CCPM_compute_graph_network = 'Scripts.CCPM_compute_graph_network:app'
-CCPM_compare_clustering = 'Scripts.CCPM_compare_clustering:app' 
-CCPM_compare_graph_network = 'Scripts.CCPM_compare_graph_network:app'
-CCPM_compute_weighted_path = 'Scripts.CCPM_compute_weighted_path:app'
-CCPM_creating_medical_statistics = 'Scripts.CCPM_creating_medical_statistics:app'
-CCPM_factor_analysis = 'Scripts.CCPM_factor_analysis:app'
-CCPM_filtering_dataset = 'Scripts.CCPM_filtering_dataset:app'
-CCPM_fuzzy_clustering = 'Scripts.CCPM_fuzzy_clustering:app'
-CCPM_graph_metrics = 'Scripts.CCPM_graph_metrics:app'
-CCPM_predict_fuzzy_membership = 'Scripts.CCPM_predict_fuzzy_membership:app'
-CCPM_set_nodes_attributes = 'Scripts.CCPM_set_nodes_attributes:app'
-CCPM_plsr = 'Scripts.CCPM_plsr:app'
+ComputeGraphNetwork = 'Scripts.ComputeGraphNetwork:app'
+CompareClustering = 'Scripts.CompareClustering:app' 
+CompareGraphs = 'Scripts.CompareGraphs:app'
+AverageWeightedPath = 'Scripts.AverageWeightedPath:app'
+FactorAnalysis = 'Scripts.FactorAnalysis:app'
+FuzzyClustering = 'Scripts.FuzzyClustering:app'
+GraphMetrics = 'Scripts.GraphMetrics:app'
+PredictFuzzyMembership = 'Scripts.PredictFuzzyMembership:app'
+AddNodesAttributes = 'Scripts.AddNodesAttributes:app'
+Plsr = 'Scripts.Plsr:app'
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
 pytest-cov = "^4.1.0"
 flake8 = "^6.1.0"
 ipykernel = "^6.27.1"
+pytest-console-scripts = "^1.4.1"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

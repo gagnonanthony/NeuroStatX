@@ -4,143 +4,171 @@
 import os
 import tempfile
 
-from typer.testing import CliRunner
-
 from CCPM.io.download import get_home, download_data, save_files_dict
-from Scripts.CCPM_graph_metrics import app
 
 
 download_data(save_files_dict(), keys=["data.zip"])
 tmp_dir = tempfile.TemporaryDirectory()
 
-runner = CliRunner()
+
+def test_help(script_runner):
+    ret = script_runner.run([
+        "GraphMetrics", "-h"])
+
+    assert ret.success
 
 
-def test_help():
-    ret = runner.invoke(app, ["--help"])
-
-    assert ret.exit_code == 0
-
-
-def test_eigencentrality():
+def test_eigencentrality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ["eigencentrality", in_graph, "membership", "-f"])
+    ret = script_runner.run([
+        "GraphMetrics",
+        "eigencentrality", in_graph,
+        "membership", "-f"])
 
-    assert ret.exit_code == 0
+    assert ret.success
 
 
-def test_closenesscentrality():
+def test_closenesscentrality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ["closenesscentrality", in_graph, "membership",
-                              "-f"])
+    ret = script_runner.run([
+        "GraphMetrics",
+        "closenesscentrality", in_graph,
+        "membership", "-f"])
 
-    assert ret.exit_code == 0
+    assert ret.success
 
 
-def test_betweennesscentrality():
+def test_betweennesscentrality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ["betweennesscentrality", in_graph, "membership",
-                              "-f"])
+    ret = script_runner.run([
+        "GraphMetrics",
+        "betweennesscentrality", in_graph,
+        "membership", "-f"])
 
-    assert ret.exit_code == 0
+    assert ret.success
 
 
-def test_informationcentrality():
+def test_informationcentrality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ["informationcentrality", in_graph, "membership",
-                              "-f"])
+    ret = script_runner.run([
+        "GraphMetrics",
+        "informationcentrality", in_graph,
+        "membership", "-f"])
 
-    assert ret.exit_code == 0
+    assert ret.success
 
 
-def test_currentflowbc():
+def test_currentflowbc(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ["currentflowbc", in_graph, "membership", "-f"])
+    ret = script_runner.run([
+        "GraphMetrics",
+        "currentflowbc", in_graph,
+        "membership", "-f"])
 
-    assert ret.exit_code == 0
+    assert ret.success
 
 
-def test_loadcentrality():
+def test_loadcentrality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ["loadcentrality", in_graph, "membership", "-f"])
+    ret = script_runner.run([
+        "GraphMetrics",
+        "loadcentrality", in_graph,
+        "membership", "-f"])
 
-    assert ret.exit_code == 0
+    assert ret.success
 
 
-def test_harmoniccentrality():
+def test_harmoniccentrality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ["harmoniccentrality", in_graph, "membership",
-                              "-f"])
+    ret = script_runner.run([
+        "GraphMetrics",
+        "harmoniccentrality", in_graph,
+        "membership", "-f"])
 
-    assert ret.exit_code == 0
+    assert ret.success
 
 
-def test_eccentricity():
+def test_eccentricity(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ["eccentricity", in_graph, "membership", "-f"])
+    ret = script_runner.run([
+        "GraphMetrics",
+        "eccentricity", in_graph,
+        "membership", "-f"])
 
-    assert ret.exit_code == 0
+    assert ret.success
 
 
-def test_clustering():
+def test_clustering(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ["clustering", in_graph, "membership", "-f"])
+    ret = script_runner.run([
+        "GraphMetrics",
+        "clustering", in_graph,
+        "membership", "-f"])
 
-    assert ret.exit_code == 0
+    assert ret.success
 
 
-# def test_constraint():
+# def test_constraint(script_runner):
 #    os.chdir(os.path.expanduser(tmp_dir.name))
 #    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-#    ret = runner.invoke(app, ["constraint", in_graph, "c1", "membership",
-#                              "-f"])
+#    ret = script_runner.run([
+    # "GraphMetrics",
+    # "constraint", in_graph, "c1",
+    # "membership", "-f"])
 
-#    assert ret.exit_code == 0
+#    assert ret.success
 
 
-# def test_effectivesize():
+# def test_effectivesize(script_runner):
 #    os.chdir(os.path.expanduser(tmp_dir.name))
 #    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-#    ret = runner.invoke(app, ["effectivesize", in_graph, "c1", "membership",
-#                              "-f"])
+#    ret = script_runner.run([
+    # "GraphMetrics",
+    # "effectivesize", in_graph, "c1",
+    # "membership", "-f"])
 
-#    assert ret.exit_code == 0
+#    assert ret.success
 
 
-def test_closenessvitality():
+def test_closenessvitality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ["closenessvitality", in_graph, "c1",
-                              "membership", "-f"])
+    ret = script_runner.run([
+        "GraphMetrics",
+        "closenessvitality", in_graph, "c1",
+        "membership", "-f"])
 
-    assert ret.exit_code == 0
+    assert ret.success
 
 
-def test_degree():
+def test_degree(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gexf")
 
-    ret = runner.invoke(app, ["degree", in_graph, "membership", "-f"])
+    ret = script_runner.run([
+        "GraphMetrics",
+        "degree", in_graph,
+        "membership", "-f"])
 
-    assert ret.exit_code == 0
+    assert ret.success

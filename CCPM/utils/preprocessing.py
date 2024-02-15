@@ -20,6 +20,76 @@ def remove_nans(df):
     return rows_with_nans, complete_rows
 
 
+def rename_columns(df, old_names, new_names):
+    """
+    Function renaming specific columns according to a list of new and old
+    column names.
+
+    :param df:              Pandas dataframe object.
+    :param old_names:       List of old column name as strings.
+    :param new_names:       List of new column name as strings.
+    :return:
+    Pandas dataframe object containing the renamed columns.
+    """
+    if len(old_names) != len(new_names):
+        raise ValueError("Number of old names and new names must be the same.")
+
+    for i, old_name in enumerate(old_names):
+        if old_name not in df.columns:
+            raise ValueError(f"Column {old_name} not found in DataFrame.")
+
+    new_names_set = set(new_names)
+    if len(new_names_set) != len(new_names):
+        raise ValueError("New names contain duplicates.")
+
+    new_df = df.copy()
+    for i in range(len(old_names)):
+        if old_names[i] in new_df.columns:
+            new_df.rename(columns={old_names[i]: new_names[i]}, inplace=True)
+    return new_df
+
+
+def binary_to_yes_no(df, cols):
+    """
+    Function to change binary answers (1/0) to Yes or No in specific columns
+    from a Pandas Dataframe.
+    *** Please validate that yes and no are assigned to the correct values,
+    default behavior is yes = 1 and no = 0 ***
+    :param df:              Pandas' dataframe object.
+    :param cols:            List of column names.
+    :return:
+    Pandas' dataframe object with changed binary answers.
+    """
+    for col in cols:
+        if df[col].isin([0.0, 1.0, 2.0, "nan"]).any():
+            df[col] = df[col].apply(
+                lambda x: "Yes"
+                if x == 1
+                else "No"
+                if x == 0
+                else "Don't know or missing value"
+            )
+    return df
+
+
+def get_column_indices(df, column_names):
+    """
+    Function to extract column index based on a list of column names.
+    :param df:              Pandas dataframe object.
+    :param column_names:    List of column names as strings.
+    :return:
+    List of column index.
+    """
+    indices = []
+    for name in column_names:
+        try:
+            index = df.columns.get_loc(name)
+            indices.append(index)
+        except KeyError:
+            print(f"Column '{name}' not found in DataFrame.")
+    return indices
+
+
 def plot_distributions(df, out_folder, context="poster", font_scale=1):
     """
     Script to visualize distribution plots for a complete dataframe.
@@ -139,6 +209,11 @@ def compute_pca(X, n_components):
         n_components (int):         Number of components.
 
     Return:
+        X (Array):                  Transformed data array.
+        exp_var (Array):            Explained variance.
+        components (Array):         Components.
+        p_value (float):            Bartlett's p-value.
+        kmo_model (float):          KMO model.
 
     """
     chi_square_value, p_value = calculate_bartlett_sphericity(X)
