@@ -7,8 +7,7 @@ license = "MIT"
 readme = "README.md"
 repository = "https://github.com/gagnonanthony/CCPM.git"
 packages = [
-    { include = "CCPM" },
-    { include = "Scripts" },
+    { include = "CCPM" }
 ]
 
 [tool.poetry-dynamic-versioning]
@@ -42,16 +41,16 @@ cyclopts = "^2.2.0"
 openpyxl = "^3.1.2"
 
 [tool.poetry.scripts]
-ComputeGraphNetwork = 'Scripts.ComputeGraphNetwork:app'
-CompareClustering = 'Scripts.CompareClustering:app' 
-CompareGraphs = 'Scripts.CompareGraphs:app'
-AverageWeightedPath = 'Scripts.AverageWeightedPath:app'
-FactorAnalysis = 'Scripts.FactorAnalysis:app'
-FuzzyClustering = 'Scripts.FuzzyClustering:app'
-GraphMetrics = 'Scripts.GraphMetrics:app'
-PredictFuzzyMembership = 'Scripts.PredictFuzzyMembership:app'
-AddNodesAttributes = 'Scripts.AddNodesAttributes:app'
-Plsr = 'Scripts.Plsr:app'
+ComputeGraphNetwork = 'CCPM.cli.ComputeGraphNetwork:app'
+CompareClustering = 'CCPM.cli.CompareClustering:app' 
+CompareGraphs = 'CCPM.cli.CompareGraphs:app'
+AverageWeightedPath = 'CCPM.cli.AverageWeightedPath:app'
+FactorAnalysis = 'CCPM.cli.FactorAnalysis:app'
+FuzzyClustering = 'CCPM.cli.FuzzyClustering:app'
+GraphMetrics = 'CCPM.cli.GraphMetrics:app'
+PredictFuzzyMembership = 'CCPM.cli.PredictFuzzyMembership:app'
+AddNodesAttributes = 'CCPM.cli.AddNodesAttributes:app'
+Plsr = 'CCPM.cli.Plsr:app'
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
@@ -69,10 +68,9 @@ line_profiler = ">=3.5.1"
 
 [tool.pytest.ini_options]
 pythonpath = [
-    ".",
-    "$(poetry env info --path)/bin/"
+    "."
 ]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.1"]
+build-backend = "poetry_dynamic_versioning.backend"
