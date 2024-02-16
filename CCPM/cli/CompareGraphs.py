@@ -4,9 +4,9 @@
 import coloredlogs
 import logging
 
+from cyclopts import App, Parameter
 import networkx as nx
 import numpy as np
-import typer
 from typing_extensions import Annotated
 
 from CCPM.io.utils import assert_input, assert_output_dir_exist
@@ -17,194 +17,156 @@ from CCPM.network.viz import (visualize_network,
 
 
 # Initializing the app.
-app = typer.Typer(add_completion=False)
+app = App(default_parameter=Parameter(negative=()))
 
 
-@app.command()
-def main(
+@app.default()
+def CompareGraphs(
     in_graph1: Annotated[
         str,
-        typer.Option(
-            help="1st graph from which subjects above --percentile will be "
-            "extracted and colored.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     in_matrix: Annotated[
         str,
-        typer.Option(
-            help="Numpy array containing the fuzzy clustering membership "
-            "values (.npy).",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     percentile: Annotated[
         float,
-        typer.Option(
-            help="Percentile value used to extract subjects.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     in_graph2: Annotated[
         str,
-        typer.Option(
-            help="2nd graph to color extracted subjects on.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     out_folder: Annotated[
         str,
-        typer.Option(
-            help="Path of the folder in which the results will be written. "
-            "If not specified, current folder and default "
-            "name will be used.",
-            rich_help_panel="Essential Files Options",
+        Parameter(
+            group="Essential Files Options",
         ),
     ] = "./comparison_results/",
     verbose: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-v",
             "--verbose",
-            help="If true, produce verbose output.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     overwrite: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-f",
             "--overwrite",
-            help="If true, force overwriting of existing " "output files.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     layout: Annotated[
         NetworkLayout,
-        typer.Option(
-            help="Layout algorithm to determine the nodes position.",
+        Parameter(
             show_default=True,
             show_choices=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = NetworkLayout.Spring,
     label_centroids: Annotated[
         bool,
-        typer.Option(
-            help="If true, centroids will be labelled.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = True,
     label_subjects: Annotated[
         bool,
-        typer.Option(
-            help="If true, will label subjects nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = False,
     centroids_size: Annotated[
         int,
-        typer.Option(
-            help="Size of the centroids nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = 500,
     centroid_alpha: Annotated[
         float,
-        typer.Option(
-            help="Alpha value representing the transparency of the centroids "
-            "nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = 1,
     centroid_node_color: Annotated[
         str,
-        typer.Option(
-            help="Centroids nodes color to use.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = "white",
     centroid_edge_color: Annotated[
         str,
-        typer.Option(
-            help="Assign a color to the edge of the centroids nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = "black",
     subject_node_size: Annotated[
         int,
-        typer.Option(
-            help="Assign the size of the subjects nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = 5,
     background_alpha: Annotated[
         bool,
-        typer.Option(
-            help="If true, will plot the background nodes with alpha = 0.2.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = True,
     subject_edge_color: Annotated[
         str,
-        typer.Option(
-            help="Assign a color to the edge of the subjects nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = None,
     colormap: Annotated[
         str,
-        typer.Option(
-            help="Colormap to use when coloring the edges of the network based"
-            " on the membership values to each clusters. Available colormap "
-            "are those from plt.cm.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = "gray",
     legend_title: Annotated[
         str,
-        typer.Option(
-            help="Legend title (colormap).",
+        Parameter(
             show_default=False,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = "Membership values",
 ):
-    """
-    \b
-    =============================================================================
-                ________    ________   ________     ____     ____
-               /    ____|  /    ____| |   ___  \   |    \___/    |
-              /   /       /   /       |  |__|   |  |             |
-             |   |       |   |        |   _____/   |   |\___/|   |
-              \   \_____  \   \_____  |  |         |   |     |   |
-               \________|  \________| |__|         |___|     |___|
-                  Children Cognitive Profile Mapping Toolbox©
-    =============================================================================
-    \b
-    GRAPH NETWORK CLUSTERING VISUALIZATION
+    """GRAPH NETWORK COMPARISON
     --------------------------------------
-    CCPM_compare_graphs.py is a script that compares 2 undirected weighted
+    CompareGraphs is a script that compares 2 undirected weighted
     graph network. As of now, the only comparison implemented is the
     extraction of the Xth percentile nodes from --in-graph1 and label those
     nodes on --in-graph2. It is essential to provide the membership matrix
     used to create the graph #1 in order to extract the percentile data. In
     future release, this will be done directly from the graph file (hopefully).
-    \b
+
     LAYOUT ALGORITHMS
     -----------------
     In order to generate a graph network, the nodes positions need to be
@@ -212,30 +174,77 @@ def main(
     weigth of those connections). Those connections are also called edges and
     contain a weight in the case of a weighted graph network. Possible
     algorithms to choose from are :
-    \b
+
     Kamada Kawai Layout: Use the Kamada-Kawai path-length cost-function. Not
                          the optimal solution for large network as it is
                          computer intensive. For details, see [2].
+
     Spectral Layout: Position is determined using the eigenvectors of the
                      graph Laplacian. For details, see [2].
+
     Spring Layout: Use the Fruchterman-Reingold force-directed algorithm.
                    Suitable for large network with high number of nodes.
                    For details, see [2]. This is the default method.
-    \b
+
     GRAPH NETWORK CUSTOMIZATION
     ---------------------------
     To customize the graph appearance, please see the Network Visualization
     Options below. It should be noted that using subjects_labelling will crowd
     the network if it contains a high number of nodes. Also, centroids are
     labelled by default 'c1, c2, ...' and subjects 's1, s2, ...'.
-    \b
+
     EXAMPLE USAGE
     -------------
-    CCPM_compare_graphs.py --in-graph1 graph1.gexf
-        --in-matrix membership_mat.npy --percentile 80
-        --in-graph2 graph2.gexf
-    ** For large graphs (~10 000 nodes), it might take ~5 mins to run using
-        the spring layout and depending on your hardware. **
+    CompareGraphs --in-graph1 graph1.gexf --in-matrix membership_mat.npy
+    --percentile 80 --in-graph2 graph2.gexf
+
+    **For large graphs (~10 000 nodes), it might take ~5 mins to run using**
+    **the spring layout and depending on your hardware.**
+
+    Parameters
+    ----------
+    in_graph1 : str
+        1st graph from which subjects above --percentile will be extracted and
+        colored.
+    in_matrix : str
+        Numpy array containing the fuzzy clustering membership values (.npy).
+    percentile : float
+        Percentile value used to extract subjects.
+    in_graph2 : str
+        2nd graph to color extracted subjects on.
+    out_folder : str, optional
+        Path of the folder in which the results will be written. If not
+        specified, current folder and default name will be used.
+    verbose : bool, optional
+        If true, produce verbose output.
+    overwrite : bool, optional
+        If true, force overwriting of existing output files.
+    layout : NetworkLayout, optional
+        Layout algorithm to determine the nodes position.
+    label_centroids : bool, optional
+        If true, centroids will be labelled.
+    label_subjects : bool, optional
+        If true, will label subjects nodes.
+    centroids_size : int, optional
+        Size of the centroids nodes.
+    centroid_alpha : float, optional
+        Alpha value representing the transparency of the centroids nodes.
+    centroid_node_color : str, optional
+        Centroids nodes color to use.
+    centroid_edge_color : str, optional
+        Assign a color to the edge of the centroids nodes.
+    subject_node_size : int, optional
+        Assign the size of the subjects nodes.
+    background_alpha : bool, optional
+        If true, will plot the background nodes with alpha = 0.2.
+    subject_edge_color : str, optional
+        Assign a color to the edge of the subjects nodes.
+    colormap : str, optional
+        Colormap to use when coloring the edges of the network based on the
+        membership values to each clusters. Available colormap are those from
+        plt.cm.
+    legend_title : str, optional
+        Legend title (colormap).
     """
 
     if verbose:

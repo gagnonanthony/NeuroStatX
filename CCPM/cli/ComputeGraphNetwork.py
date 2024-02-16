@@ -5,10 +5,10 @@ import coloredlogs
 import logging
 import sys
 
+from cyclopts import App, Parameter
 import networkx as nx
 import numpy as np
 import pandas as pd
-import typer
 from typing import List
 from typing_extensions import Annotated
 
@@ -24,231 +24,185 @@ from CCPM.network.viz import (
 
 
 # Initializing the app.
-app = typer.Typer(add_completion=False)
+app = App(default_parameter=Parameter(negative=()))
 
 
-@app.command()
-def main(
+@app.default()
+def ComputeGraphNetwork(
     in_dataset: Annotated[
         str,
-        typer.Option(
-            help="Input dataset containing membership values for each "
-            "clusters.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     id_column: Annotated[
         str,
-        typer.Option(
-            help="Name of the column containing the subject's ID tag. "
-            "Required for proper handling of IDs.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     desc_columns: Annotated[
         int,
-        typer.Option(
-            help="Number of descriptive columns at the beginning of the "
-            "dataset.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     out_folder: Annotated[
         str,
-        typer.Option(
-            help="Path of the folder in which the results will be written. "
-            "If not specified, current folder and default "
-            "name will be used.",
-            rich_help_panel="Essential Files Options",
+        Parameter(
+            show_default=True,
+            group="Essential Files Options",
         ),
     ] = "./graph_results/",
     verbose: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-v",
             "--verbose",
-            help="If true, produce verbose output.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     overwrite: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-f",
             "--overwrite",
-            help="If true, force overwriting of existing " "output files.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     data_for_label: Annotated[
         str,
-        typer.Option(
-            help="Variable within the dataframe to use for labelling specific "
-            "subjects.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Label Options",
+            group="Label Options",
         ),
     ] = None,
     label_name: Annotated[
         List[str],
-        typer.Option(
-            help="Variable within the --data-for-label to use for subject "
-            "nodes labelling.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Label Options",
+            group="Label Options",
         ),
     ] = None,
     background_alpha: Annotated[
         bool,
-        typer.Option(
-            help="If set, background nodes alpha will be set to 0.1 (more "
-            "transparent).",
+        Parameter(
             show_default=True,
-            rich_help_panel="Label Options",
+            group="Label Options",
         ),
     ] = True,
     layout: Annotated[
         NetworkLayout,
-        typer.Option(
-            help="Layout algorithm to determine the nodes position.",
+        Parameter(
             show_default=True,
             show_choices=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = NetworkLayout.Spring,
     label_centroids: Annotated[
         bool,
-        typer.Option(
-            help="If true, centroids will be labelled.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = True,
     label_subjects: Annotated[
         bool,
-        typer.Option(
-            help="If true, will label subjects nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = False,
     centroids_size: Annotated[
         int,
-        typer.Option(
-            help="Size of the centroids nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = 500,
     centroid_alpha: Annotated[
         float,
-        typer.Option(
-            help="Alpha value representing the transparency of the centroids "
-            "nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = 1,
     centroid_node_color: Annotated[
         str,
-        typer.Option(
-            help="Centroids nodes color to use.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = "white",
     centroid_edge_color: Annotated[
         str,
-        typer.Option(
-            help="Assign a color to the edge of the centroids nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = "black",
     subject_node_size: Annotated[
         int,
-        typer.Option(
-            help="Assign the size of the subjects nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = 5,
     subject_node_alpha: Annotated[
         float,
-        typer.Option(
-            help="Assign the transparency alpha value to the subjects "
-            "nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = 0.3,
     subject_node_color: Annotated[
         str,
-        typer.Option(
-            help="Assign a color to the subjects nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = "darkgrey",
     subject_edge_color: Annotated[
         str,
-        typer.Option(
-            help="Assign a color to the edge of the subjects nodes.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = None,
     colormap: Annotated[
         str,
-        typer.Option(
-            help="Colormap to use when coloring the edges of the network "
-            "based on the membership values to each clusters. Available "
-            "colormap are those from plt.cm.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = "plasma",
     title: Annotated[
         str,
-        typer.Option(
-            help="Title of the network graph.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = "Network Graph of the clustering membership values.",
     legend_title: Annotated[
         str,
-        typer.Option(
-            help="Legend title (colormap).",
+        Parameter(
             show_default=False,
-            rich_help_panel="Network Visualization Options",
+            group="Network Visualization Options",
         ),
     ] = "Membership values",
 ):
-    """
-    \b
-    =============================================================================
-                ________    ________   ________     ____     ____
-               /    ____|  /    ____| |   ___  \   |    \___/    |
-              /   /       /   /       |  |__|   |  |             |
-             |   |       |   |        |   _____/   |   |\___/|   |
-              \   \_____  \   \_____  |  |         |   |     |   |
-               \________|  \________| |__|         |___|     |___|
-                  Children Cognitive Profile Mapping Toolbox©
-    =============================================================================
-    \b
-    GRAPH NETWORK CLUSTERING VISUALIZATION
+    """GRAPH NETWORK CLUSTERING VISUALIZATION
     --------------------------------------
-    CCPM_compute_graph_network.py is a script computing an undirected weighted
+    ComputeGraphNetwork is a script computing an undirected weighted
     graph network from fuzzy clustering c-partitioned membership matrix. It is
     designed to work seemlessly with CCPM_fuzzy_clustering.py. Mapping
     membership matrices to a graph network allows the future use of graph
     theory statistics such as shortest path, betweenness centrality, etc.
     The concept of this script was initially proposed in [1].
-    \b
+
     LAYOUT ALGORITHMS
     -----------------
     In order to generate a graph network, the nodes positions need to be
@@ -256,18 +210,21 @@ def main(
     weigth of those connections). Those connections are also called edges and
     contain a weight in the case of a weighted graph network. Possible
     algorithms to choose from are :
-    \b
+
     Kamada Kawai Layout: Use the Kamada-Kawai path-length cost-function. Not
                         the optimal solution for large network as it is
                         computer intensive. For details, see [2].
+
     Spectral Layout: Position is determined using the eigenvectors of the
                     graph Laplacian. For details, see [2].
+
     Spring Layout: Use the Fruchterman-Reingold force-directed algorithm.
                     Suitable for large network with high number of nodes.
                     For details, see [2]. This is the default method.
-    ** Layout is only computed once and is reused in all other network to
-    reduce the computational burden. **
-    \b
+
+    **Layout is only computed once and is reused in all other network to**
+    **reduce the computational burden.**
+
     LABELLING GRAPH NETWORK NODES
     -----------------------------
     It is possible to label specific nodes based on a condition (e.g. a
@@ -276,9 +233,9 @@ def main(
     specify the --label-name in order to use the correct column. It is also
     possible to provide multiple label name by using --label-name x
     --label-name y. The script will output multiple graphs for each label name.
-    ** LABEL DATA NEEDS TO BE IN THE SAME ORDER AS THE DATASET PROVIDED DURING
-    CLUSTERING, IF NOT, LABEL AND SUBJECT WILL NOT MATCH **
-    \b
+    **LABEL DATA NEEDS TO BE IN THE SAME ORDER AS THE DATASET PROVIDED DURING**
+    **CLUSTERING, IF NOT, LABEL AND SUBJECT WILL NOT MATCH**
+
     GRAPH NETWORK CUSTOMIZATION
     ---------------------------
     To customize the graph appearance, please see the Network Visualization
@@ -287,7 +244,7 @@ def main(
     labelled by default 'c1, c2, ...' and subjects 's1, s2, ...'. The script
     also exports a graph_network_file.gexf. This file can be used to further
     customize the network using other APIs such as GEPHI (see [3]).
-    \b
+
     REFERENCES
     ----------
     [1] Ariza-Jiménez, L., Villa, L. F., & Quintero, O. L. (2019). Memberships
@@ -295,16 +252,71 @@ def main(
         Computer Sciences in Engineering (Vol. 1052, pp. 263–273). Springer
         International Publishing.
         https://doi.org/10.1007/978-3-030-31019-6_23
+
     [2] https://networkx.org/documentation/stable/reference/drawing.html
+
     [3] https://gephi.org/
-    \b
+
     EXAMPLE USAGE
     -------------
-    CCPM_compute_graph_network.py --in-dataset cluster_membership.xlsx
-        --id-column subjectkey --desc-columns 1
-        --out-folder output/
-    ** For large graphs (~10 000 nodes), it might take ~5 mins to run using
-        the spring layout and depending on your hardware. **
+    ComputeGraphNetwork --in-dataset cluster_membership.xlsx
+    --id-column subjectkey --desc-columns 1 --out-folder output/
+    **For large graphs (~10 000 nodes), it might take ~5 mins to run using**
+    **the spring layout and depending on your hardware.**
+
+    Parameters
+    ----------
+    in_dataset : str
+        Input dataset containing membership values for each clusters.
+    id_column : str
+        Name of the column containing the subject's ID tag. Required for
+        proper handling of IDs.
+    desc_columns : int
+        Number of descriptive columns at the beginning of the dataset.
+    out_folder : str, optional
+        Path of the folder in which the results will be written. If not
+        specified, current folder and default name will be used.
+    verbose : bool, optional
+        If true, produce verbose output.
+    overwrite : bool, optional
+        If true, force overwriting of existing output files.
+    data_for_label : str, optional
+        Variable within the dataframe to use for labelling specific subjects.
+    label_name : List[str], optional
+        Variable within the --data-for-label to use for subject nodes
+        labelling.
+    background_alpha : bool, optional
+        If set, background nodes alpha will be set to 0.1 (more transparent).
+    layout : NetworkLayout, optional
+        Layout algorithm to determine the nodes position.
+    label_centroids : bool, optional
+        If true, centroids will be labelled.
+    label_subjects : bool, optional
+        If true, will label subjects nodes.
+    centroids_size : int, optional
+        Size of the centroids nodes.
+    centroid_alpha : float, optional
+        Alpha value representing the transparency of the centroids nodes.
+    centroid_node_color : str, optional
+        Centroids nodes color to use.
+    centroid_edge_color : str, optional
+        Assign a color to the edge of the centroids nodes.
+    subject_node_size : int, optional
+        Assign the size of the subjects nodes.
+    subject_node_alpha : float, optional
+        Assign the transparency alpha value to the subjects nodes.
+    subject_node_color : str, optional
+        Assign a color to the subjects nodes.
+    subject_edge_color : str, optional
+        Assign a color to the edge of the subjects nodes.
+    colormap : str, optional
+        Colormap to use when coloring the edges of the network based on the
+        membership values to each clusters. Available colormap are those from
+        plt.cm.
+    title : str, optional
+        Title of the network graph.
+    legend_title : str, optional
+        Legend title (colormap).
     """
 
     if verbose:

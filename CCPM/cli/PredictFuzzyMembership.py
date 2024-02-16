@@ -6,10 +6,10 @@ import logging
 import os
 import sys
 
+from cyclopts import App, Parameter
 import numpy as np
 import pandas as pd
 from skfuzzy import cmeans_predict
-import typer
 from typing import List
 from typing_extensions import Annotated
 
@@ -24,146 +24,112 @@ from CCPM.clustering.distance import DistanceMetrics
 
 
 # Initializing the app.
-app = typer.Typer(add_completion=False)
+app = App(default_parameter=Parameter(negative=()))
 
 
-@app.command()
-def main(
+@app.default()
+def PredictFuzzyMembership(
     in_dataset: Annotated[
         List[str],
-        typer.Option(
-            help="Input dataset(s) to filter. If multiple files are"
-            "provided as input, will be merged according to "
-            "the subject id columns.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     in_cntr: Annotated[
         str,
-        typer.Option(
-            help="Centroid file to use for prediction. Should come from a "
-            "trained Cmeans model (such as ``CCPM_fuzzy_clustering.py``).",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     id_column: Annotated[
         str,
-        typer.Option(
-            help="Name of the column containing the subject's ID tag. "
-            "Required for proper handling of IDs and "
-            "merging multiple datasets.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     desc_columns: Annotated[
         int,
-        typer.Option(
-            help="Number of descriptive columns at the beginning of the "
-            "dataset to exclude in statistics and descriptive tables.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     out_folder: Annotated[
         str,
-        typer.Option(
-            help="Output folder for the predicted membership matrix.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
-    ],
+    ] = "./output/",
     m: Annotated[
         float,
-        typer.Option(
-            help="Exponentiation value to apply on the membership function, "
-            "will determined the degree of fuzziness of the membership matrix",
+        Parameter(
             show_default=True,
-            rich_help_panel="Clustering Options",
+            group="Clustering Options",
         ),
     ] = 2,
     error: Annotated[
         float,
-        typer.Option(
-            help="Error threshold for convergence stopping criterion.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Clustering Options",
+            group="Clustering Options",
         ),
     ] = 1e-6,
     maxiter: Annotated[
         int,
-        typer.Option(
-            help="Maximum number of iterations to perform.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Clustering Options",
+            group="Clustering Options",
         ),
     ] = 1000,
     metric: Annotated[
         DistanceMetrics,
-        typer.Option(
-            help="Metric to use to compute distance between original points"
-            " and clusters centroids.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Clustering Options",
+            group="Clustering Options",
         ),
     ] = DistanceMetrics.euclidean,
     pca: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "--pca",
-            help="If set, will perform PCA decomposition to 2 components "
-            "before clustering",
             show_default=True,
-            rich_help_panel="Clustering Options",
+            group="Clustering Options",
         ),
     ] = False,
     verbose: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-v",
             "--verbose",
-            help="If true, produce verbose output.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     save_parameters: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-s",
             "--save_parameters",
-            help="If true, will save input parameters to .txt file.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     overwrite: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-f",
             "--overwrite",
-            help="If true, force overwriting of existing " "output files.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
 ):
-    """
-    \b
-    =============================================================================
-                ________    ________   ________     ____     ____
-               /    ____|  /    ____| |   ___  \   |    \___/    |
-              /   /       /   /       |  |__|   |  |             |
-             |   |       |   |        |   _____/   |   |\___/|   |
-              \   \_____  \   \_____  |  |         |   |     |   |
-               \________|  \________| |__|         |___|     |___|
-                  Children Cognitive Profile Mapping Toolbox©
-    =============================================================================
-    \b
-    FUZZY MEMBERSHIP PREDICTION
+    """FUZZY MEMBERSHIP PREDICTION
     ---------------------------
     This script will predict the membership matrix of a dataset using a
     trained Cmeans model (only the centroids are necessary for the prediction).
-    \b
+
     PARAMETERS
     ----------
     Details regarding the parameters can be seen below. Regarding the
@@ -171,22 +137,49 @@ def main(
     membership matrix. Using --m 1 will returns crisp clusters, whereas
     --m >1 will returned more and more fuzzy clusters. It is recommended
     to use the same m value as used during training.
-    \b
+
     EXAMPLE USAGE
     -------------
-    CCPM_predict_fuzzy_membership.py \
-        --in_dataset dataset.xlsx \
-        --in_cntr centroids.xlsx \
-        --id_column ID \
-        --desc_columns 1 \
-        --out_folder predicted_membership_matrix/ \
-        --m 2 \
-        --error 1e-6 \
-        --maxiter 1000 \
-        --metric euclidean \
-        --verbose \
-        --save_parameters \
-        --overwrite
+    PredictFuzzyMembership --in_dataset dataset.xlsx --in_cntr centroids.xlsx
+    --id_column ID --desc_columns 1 --out_folder predicted_membership_matrix/
+    --m 2 --error 1e-6 --maxiter 1000 --metric euclidean --verbose
+    --save_parameters --overwrite
+
+    Parameters
+    ----------
+    in_dataset : List[str]
+        Input dataset(s) to filter. If multiple files are provided as input,
+        will be merged according to the subject id columns.
+    in_cntr : str
+        Centroid file to use for prediction. Should come from a trained Cmeans
+        model (such as ``CCPM_fuzzy_clustering.py``).
+    id_column : str
+        Name of the column containing the subject's ID tag. Required for proper
+        handling of IDs and merging multiple datasets.
+    desc_columns : int
+        Number of descriptive columns at the beginning of the dataset to
+        exclude in statistics and descriptive tables.
+    out_folder : str, optional
+        Output folder for the predicted membership matrix.
+    m : float, optional
+        Exponentiation value to apply on the membership function, will
+        determined the degree of fuzziness of the membership matrix.
+    error : float, optional
+        Error threshold for convergence stopping criterion.
+    maxiter : int, optional
+        Maximum number of iterations to perform.
+    metric : DistanceMetrics, optional
+        Metric to use to compute distance between original points and clusters
+        centroids.
+    pca : bool, optional
+        If set, will perform PCA decomposition to 2 components before
+        clustering.
+    verbose : bool, optional
+        If true, produce verbose output.
+    save_parameters : bool, optional
+        If true, will save input parameters to .txt file.
+    overwrite : bool, optional
+        If true, force overwriting of existing output files.
     """
 
     if verbose:

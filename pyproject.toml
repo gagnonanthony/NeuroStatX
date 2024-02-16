@@ -1,11 +1,23 @@
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.1"]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "semver"
+
 [tool.poetry]
 name = "CCPM"
-version = "0.1.0"
+version = "0.0.0"
 description = "Children Cognitive Profiles Mapping Toolbox (CCPM)"
 authors = ["Anthony Gagnon <anthony.gagnon7@usherbrooke.ca>"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/gagnonanthony/CCPM.git"
+packages = [
+    { include = "CCPM" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -25,36 +37,40 @@ Pillow = "^10.2.0"
 factor-analyzer = "^0.5.0"
 matplotlib = "^3.8.2"
 networkx = "^3.2.1"
-typer = {extras = ["all"], version = "^0.9.0"}
 coloredlogs = "^15.0.1"
-tableone = "^0.8.0"
 statannotations = {git = "https://github.com/gagnonanthony/statannotations.git"}
 adjusttext = "^1.0.4"
 strenum = "^0.4.15"
+cyclopts = "^2.2.0"
+openpyxl = "^3.1.2"
 
 [tool.poetry.scripts]
-CCPM_compute_graph_network = 'Scripts.CCPM_compute_graph_network:app'
-CCPM_compare_clustering = 'Scripts.CCPM_compare_clustering:app' 
-CCPM_compare_graph_network = 'Scripts.CCPM_compare_graph_network:app'
-CCPM_compute_weighted_path = 'Scripts.CCPM_compute_weighted_path:app'
-CCPM_creating_medical_statistics = 'Scripts.CCPM_creating_medical_statistics:app'
-CCPM_factor_analysis = 'Scripts.CCPM_factor_analysis:app'
-CCPM_filtering_dataset = 'Scripts.CCPM_filtering_dataset:app'
-CCPM_fuzzy_clustering = 'Scripts.CCPM_fuzzy_clustering:app'
-CCPM_graph_metrics = 'Scripts.CCPM_graph_metrics:app'
-CCPM_predict_fuzzy_membership = 'Scripts.CCPM_predict_fuzzy_membership:app'
-CCPM_set_nodes_attributes = 'Scripts.CCPM_set_nodes_attributes:app'
-CCPM_plsr = 'Scripts.CCPM_plsr:app'
+ComputeGraphNetwork = 'CCPM.cli.ComputeGraphNetwork:app'
+CompareClustering = 'CCPM.cli.CompareClustering:app' 
+CompareGraphs = 'CCPM.cli.CompareGraphs:app'
+AverageWeightedPath = 'CCPM.cli.AverageWeightedPath:app'
+FactorAnalysis = 'CCPM.cli.FactorAnalysis:app'
+FuzzyClustering = 'CCPM.cli.FuzzyClustering:app'
+GraphMetrics = 'CCPM.cli.GraphMetrics:app'
+PredictFuzzyMembership = 'CCPM.cli.PredictFuzzyMembership:app'
+AddNodesAttributes = 'CCPM.cli.AddNodesAttributes:app'
+Plsr = 'CCPM.cli.Plsr:app'
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.4.0"
+pytest = "^8.0.0"
 pytest-cov = "^4.1.0"
 flake8 = "^6.1.0"
 ipykernel = "^6.27.1"
+pytest-console-scripts = "^1.4.1"
+
+[tool.poetry.group.debug]
+optional = true
+
+[tool.poetry.group.debug.dependencies]
+ipdb = ">=0.13.9"
+line_profiler = ">=3.5.1"
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+pythonpath = [
+    "."
+]

@@ -5,8 +5,8 @@ import coloredlogs
 import logging
 import os
 
+from cyclopts import App, Parameter
 import networkx as nx
-import typer
 from typing import List
 from typing_extensions import Annotated
 
@@ -15,113 +15,107 @@ from CCPM.io.utils import (assert_input, assert_output,
 from CCPM.network.utils import construct_attributes_dict
 
 # Initializing the app.
-app = typer.Typer(add_completion=False)
+app = App(default_parameter=Parameter(negative=()))
 
 
-@app.command()
-def main(
+@app.default()
+def AddNodesAttributes(
     in_graph: Annotated[
         str,
-        typer.Option(
-            help="Graph file to add attributes to.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     in_dataset: Annotated[
         str,
-        typer.Option(
-            help="Dataset containing the variables to add as nodes' attributes"
-            " to the graph.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     id_column: Annotated[
         str,
-        typer.Option(
-            help="Name of the column containing the subject's ID tag. "
-            "Required for proper handling of IDs and "
-            "merging multiple datasets.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     labels: Annotated[
         List[str],
-        typer.Option(
-            help="Label(s) name(s) to add as nodes' attributes to the graph. "
-            "Can be supplied multiple times or as a .txt file containing all "
-            "names in a line separated format.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     out_file: Annotated[
         str,
-        typer.Option(
-            help="Output graph file name.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
-    ],
+    ] = "graph_with_attributes.gexf",
     verbose: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-v",
             "--verbose",
-            help="If true, produce verbose output.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     save_parameters: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-s",
             "--save_parameters",
-            help="If true, will save input parameters to .txt file.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     overwrite: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-f",
             "--overwrite",
-            help="If true, force overwriting of existing " "output files.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False
 ):
-    """
-    \b
-    =============================================================================
-                ________    ________   ________     ____     ____
-               /    ____|  /    ____| |   ___  \   |    \___/    |
-              /   /       /   /       |  |__|   |  |             |
-             |   |       |   |        |   _____/   |   |\___/|   |
-              \   \_____  \   \_____  |  |         |   |     |   |
-               \________|  \________| |__|         |___|     |___|
-                  Children Cognitive Profile Mapping Toolbox©
-    =============================================================================
-    \b
-    SETTING NODES ATTRIBUTES
+    """SETTING NODES ATTRIBUTES
     ------------------------
-    CCPM_set_nodes_attributes.py is a script that sets the attributes of the
+    AddNodesAttributes is a script that sets the attributes of the
     nodes of a graph. The attributes are provided via a xlsx file. The script
     will automatically match the IDs of the nodes with the IDs of the subjects
     in the xlsx file. Name of the variables to add as attributes can be
     supplied either via a .txt file or with multiple --labels arguments.
-    \b
+
     EXAMPLE USAGE
     -------------
-    CCPM_set_nodes_attributes.py \\
-        --in-graph graph.gexf \\
-        --in-dataset dataset.xlsx \\
-        --id-column ID \\
-        --labels label1 --labels label2 --labels label3 \\
-        --out-file graph_attributes.gexf \\
-        --verbose
+    AddNodesAttributes --in-graph graph.gexf --in-dataset dataset.xlsx
+    --id-column ID --labels label1 --labels label2 --labels label3
+    --out-file graph_attributes.gexf --verbose
+
+    Parameters
+    ----------
+    in_graph : str
+        Graph file to add attributes to.
+    in_dataset : str
+        Dataset containing the variables to add as nodes' attributes to the
+        graph.
+    id_column : str
+        Name of the column containing the subject's ID tag. Required for proper
+        handling of IDs and merging multiple datasets.
+    labels : List[str]
+        Label(s) name(s) to add as nodes' attributes to the graph. Can be
+        supplied multiple times or as a .txt file containing all names in a
+        line separated format.
+    out_file : str, optional
+        Output graph file name (*.gexf).
+    verbose : bool, optional
+        If true, produce verbose output.
+    save_parameters : bool, optional
+        If true, will save input parameters to .txt file.
+    overwrite : bool, optional
+        If true, force overwriting of existing output files.
     """
 
     if verbose:

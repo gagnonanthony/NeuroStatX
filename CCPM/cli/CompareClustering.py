@@ -6,7 +6,7 @@ import logging
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import typer
+from cyclopts import App, Parameter
 from typing import List
 from typing_extensions import Annotated
 import seaborn as sns
@@ -16,108 +16,84 @@ from CCPM.io.utils import (assert_input, assert_output_dir_exist,
 from CCPM.clustering.metrics import compute_rand_index
 
 # Initializing the app.
-app = typer.Typer(add_completion=False)
+app = App(default_parameter=Parameter(negative=()))
 
 
-@app.command()
-def main(
+@app.default()
+def CompareClustering(
     in_dataset: Annotated[
         List[str],
-        typer.Option(
-            help="Input dataset(s) (at least 2 are expected to produce a "
-            "comparison)",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     id_column: Annotated[
         str,
-        typer.Option(
-            help="Name of the column containing the subject's ID tag. "
-            "Required for proper handling of IDs and "
-            "merging multiple datasets.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     desc_columns: Annotated[
         int,
-        typer.Option(
-            help="Number of descriptive columns at the beginning of the "
-            "dataset to exclude in statistics and descriptive tables.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     out_folder: Annotated[
         str,
-        typer.Option(
-            help="Output folder for the predicted membership matrix.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     columns_name: Annotated[
         List[str],
-        typer.Option(
-            help="Name given to each input dataset (needs to be in the same "
-            "order as the input datasets)",
-            rich_help_panel="Visualization Options",
+        Parameter(
+            group="Visualization Options",
             show_default=True,
         )
-    ] = None,
+    ] = [],
     title: Annotated[
         str,
-        typer.Option(
-            help="Heatmap title.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Visualization Options",
+            group="Visualization Options",
         )
     ] = 'Adjusted Rand Index Heatmap',
     verbose: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-v",
             "--verbose",
-            help="If true, produce verbose output.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     save_parameters: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-s",
             "--save_parameters",
-            help="If true, will save input parameters to .txt file.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     overwrite: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-f",
             "--overwrite",
-            help="If true, force overwriting of existing " "output files.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
 ):
-    """
-    \b
-    =============================================================================
-                ________    ________   ________     ____     ____
-               /    ____|  /    ____| |   ___  \   |    \___/    |
-              /   /       /   /       |  |__|   |  |             |
-             |   |       |   |        |   _____/   |   |\___/|   |
-              \   \_____  \   \_____  |  |         |   |     |   |
-               \________|  \________| |__|         |___|     |___|
-                  Children Cognitive Profile Mapping Toolbox©
-    =============================================================================
-    \b
-    CCPM_compare_clustering.py is a script that compares clustering results
+    """COMPARE CLUSTERING RESULTS
+    --------------------------
+    CompareClustering is a script that compares clustering results
     from multiple solutions using the Adjusted Rand Index (ARI) and produces a
     heatmap of the results.
-    \b
+
     ADJUSTED RAND INDEX
     -------------------
     The Adjusted Rand Index (ARI) is a measure of similarity between two
@@ -129,30 +105,51 @@ def main(
     results are completely different. The ARI is an extension of the Rand
     Index (RI) that takes into account the fact that the RI is expected to
     be higher for large number of clusters.
-    \b
+
     REFERENCES
     ----------
     [1] Hubert, L., & Arabie, P. (1985). Comparing partitions. Journal of
     classification, 2(1), 193-218.
+
     [2] Rand, W. M. (1971). Objective criteria for the evaluation of
     clustering methods. Journal of the American Statistical Association,
     66(336), 846-850.
+
     [3] D. Steinley, Properties of the Hubert-Arabie adjusted Rand index,
     Psychological Methods 2004
+
     [4]
     https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_rand_score.html
-    \b
+
     EXAMPLE USAGE
     -------------
-    CCPM_compare_clustering.py --in_dataset dataset1.csv \
-        --in_dataset dataset2.csv \
-        --in_dataset dataset3.csv \
-        --id_column ID \
-        --desc_columns 1 \
-        --out_folder ./ \
-        --columns_name dataset1 dataset2 dataset3 \
-        --title "ARI Heatmap" \
-        --verbose
+    CompareClustering --in_dataset dataset1.csv --in_dataset dataset2.csv
+    --in_dataset dataset3.csv --id_column ID --desc_columns 1 --out_folder ./
+    --columns_name dataset1 dataset2 dataset3 --title "ARI Heatmap" --verbose
+
+    Parameters
+    ----------
+    in_dataset : List[str]
+        Input dataset(s) (at least 2 are expected to produce a comparison).
+    id_column : str
+        Name of the column containing the subject's ID tag. Required for
+        proper handling of IDs and merging multiple datasets.
+    desc_columns : int
+        Number of descriptive columns at the beginning of the dataset to
+        exclude in statistics and descriptive tables.
+    out_folder : str
+        Output folder containing the results.
+    columns_name : List[str], optional
+        Name given to each input dataset (needs to be in the same order as
+        the input datasets).
+    title : str, optional
+        Heatmap title.
+    verbose : bool, optional
+        If true, produce verbose output.
+    save_parameters : bool, optional
+        If true, will save input parameters to .txt file.
+    overwrite : bool, optional
+        If true, force overwriting of existing output files.
     """
 
     if verbose:
