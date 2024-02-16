@@ -1,4 +1,4 @@
-[![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d)
+[![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 [![codecov](https://codecov.io/gh/gagnonanthony/CCPM/graph/badge.svg?token=7P0QUI6B8U)](https://codecov.io/gh/gagnonanthony/CCPM)
 [![CI](https://github.com/gagnonanthony/CCPM/actions/workflows/build-dev.yml/badge.svg?branch=main)](https://github.com/gagnonanthony/CCPM/actions/workflows/build-dev.yml)
