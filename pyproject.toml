@@ -1,11 +1,16 @@
 [tool.poetry]
 name = "CCPM"
-version = "0.1.0"
+version = "0.0.0"
 description = "Children Cognitive Profiles Mapping Toolbox (CCPM)"
 authors = ["Anthony Gagnon <anthony.gagnon7@usherbrooke.ca>"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/gagnonanthony/CCPM.git"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "semver"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -33,16 +38,16 @@ cyclopts = "^2.2.0"
 openpyxl = "^3.1.2"
 
 [tool.poetry.scripts]
-ComputeGraphNetwork = 'Scripts.ComputeGraphNetwork:app'
-CompareClustering = 'Scripts.CompareClustering:app' 
-CompareGraphs = 'Scripts.CompareGraphs:app'
-AverageWeightedPath = 'Scripts.AverageWeightedPath:app'
-FactorAnalysis = 'Scripts.FactorAnalysis:app'
-FuzzyClustering = 'Scripts.FuzzyClustering:app'
-GraphMetrics = 'Scripts.GraphMetrics:app'
-PredictFuzzyMembership = 'Scripts.PredictFuzzyMembership:app'
-AddNodesAttributes = 'Scripts.AddNodesAttributes:app'
-Plsr = 'Scripts.Plsr:app'
+ComputeGraphNetwork = "Scripts.ComputeGraphNetwork:app"
+CompareClustering = "Scripts.CompareClustering:app" 
+CompareGraphs = "Scripts.CompareGraphs:app"
+AverageWeightedPath = "Scripts.AverageWeightedPath:app"
+FactorAnalysis = "Scripts.FactorAnalysis:app"
+FuzzyClustering = "Scripts.FuzzyClustering:app"
+GraphMetrics = "Scripts.GraphMetrics:app"
+PredictFuzzyMembership = "Scripts.PredictFuzzyMembership:app"
+AddNodesAttributes = "Scripts.AddNodesAttributes:app"
+Plsr = "Scripts.Plsr:app"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
@@ -51,10 +56,16 @@ flake8 = "^6.1.0"
 ipykernel = "^6.27.1"
 pytest-console-scripts = "^1.4.1"
 
+[tool.poetry.group.debug]
+optional = true
+
+[tool.poetry.group.debug.dependencies]
+ipdb = ">=0.13.9"
+line_profiler = ">=3.5.1"
+
 [tool.pytest.ini_options]
 pythonpath = [
-    ".",
-    "Scripts"
+    "."
 ]
 
 [build-system]
