@@ -75,6 +75,7 @@ mkdocs = "^1.5.3"
 mkdocs-material = {extras = ["imaging"], version = "^9.5.9"}
 mkdocs-git-revision-date-localized-plugin = "^1.2.4"
 mkapi = "^2.1.0"
+config = "^0.5.1"
 
 [tool.pytest.ini_options]
 pythonpath = [

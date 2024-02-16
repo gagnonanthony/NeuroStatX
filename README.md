@@ -2,6 +2,7 @@
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 [![codecov](https://codecov.io/gh/gagnonanthony/CCPM/graph/badge.svg?token=7P0QUI6B8U)](https://codecov.io/gh/gagnonanthony/CCPM)
 [![CI](https://github.com/gagnonanthony/CCPM/actions/workflows/build-dev.yml/badge.svg?branch=main)](https://github.com/gagnonanthony/CCPM/actions/workflows/build-dev.yml)
+[![Docs](https://github.com/gagnonanthony/CCPM/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/gagnonanthony/CCPM/actions/workflows/build-dev.yml)
 
 ![CCPM](https://user-images.githubusercontent.com/79757265/225111405-0a5e9a60-4702-4aa7-89fc-d353124dfb63.png)
 
