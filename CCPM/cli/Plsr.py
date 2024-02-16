@@ -163,7 +163,9 @@ def Plsr(
 
     EXAMPLE USAGE
     -------------
-    Plsr --in-graph graph.gexf --out-folder output_folder -v -s
+    ::
+
+        Plsr --in-graph graph.gexf --out-folder output_folder -v -s
 
     Parameters
     ----------

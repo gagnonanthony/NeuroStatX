@@ -159,10 +159,12 @@ def AverageWeightedPath(
 
     EXAMPLE USAGE
     -------------
-    AverageWeightedPath --in-graph ./graph.gexf --id-column ID
-    --data-for-label ./data_for_label.xlsx --label-name Group1
-    --label-name Group2 --out-folder ./results --iterations 5000
-    --weight membership --method Dijkstra
+    ::
+
+        AverageWeightedPath --in-graph ./graph.gexf --id-column ID
+        --data-for-label ./data_for_label.xlsx --label-name Group1
+        --label-name Group2 --out-folder ./results --iterations 5000
+        --weight membership --method Dijkstra
 
     Parameters
     ----------

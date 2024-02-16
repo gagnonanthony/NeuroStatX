@@ -195,8 +195,10 @@ def CompareGraphs(
 
     EXAMPLE USAGE
     -------------
-    CompareGraphs --in-graph1 graph1.gexf --in-matrix membership_mat.npy
-    --percentile 80 --in-graph2 graph2.gexf
+    ::
+
+        CompareGraphs --in-graph1 graph1.gexf --in-matrix membership_mat.npy
+        --percentile 80 --in-graph2 graph2.gexf
 
     **For large graphs (~10 000 nodes), it might take ~5 mins to run using**
     **the spring layout and depending on your hardware.**

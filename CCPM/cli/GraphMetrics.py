@@ -81,7 +81,9 @@ def GraphMetrics(
 
     EXAMPLE USAGE
     -------------
-    GraphMetrics --out-folder output/ eigencentrality graph.gexf membership
+    ::
+
+        GraphMetrics --out-folder output/ eigencentrality graph.gexf membership
 
     Parameters
     ----------

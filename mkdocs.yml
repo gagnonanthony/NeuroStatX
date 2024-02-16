@@ -7,9 +7,7 @@ theme:
   logo: img/CCPM.png
   name: material
   features:
-    - navigation.tabs
     - navigation.sections
-    - toc.integrate
     - navigation.top
     - search.suggest
     - search.highlight
@@ -22,14 +20,14 @@ theme:
       toggle:
         icon: material/toggle-switch-off-outline 
         name: Switch to dark mode
-      primary: teal
-      accent: purple 
-    - scheme: slate 
+      primary: green
+      accent: yellow 
+    - scheme: slate
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode    
-      primary: teal
-      accent: lime
+      primary: green
+      accent: yellow
   icon:
     repo: fontawesome/brands/github
 
@@ -39,13 +37,18 @@ plugins:
   - mkapi:
       exclude:
         - CCPM.tests
+      config: config.py
 
 nav:
   - Home: 'index.md'
-  - 'Scripts':
-    - $api/Scripts.*
+  - 'CLI Tools': 
+    - $api/CCPM.cli.**
   - 'API Reference':
-    - $api/CCPM.**
+    - 'CCPM.clustering': $api/CCPM.clustering.**
+    - 'CCPM.io': $api/CCPM.io.**
+    - 'CCPM.network': $api/CCPM.network.**
+    - 'CCPM.statistics': $api/CCPM.statistics.**
+    - 'CCPM.utils': $api/CCPM.utils.**
   - 'About': 
     - 'License': 'license.md'
 

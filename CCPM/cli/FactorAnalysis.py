@@ -214,9 +214,11 @@ def FactorAnalysis(
 
     EXAMPLE USAGE
     -------------
-    FactorAnalysis --in-dataset df --id-column IDs --out-folder results_FA/
-    --test-name EXAMPLE --rotation promax --method ml --threshold 0.4
-    --train_dataset_size 0.8 -v -f
+    ::
+
+        FactorAnalysis --in-dataset df --id-column IDs --out-folder results_FA/
+        --test-name EXAMPLE --rotation promax --method ml --threshold 0.4
+        --train_dataset_size 0.8 -v -f
 
     Parameters
     ----------

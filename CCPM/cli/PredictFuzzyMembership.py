@@ -140,10 +140,12 @@ def PredictFuzzyMembership(
 
     EXAMPLE USAGE
     -------------
-    PredictFuzzyMembership --in_dataset dataset.xlsx --in_cntr centroids.xlsx
-    --id_column ID --desc_columns 1 --out_folder predicted_membership_matrix/
-    --m 2 --error 1e-6 --maxiter 1000 --metric euclidean --verbose
-    --save_parameters --overwrite
+    ::
+
+        PredictFuzzyMembership --in_dataset dataset.xlsx --in_cntr
+        centroids.xlsx --id_column ID --desc_columns 1 --out_folder
+        predicted_membership_matrix/ --m 2 --error 1e-6 --maxiter 1000
+        --metric euclidean --verbose --save_parameters --overwrite
 
     Parameters
     ----------

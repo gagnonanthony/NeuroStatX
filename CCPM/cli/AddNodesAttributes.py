@@ -90,9 +90,11 @@ def AddNodesAttributes(
 
     EXAMPLE USAGE
     -------------
-    AddNodesAttributes --in-graph graph.gexf --in-dataset dataset.xlsx
-    --id-column ID --labels label1 --labels label2 --labels label3
-    --out-file graph_attributes.gexf --verbose
+    ::
+
+        AddNodesAttributes --in-graph graph.gexf --in-dataset dataset.xlsx
+        --id-column ID --labels label1 --labels label2 --labels label3
+        --out-file graph_attributes.gexf --verbose
 
     Parameters
     ----------

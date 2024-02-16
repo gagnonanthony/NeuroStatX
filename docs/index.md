@@ -46,3 +46,8 @@ echo "export CCPMPATH=${ENVPATH}" >> ~/.bashrc
 
 Restart your terminal. You should be able to activate the project virtual
 environment by using `source $ENVPATH/bin/activate`. 
+
+## How to use?
+
+All CLI tools should be available directly from the command line if the virtual
+env is activated. Simply run `AddNodesAttributes --version` to validate.
