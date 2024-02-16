@@ -7,8 +7,7 @@ on:
     types: [opened,reopened,synchronize]
     paths:
       - 'CCPM/**/*.py'
-      - 'Scripts/*.py'
-      - 'setup.py'
+      - 'pyproject.toml'
       - '!.github/**'
       - '.github/workflows/*.yml'
   push:
