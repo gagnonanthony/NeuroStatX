@@ -259,8 +259,11 @@ def ComputeGraphNetwork(
 
     EXAMPLE USAGE
     -------------
-    ComputeGraphNetwork --in-dataset cluster_membership.xlsx
-    --id-column subjectkey --desc-columns 1 --out-folder output/
+    ::
+
+        ComputeGraphNetwork --in-dataset cluster_membership.xlsx
+        --id-column subjectkey --desc-columns 1 --out-folder output/
+
     **For large graphs (~10 000 nodes), it might take ~5 mins to run using**
     **the spring layout and depending on your hardware.**
 

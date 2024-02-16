@@ -1,36 +1,52 @@
-# !/usr/bin/env python3
-# -*- coding: utf-8 -*-
+import unittest
+from sklearn import datasets
+from sklearn.cross_decomposition import PLSRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 
-import os
-import tempfile
-
-from CCPM.io.download import get_home, download_data, save_files_dict
-
-
-download_data(save_files_dict(), keys=["data.zip"])
-tmp_dir = tempfile.TemporaryDirectory()
+from CCPM.statistics.plsr import plsr_cv
 
 
-def test_help(script_runner):
-    ret = script_runner.run(["Plsr", "-h"])
+class TestPLSRFunctions(unittest.TestCase):
 
-    assert ret.success
+    def test_plsr_cv(self):
+        # Generate synthetic data
+        # Not optimal, but gives a certain quality control over the results.
+
+        # Load the Diabetes dataset
+        diabetes = datasets.load_diabetes()
+
+        # Extract features (X) and target variable (y)
+        X = diabetes.data
+        y = diabetes.target
+
+        # Split the data into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y,
+                                                            test_size=0.2,
+                                                            random_state=42)
+
+        # Initialize PLS model with the desired number of components
+        n_components = 3
+        pls_model = PLSRegression(n_components=n_components)
+
+        # Fit the model on the training data
+        pls_model.fit(X_train, y_train)
+
+        # Predictions on the test set
+        y_pred = pls_model.predict(X_test)
+
+        # Evaluate the model performance
+        r_squared = pls_model.score(X_test, y_test)
+        mse_expected = mean_squared_error(y_test, y_pred)
+
+        # Using the pls_cv function.
+        plsr, mse, score_c, score_cv, rscore, mse_c, mse_cv = plsr_cv(
+            X, y, nb_comp=3, splits=10, processes=4)
+
+        # Validating score and mse are within a close range.
+        self.assertAlmostEqual(score_c, r_squared, delta=0.05)
+        self.assertAlmostEqual(mse_c, mse_expected, delta=100)
 
 
-def test_plsr(script_runner):
-    os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_with_attributes.gexf")
-    out_folder = os.path.join(get_home(), "data/PLSR_results")
-
-    ret = script_runner.run([
-        "Plsr",
-        "--in-graph", in_graph,
-        "--out-folder", out_folder,
-        "--attributes", "gestage",
-        "--attributes", "age",
-        "--attributes", "iq",
-        "--permutations", 100,
-        "-f"]
-    )
-
-    assert ret.success
+if __name__ == '__main__':
+    unittest.main()

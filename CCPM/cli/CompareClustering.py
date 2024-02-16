@@ -123,9 +123,12 @@ def CompareClustering(
 
     EXAMPLE USAGE
     -------------
-    CompareClustering --in_dataset dataset1.csv --in_dataset dataset2.csv
-    --in_dataset dataset3.csv --id_column ID --desc_columns 1 --out_folder ./
-    --columns_name dataset1 dataset2 dataset3 --title "ARI Heatmap" --verbose
+    ::
+
+        CompareClustering --in_dataset dataset1.csv --in_dataset dataset2.csv
+        --in_dataset dataset3.csv --id_column ID --desc_columns 1 --out_folder
+        ./ --columns_name dataset1 dataset2 dataset3 --title "ARI Heatmap"
+        --verbose
 
     Parameters
     ----------

@@ -255,6 +255,14 @@ def FuzzyClustering(
 
     [5] https://github.com/scikit-fuzzy/scikit-fuzzy
 
+    EXAMPLE USAGE
+    -------------
+    ::
+
+        FuzzyClustering --in-dataset dataset.csv --id-column ID --desc-columns
+        1 --k 10 --m 2 --error 1e-6 --maxiter 1000 --init init_folder --metric
+        euclidean --pca --out-folder ./fuzzy_results/ --processes 4 --verbose
+
     Parameters
     ----------
     in_dataset : List[str]
