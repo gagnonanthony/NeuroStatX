@@ -69,7 +69,8 @@ line_profiler = ">=3.5.1"
 
 [tool.pytest.ini_options]
 pythonpath = [
-    "."
+    ".",
+    "$(poetry env info --path)/bin/"
 ]
 
 [build-system]
