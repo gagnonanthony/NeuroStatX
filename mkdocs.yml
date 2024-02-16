@@ -60,7 +60,6 @@ extra:
     default: latest
 
 markdown_extensions:
-  - mkdocs-typer
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite

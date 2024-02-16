@@ -73,7 +73,6 @@ line_profiler = ">=3.5.1"
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5.3"
 mkdocs-material = {extras = ["imaging"], version = "^9.5.9"}
-mkdocs-dracula-theme = "^1.0.7"
 mkdocs-git-revision-date-localized-plugin = "^1.2.4"
 mkapi = "^2.1.0"
 
