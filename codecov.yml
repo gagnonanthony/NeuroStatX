@@ -18,10 +18,6 @@ coverage:
 
 component_management:
   individual_components:
-    - component_id: ccpm_scripts
-      name: Scripts
-      paths:
-        - Scripts/
     - component_id: ccpm_library
       name: Library
       paths:

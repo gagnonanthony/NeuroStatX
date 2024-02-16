@@ -4,11 +4,11 @@
 import logging
 import coloredlogs
 
+from cyclopts import App, Parameter
 import matplotlib.pyplot as plt
 import pandas as pd
 import networkx as nx
 import seaborn as sns
-import typer
 from typing_extensions import Annotated
 from typing import List
 
@@ -16,147 +16,117 @@ from CCPM.io.utils import assert_input, assert_output_dir_exist
 from CCPM.network.metrics import weightedpath, PathLengthsMethods
 
 # Initializing the app.
-app = typer.Typer(add_completion=False)
+app = App(default_parameter=Parameter(negative=()))
 
 
-@app.command()
-def main(
+@app.default()
+def AverageWeightedPath(
     in_graph: Annotated[
         str,
-        typer.Option(
-            help="Input graph file (.gexf).",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     id_column: Annotated[
         str,
-        typer.Option(
-            help="Name of the column in --data-for-label containing the "
-            "subjects ids.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     data_for_label: Annotated[
         str,
-        typer.Option(
-            help="Dataset containing binary columns used to select nodes.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     label_name: Annotated[
         List[str],
-        typer.Option(
-            help="Label(s) name(s) to select group(s) of nodes. Can be "
-            "multiple.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     out_folder: Annotated[
         str,
-        typer.Option(
-            help="Output folder where files will be exported.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ] = None,
     iterations: Annotated[
         int,
-        typer.Option(
-            help="Number of iterations to perform to generate the null "
-            "distribution.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Computational Options",
+            group="Computational Options",
         ),
     ] = 1000,
     weight: Annotated[
         str,
-        typer.Option(
-            help="Name of the edge attributes to use during the weighted path "
-            "computation.",
+        Parameter(
             show_default=True,
-            rich_help_panel="Computational Options",
+            group="Computational Options",
         ),
     ] = "membership",
     method: Annotated[
         PathLengthsMethods,
-        typer.Option(
-            help="Method to use for the estimation of the weighted path.",
+        Parameter(
             show_choices=True,
             show_default=True,
-            rich_help_panel="Computational Options",
+            group="Computational Options",
         ),
     ] = PathLengthsMethods.Dijkstra,
     distribution: Annotated[
         str,
-        typer.Option(
-            help="Pre-computed null distribution, needs to be an .xlsx file"
-            "containing label name as --label-name.",
+        Parameter(
             show_choices=False,
             show_default=True,
-            rich_help_panel="Computational Options",
+            group="Computational Options",
         ),
     ] = None,
     processes: Annotated[
         int,
-        typer.Option(
-            help="Number of processes to use to compute the null distribution",
+        Parameter(
             show_default=True,
-            rich_help_panel="Computational Options",
+            group="Computational Options",
         ),
     ] = 4,
     verbose: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-v",
             "--verbose",
-            help="If true, produce verbose output.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     save_parameters: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-s",
             "--save_parameters",
-            help="If true, will save input parameters to .txt file.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     overwrite: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-f",
             "--overwrite",
-            help="If true, force overwriting of existing " "output files.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
 ):
-    """
-    \b
-    =============================================================================
-                ________    ________   ________     ____     ____
-               /    ____|  /    ____| |   ___  \   |    \___/    |
-              /   /       /   /       |  |__|   |  |             |
-             |   |       |   |        |   _____/   |   |\___/|   |
-              \   \_____  \   \_____  |  |         |   |     |   |
-               \________|  \________| |__|         |___|     |___|
-                  Children Cognitive Profile Mapping Toolbox©
-    =============================================================================
-    \b
-    GRAPH NETWORK METRICS
+    """AVEARGE WEIGHTED PATH
     ---------------------
-    CCPM_compute_weighted_path.py is a script that computes the average
+    AverageWeightedPath is a script that computes the average
     weighted shortest path length for a group of nodes. The script will
     compare the result against a null distribution generated by randomly
     selecting the same number of nodes and computing the average weighted
     shortest path length. The script will also compute the p-value for the
     comparison.
-    \b
+
     NULL DISTRIBUTION
     -----------------
     The null distribution is generated by randomly selecting the same number
@@ -168,37 +138,61 @@ def main(
     option to provide a pre-computed null distribution (see below). One could
     also reduce the number of iterations to speed up the process and have a
     rough estimate of the p-value.
-    \b
+
     MULTIPROCESSING
     ---------------
-    By default, CCPM_compute_weighted_path.py will use 4 CPUs to
+    By default, AverageWeightedPath will use 4 CPUs to
     compute the null distribution. This can be changed by setting the
     --processes option.
-    \b
+
     METHOD TO COMPUTE THE WEIGHTED PATH
     -----------------------------------
-    CCPM_compute_weighted_path.py can use different methods to compute the
+    AverageWeightedPath can use different methods to compute the
     weighted path. The default method is Dijkstra. The other methods are
     Bellman-Ford and Floyd-Warshall. Please note that the Floyd-Warshall
     method is not recommended for large graphs. For more details, see [1].
-    \b
+
     REFERENCE
     ---------
     [1]
     https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.shortest_paths.generic.average_shortest_path_length.html#networkx.algorithms.shortest_paths.generic.average_shortest_path_length
-    \b
+
     EXAMPLE USAGE
     -------------
-    CCPM_compute_weighted_path.py \
-        --in-graph ./graph.gexf \
-        --id-column ID \
-        --data-for-label ./data_for_label.xlsx \
-        --label-name Group1 \
-        --label-name Group2 \
-        --out-folder ./results \
-        --iterations 5000 \
-        --weight membership \
-        --method Dijkstra
+    AverageWeightedPath --in-graph ./graph.gexf --id-column ID
+    --data-for-label ./data_for_label.xlsx --label-name Group1
+    --label-name Group2 --out-folder ./results --iterations 5000
+    --weight membership --method Dijkstra
+
+    Parameters
+    ----------
+    in_graph : str
+        Input graph file (.gexf).
+    id_column : str
+        Name of the column in --data-for-label containing the subjects ids.
+    data_for_label : str
+        Dataset containing binary columns used to select nodes.
+    label_name : List[str]
+        Label(s) name(s) to select group(s) of nodes. Can be multiple.
+    out_folder : str, optional
+        Output folder where files will be exported.
+    iterations : int, optional
+        Number of iterations to perform to generate the null distribution.
+    weight : str, optional
+        Name of the edge attributes to use during the weighted path computation
+    method : PathLengthsMethods, optional
+        Method to use for the estimation of the weighted path.
+    distribution : str, optional
+        Pre-computed null distribution, needs to be an .xlsx file containing
+        label name as --label-name.
+    processes : int, optional
+        Number of processes to use to compute the null distribution.
+    verbose : bool, optional
+        If true, produce verbose output.
+    save_parameters : bool, optional
+        If true, will save input parameters to .txt file.
+    overwrite : bool, optional
+        If true, force overwriting of existing output files.
     """
 
     if verbose:

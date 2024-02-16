@@ -6,12 +6,12 @@ import logging
 import os
 import warnings
 
+from cyclopts import App, Parameter
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import scale
-import typer
 from typing import List
 from typing_extensions import Annotated
 
@@ -22,119 +22,95 @@ from CCPM.statistics.plsr import (plsr_cv, permutation_testing,
 from CCPM.io.viz import generate_coef_plot
 
 # Initializing the app.
-app = typer.Typer(add_completion=False)
+app = App(default_parameter=Parameter(negative=()))
 
 
-@app.command()
-def main(
+@app.default()
+def Plsr(
     in_graph: Annotated[
         str,
-        typer.Option(
-            help="Graph file to add attributes to.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     out_folder: Annotated[
         str,
-        typer.Option(
-            help="Output folder.",
+        Parameter(
             show_default=False,
-            rich_help_panel="Essential Files Options",
+            group="Essential Files Options",
         ),
     ],
     attributes: Annotated[
         List[str],
-        typer.Option(
-            help="Attributes names to include in the PLSR model. If None are "
-            "provided, all attributes will be included.",
-            rich_help_panel="Model Parameters",
+        Parameter(
+            group="Model Parameters",
             show_default=True,
         ),
     ] = None,
     weight: Annotated[
         str,
-        typer.Option(
-            help="Edge weight to use for the PLSR model.",
-            rich_help_panel="Model Parameters",
+        Parameter(
+            group="Model Parameters",
             show_default=True,
         ),
     ] = "membership",
     splits: Annotated[
         int,
-        typer.Option(
-            help="Number of splits to use for the cross-validation.",
-            rich_help_panel="Model Parameters",
+        Parameter(
+            group="Model Parameters",
             show_default=True,
         ),
     ] = 10,
     permutations: Annotated[
         int,
-        typer.Option(
-            help="Number of permutations to use for the permutation testing.",
-            rich_help_panel="Model Parameters",
+        Parameter(
+            group="Model Parameters",
             show_default=True,
         ),
     ] = 1000,
     scoring: Annotated[
         ScoringMethod,
-        typer.Option(
-            help="Scoring method to use for the permutation testing.",
-            rich_help_panel="Model Parameters",
+        Parameter(
+            group="Model Parameters",
             show_default=True,
         ),
     ] = ScoringMethod.r2,
     processes: Annotated[
         int,
-        typer.Option(
-            help="Number of processes to use for the cross-validation.",
-            rich_help_panel="Model Parameters",
+        Parameter(
+            group="Model Parameters",
             show_default=True,
         ),
     ] = 4,
     verbose: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-v",
             "--verbose",
-            help="If true, produce verbose output.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     save_parameters: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-s",
             "--save_parameters",
-            help="If true, will save input parameters to .txt file.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False,
     overwrite: Annotated[
         bool,
-        typer.Option(
+        Parameter(
             "-f",
             "--overwrite",
-            help="If true, force overwriting of existing " "output files.",
-            rich_help_panel="Optional parameters",
+            group="Optional parameters",
         ),
     ] = False
 ):
-    """
-    \b
-    =============================================================================
-                ________    ________   ________     ____     ____
-               /    ____|  /    ____| |   ___  \   |    \___/    |
-              /   /       /   /       |  |__|   |  |             |
-             |   |       |   |        |   _____/   |   |\___/|   |
-              \   \_____  \   \_____  |  |         |   |     |   |
-               \________|  \________| |__|         |___|     |___|
-                  Children Cognitive Profile Mapping Toolbox©
-    =============================================================================
-    \b
-    PARTIAL LEAST SQUARE REGRESSION (PLSR)
+    """PARTIAL LEAST SQUARE REGRESSION (PLSR)
     --------------------------------------
-    CCPM_plsr.py performs a Partial Least Square Regression (PLSR) on a graph
+    Plsr performs a Partial Least Square Regression (PLSR) on a graph
     using the nodes' attributes as predictors and the edges' weights as
     response variable. The script will perform a cross-validation to determine
     the optimal number of components to use for the PLSR model. It will then
@@ -142,14 +118,14 @@ def main(
     significant. Finally, it will output the PLSR coefficients and statistics
     as well as plots of the distributions of the attributes and edges' weights
     and the PLSR coefficients.
-    \b
+
     PREPROCESSING
     -------------
     The script will scale the data to unit variance and zero mean and will
     perform a log transformation on the edges' weights (for now, it assumes
     that the weights represent a membership value resulting from a fuzzy
     clustering analysis).
-    \b
+
     NODES' ATTRIBUTES
     -----------------
     The script takes only one graph file as input. The graph file must be in
@@ -158,7 +134,7 @@ def main(
     weights. If no attributes are provided, the script will use all attributes
     found in the graph file. To set attributes to the nodes in the graph file,
     please see CCPM_set_nodes_attributes.py.
-    \b
+
     SCORING OPTIONS
     ---------------
     The script will perform a permutation testing to determine if the model is
@@ -167,9 +143,9 @@ def main(
     also choose multiple scores to compute the p-value. The available scores
     can be seen in [1]. The equation used to compute the single-tailed p-value
     is:
-        \b
+
         p-value = ∑(score_perm >= score) / (nb_permutations)
-    \b
+
     COEFFICIENT SIGNIFICANCE
     ------------------------
     The script will also compute the p-value for the coefficients using the
@@ -177,18 +153,43 @@ def main(
     comparing the coefficients obtained from the PLSR model with the
     coefficients obtained from the permutation testing. The equation used to
     compute the two-tailed p-value is:
-        \b
+
         p-value = ∑(abs(coef_perm) >= abs(coef)) / (nb_permutations)
-    \b
+
     REFERENCES
     ----------
     [1]
     https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter
-    \b
+
     EXAMPLE USAGE
     -------------
-    CCPM_plsr.py --in-graph graph.gexf --out-folder output_folder \\
-        -v -s
+    Plsr --in-graph graph.gexf --out-folder output_folder -v -s
+
+    Parameters
+    ----------
+    in_graph : str
+        Graph file containing the data for the PLSR model.
+    out_folder : str
+        Output folder.
+    attributes : List[str], optional
+        Attributes names to include in the PLSR model. If None are provided,
+        all attributes will be included.
+    weight : str, optional
+        Edge weight to use for the PLSR model.
+    splits : int, optional
+        Number of splits to use for the cross-validation.
+    permutations : int, optional
+        Number of permutations to use for the permutation testing.
+    scoring : ScoringMethod, optional
+        Scoring method to use for the permutation testing.
+    processes : int, optional
+        Number of processes to use for the cross-validation.
+    verbose : bool, optional
+        If true, produce verbose output.
+    save_parameters : bool, optional
+        If true, will save input parameters to .txt file.
+    overwrite : bool, optional
+        If true, force overwriting of existing output files.
     """
 
     warnings.filterwarnings("ignore")
