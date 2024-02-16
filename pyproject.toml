@@ -6,6 +6,10 @@ authors = ["Anthony Gagnon <anthony.gagnon7@usherbrooke.ca>"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/gagnonanthony/CCPM.git"
+packages = [
+    { include = "CCPM" },
+    { include = "Scripts" },
+]
 
 [tool.poetry-dynamic-versioning]
 enable = true
@@ -38,16 +42,16 @@ cyclopts = "^2.2.0"
 openpyxl = "^3.1.2"
 
 [tool.poetry.scripts]
-ComputeGraphNetwork = "Scripts.ComputeGraphNetwork:app"
-CompareClustering = "Scripts.CompareClustering:app" 
-CompareGraphs = "Scripts.CompareGraphs:app"
-AverageWeightedPath = "Scripts.AverageWeightedPath:app"
-FactorAnalysis = "Scripts.FactorAnalysis:app"
-FuzzyClustering = "Scripts.FuzzyClustering:app"
-GraphMetrics = "Scripts.GraphMetrics:app"
-PredictFuzzyMembership = "Scripts.PredictFuzzyMembership:app"
-AddNodesAttributes = "Scripts.AddNodesAttributes:app"
-Plsr = "Scripts.Plsr:app"
+ComputeGraphNetwork = 'Scripts.ComputeGraphNetwork:app'
+CompareClustering = 'Scripts.CompareClustering:app' 
+CompareGraphs = 'Scripts.CompareGraphs:app'
+AverageWeightedPath = 'Scripts.AverageWeightedPath:app'
+FactorAnalysis = 'Scripts.FactorAnalysis:app'
+FuzzyClustering = 'Scripts.FuzzyClustering:app'
+GraphMetrics = 'Scripts.GraphMetrics:app'
+PredictFuzzyMembership = 'Scripts.PredictFuzzyMembership:app'
+AddNodesAttributes = 'Scripts.AddNodesAttributes:app'
+Plsr = 'Scripts.Plsr:app'
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
