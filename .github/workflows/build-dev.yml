@@ -84,7 +84,7 @@ jobs:
           wget -O ~/.cache/gdown/cookies.txt "https://www.dropbox.com/scl/fi/v2xzm8yrnaonaludeuthq/cookies.txt?rlkey=gy5qlhhbsj3fmf87lm0snfxs0&dl=0"
       - name: Pytest
         run: |
-          poetry run python -m pytest --cov=./ --cov-report=xml
+          poetry run pytest --cov=./ --cov-report=xml
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
         env:
