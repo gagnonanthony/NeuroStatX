@@ -12,8 +12,7 @@ from typing_extensions import Annotated
 from CCPM.io.utils import assert_input, assert_output_dir_exist
 from CCPM.network.utils import extract_subject_percentile
 from CCPM.network.viz import (visualize_network,
-                              creating_node_colormap,
-                              NetworkLayout)
+                              creating_node_colormap)
 
 
 # Initializing the app.
@@ -72,14 +71,6 @@ def CompareGraphs(
             group="Optional parameters",
         ),
     ] = False,
-    layout: Annotated[
-        NetworkLayout,
-        Parameter(
-            show_default=True,
-            show_choices=True,
-            group="Network Visualization Options",
-        ),
-    ] = NetworkLayout.Spring,
     label_centroids: Annotated[
         bool,
         Parameter(
@@ -197,8 +188,8 @@ def CompareGraphs(
     -------------
     ::
 
-        CompareGraphs --in-graph1 graph1.gexf --in-matrix membership_mat.npy
-        --percentile 80 --in-graph2 graph2.gexf
+        CompareGraphs --in-graph1 graph1.gml --in-matrix membership_mat.npy
+        --percentile 80 --in-graph2 graph2.gml
 
     **For large graphs (~10 000 nodes), it might take ~5 mins to run using**
     **the spring layout and depending on your hardware.**
@@ -221,8 +212,6 @@ def CompareGraphs(
         If true, produce verbose output.
     overwrite : bool, optional
         If true, force overwriting of existing output files.
-    layout : NetworkLayout, optional
-        Layout algorithm to determine the nodes position.
     label_centroids : bool, optional
         If true, centroids will be labelled.
     label_subjects : bool, optional
@@ -259,8 +248,8 @@ def CompareGraphs(
     # Loading membership matrix.
     logging.info("Loading graphs and membership matrix.")
     mat = np.load(in_matrix)
-    graph1 = nx.read_gexf(in_graph1)
-    graph2 = nx.read_gexf(in_graph2)
+    graph1 = nx.read_gml(in_graph1)
+    graph2 = nx.read_gml(in_graph2)
 
     # Extracting percentiles.
     logging.info("Extracting percentiles.")
@@ -285,7 +274,6 @@ def CompareGraphs(
     _ = visualize_network(
         graph1,
         output=f"{out_folder}/graph1.png",
-        layout=getattr(nx, layout),
         weight="membership",
         centroids_labelling=label_centroids,
         subjects_labelling=label_subjects,
@@ -306,7 +294,6 @@ def CompareGraphs(
     _ = visualize_network(
         graph2,
         output=f"{out_folder}/graph2.png",
-        layout=getattr(nx, layout),
         weight="membership",
         centroids_labelling=label_centroids,
         subjects_labelling=label_subjects,

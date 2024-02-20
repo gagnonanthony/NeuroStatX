@@ -16,11 +16,49 @@ class NetworkLayout(StrEnum, Enum):
     Spring = "spring_layout"
 
 
+def compute_layout(G,
+                   layout=nx.spring_layout,
+                   weight="weight",
+                   seed=1234):
+    """Function to compute the optimal layout for a graph network.
+
+    Args:
+        G (nx.Graph):               Graph Network to draw.
+        layout (nx.layout, optional):  Layout algorithm to use.
+                                    Defaults to nx.spring_layout.
+        weight (str, optional):     Edges weight to use while computing the
+                                    layout. Defaults to "weight".
+        seed (int, optional):       Random seed. Defaults to 1234.
+
+    Returns:
+        pos:                        Layout positions that can be reused for
+                                    replotting of the same network.
+    """
+
+    return layout(G, weight=weight, seed=seed)
+
+
+def set_nodes_position(G, pos):
+    """Function to set the nodes' position for a graph network.
+
+    Position array has to be converted into python float in order for
+    Gephi file format export.
+
+    Args:
+        G (nx.Graph):       Graph Network to draw.
+        pos (dict):         Dictionary with nodes' positions.
+
+    Returns:
+        G:                  Network with nodes' positions set.
+    """
+    positions = {k: list(map(float, pos[k])) for k in pos}
+
+    return nx.set_node_attributes(G, positions, "pos")
+
+
 def visualize_network(
     G,
     output,
-    layout=nx.spring_layout,
-    pos=None,
     weight="weight",
     centroids_labelling=True,
     subjects_labelling=False,
@@ -49,15 +87,6 @@ def visualize_network(
         G (NetworkX.Graph()):                       Graph Network to draw.
         output (str):                               Filename and path for
                                                     the output png image.
-        layout (_type_, optional):                  Layout algoritm to use,
-                                                    choices are:
-                                                    * nx.kamada_kawai_layout
-                                                    * nx.spectral_layout
-                                                    * nx.spring_layout
-                                                    Defaults to
-                                                    nx.spring_layout.
-        pos (NetworkX.layout() object, optional):   If provided, will skip
-                                                    the layout computation step
         weight (str, optional):                     Edge attribute to use as
                                                     weight. Defaults to
                                                     'weight'.
@@ -88,15 +117,10 @@ def visualize_network(
                                                     'Graph Network'.
         legend_title (str, optional):               Legend title. Defaults to
                                                     'Membership values'.
-
-    Returns:
-        pos:                Layout positions that can be reused for replotting
-                            of the same network.
     """
 
-    # Computing optimal node's positions.
-    if pos is None:
-        pos = layout(G, weight=weight, seed=1234)
+    # Fetching nodes position.
+    pos = nx.get_node_attributes(G, "pos")
 
     # Fetching edges widths.
     widths = nx.get_edge_attributes(G, weight)

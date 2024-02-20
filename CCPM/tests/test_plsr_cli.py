@@ -19,7 +19,7 @@ def test_help(script_runner):
 
 def test_plsr(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_with_attributes.gexf")
+    in_graph = os.path.join(get_home(), "data/graph_with_attributes.gml")
     out_folder = os.path.join(get_home(), "data/PLSR_results")
 
     ret = script_runner.run([

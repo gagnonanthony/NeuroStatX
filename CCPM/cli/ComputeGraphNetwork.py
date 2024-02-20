@@ -3,24 +3,20 @@
 
 import coloredlogs
 import logging
-import sys
 
 from cyclopts import App, Parameter
 import networkx as nx
-import numpy as np
 import pandas as pd
-from typing import List
 from typing_extensions import Annotated
 
 from CCPM.io.utils import (assert_input, assert_output_dir_exist,
                            load_df_in_any_format)
 from CCPM.network.utils import get_nodes_and_edges
 from CCPM.network.viz import (
-    visualize_network,
+    compute_layout,
+    set_nodes_position,
     membership_distribution,
-    NetworkLayout,
-    create_cmap_from_list,
-)
+    NetworkLayout)
 
 
 # Initializing the app.
@@ -73,126 +69,29 @@ def ComputeGraphNetwork(
             group="Optional parameters",
         ),
     ] = False,
-    data_for_label: Annotated[
-        str,
-        Parameter(
-            show_default=True,
-            group="Label Options",
-        ),
-    ] = None,
-    label_name: Annotated[
-        List[str],
-        Parameter(
-            show_default=False,
-            group="Label Options",
-        ),
-    ] = None,
-    background_alpha: Annotated[
+    save_parameters: Annotated[
         bool,
         Parameter(
-            show_default=True,
-            group="Label Options",
+            "-s",
+            "--save_parameters",
+            group="Optional parameters",
         ),
-    ] = True,
+    ] = False,
     layout: Annotated[
         NetworkLayout,
         Parameter(
             show_default=True,
             show_choices=True,
-            group="Network Visualization Options",
+            group="Layout Options",
         ),
     ] = NetworkLayout.Spring,
-    label_centroids: Annotated[
-        bool,
-        Parameter(
-            show_default=True,
-            group="Network Visualization Options",
-        ),
-    ] = True,
-    label_subjects: Annotated[
-        bool,
-        Parameter(
-            show_default=True,
-            group="Network Visualization Options",
-        ),
-    ] = False,
-    centroids_size: Annotated[
-        int,
-        Parameter(
-            show_default=True,
-            group="Network Visualization Options",
-        ),
-    ] = 500,
-    centroid_alpha: Annotated[
-        float,
-        Parameter(
-            show_default=True,
-            group="Network Visualization Options",
-        ),
-    ] = 1,
-    centroid_node_color: Annotated[
+    weight: Annotated[
         str,
         Parameter(
             show_default=True,
-            group="Network Visualization Options",
+            group="Layout Options",
         ),
-    ] = "white",
-    centroid_edge_color: Annotated[
-        str,
-        Parameter(
-            show_default=True,
-            group="Network Visualization Options",
-        ),
-    ] = "black",
-    subject_node_size: Annotated[
-        int,
-        Parameter(
-            show_default=True,
-            group="Network Visualization Options",
-        ),
-    ] = 5,
-    subject_node_alpha: Annotated[
-        float,
-        Parameter(
-            show_default=True,
-            group="Network Visualization Options",
-        ),
-    ] = 0.3,
-    subject_node_color: Annotated[
-        str,
-        Parameter(
-            show_default=True,
-            group="Network Visualization Options",
-        ),
-    ] = "darkgrey",
-    subject_edge_color: Annotated[
-        str,
-        Parameter(
-            show_default=True,
-            group="Network Visualization Options",
-        ),
-    ] = None,
-    colormap: Annotated[
-        str,
-        Parameter(
-            show_default=True,
-            group="Network Visualization Options",
-        ),
-    ] = "plasma",
-    title: Annotated[
-        str,
-        Parameter(
-            show_default=False,
-            group="Network Visualization Options",
-        ),
-    ] = "Network Graph of the clustering membership values.",
-    legend_title: Annotated[
-        str,
-        Parameter(
-            show_default=False,
-            group="Network Visualization Options",
-        ),
-    ] = "Membership values",
+    ] = "membership",
 ):
     """GRAPH NETWORK CLUSTERING VISUALIZATION
     --------------------------------------
@@ -222,29 +121,6 @@ def ComputeGraphNetwork(
                     Suitable for large network with high number of nodes.
                     For details, see [2]. This is the default method.
 
-    **Layout is only computed once and is reused in all other network to**
-    **reduce the computational burden.**
-
-    LABELLING GRAPH NETWORK NODES
-    -----------------------------
-    It is possible to label specific nodes based on a condition (e.g. a
-    diagnosis, etc.). To do so, use --data-for-label argument to provide a
-    dataframe containing the column(s) to use for labelling. You also need to
-    specify the --label-name in order to use the correct column. It is also
-    possible to provide multiple label name by using --label-name x
-    --label-name y. The script will output multiple graphs for each label name.
-    **LABEL DATA NEEDS TO BE IN THE SAME ORDER AS THE DATASET PROVIDED DURING**
-    **CLUSTERING, IF NOT, LABEL AND SUBJECT WILL NOT MATCH**
-
-    GRAPH NETWORK CUSTOMIZATION
-    ---------------------------
-    To customize the graph appearance, please see the Network Visualization
-    Options below. It should be noted that using subjects_labelling will crowd
-    the network if it contains a high number of nodes. Also, centroids are
-    labelled by default 'c1, c2, ...' and subjects 's1, s2, ...'. The script
-    also exports a graph_network_file.gexf. This file can be used to further
-    customize the network using other APIs such as GEPHI (see [3]).
-
     REFERENCES
     ----------
     [1] Ariza-Jiménez, L., Villa, L. F., & Quintero, O. L. (2019). Memberships
@@ -254,8 +130,6 @@ def ComputeGraphNetwork(
         https://doi.org/10.1007/978-3-030-31019-6_23
 
     [2] https://networkx.org/documentation/stable/reference/drawing.html
-
-    [3] https://gephi.org/
 
     EXAMPLE USAGE
     -------------
@@ -283,44 +157,20 @@ def ComputeGraphNetwork(
         If true, produce verbose output.
     overwrite : bool, optional
         If true, force overwriting of existing output files.
-    data_for_label : str, optional
-        Variable within the dataframe to use for labelling specific subjects.
-    label_name : List[str], optional
-        Variable within the --data-for-label to use for subject nodes
-        labelling.
-    background_alpha : bool, optional
-        If set, background nodes alpha will be set to 0.1 (more transparent).
+    save_parameters : bool, optional
+        If true, save the parameters used in a .txt file.
     layout : NetworkLayout, optional
         Layout algorithm to determine the nodes position.
-    label_centroids : bool, optional
-        If true, centroids will be labelled.
-    label_subjects : bool, optional
-        If true, will label subjects nodes.
-    centroids_size : int, optional
-        Size of the centroids nodes.
-    centroid_alpha : float, optional
-        Alpha value representing the transparency of the centroids nodes.
-    centroid_node_color : str, optional
-        Centroids nodes color to use.
-    centroid_edge_color : str, optional
-        Assign a color to the edge of the centroids nodes.
-    subject_node_size : int, optional
-        Assign the size of the subjects nodes.
-    subject_node_alpha : float, optional
-        Assign the transparency alpha value to the subjects nodes.
-    subject_node_color : str, optional
-        Assign a color to the subjects nodes.
-    subject_edge_color : str, optional
-        Assign a color to the edge of the subjects nodes.
-    colormap : str, optional
-        Colormap to use when coloring the edges of the network based on the
-        membership values to each clusters. Available colormap are those from
-        plt.cm.
-    title : str, optional
-        Title of the network graph.
-    legend_title : str, optional
-        Legend title (colormap).
+    weight : str, optional
+        Name of the column containing the edge weight. Default is 'membership'.
     """
+
+    # Saving parameters
+    if save_parameters:
+        parameters = list(locals().items())
+        with open("nodes_attributes_parameters.txt", "w+") as f:
+            for param in parameters:
+                f.writelines(str(param))
 
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
@@ -353,84 +203,15 @@ def ComputeGraphNetwork(
     # Creating network graph.
     G = nx.from_pandas_edgelist(df, "node1", "node2", edge_attr="membership")
 
-    # Visualizing and saving network.
-    logging.info("Constructing the layout and generating graph.")
-    pos = visualize_network(
-        G,
-        output=f"{out_folder}/graph_network.png",
-        layout=getattr(nx, layout),
-        weight="membership",
-        centroids_labelling=label_centroids,
-        subjects_labelling=label_subjects,
-        centroid_node_shape=centroids_size,
-        centroid_alpha=centroid_alpha,
-        centroid_node_color=centroid_node_color,
-        centroid_edge_color=centroid_edge_color,
-        subject_node_shape=subject_node_size,
-        subject_alpha=subject_node_alpha,
-        subject_node_color=subject_node_color,
-        subject_edge_color=subject_edge_color,
-        colormap=colormap,
-        title=title,
-        legend_title=legend_title,
-    )
+    # Computing graph network layout.
+    logging.info("Computing graph network layout.")
+    pos = compute_layout(G, layout=getattr(nx, layout), weight=weight)
+
+    logging.info("Setting nodes position.")
+    set_nodes_position(G, pos)
 
     # Saving graph as a .gexf object for easy reloading.
-    nx.write_gexf(G, f"{out_folder}/network_graph_file.gexf")
-
-    # Plotting network with custom label.
-    if data_for_label is not None:
-        if label_name is None:
-            sys.exit(
-                "If --data-for-label is provided, you need to specify which "
-                "column to use with --label-name."
-            )
-
-        logging.info("Constructing graph(s) with custom labels.")
-
-        # Loading df.
-        df_for_label = load_df_in_any_format(data_for_label)
-
-        assert (
-            df_with_ids[id_column].all() == df_for_label[id_column].all()
-        ), "Label and input data IDs does not match."
-
-        # Fetching data for label as array.
-        for label in label_name:
-            labels = df_for_label[label]
-
-            nodes_cmap = create_cmap_from_list(labels)
-
-            if background_alpha:
-                sub_alpha = []
-                for i in nodes_cmap:
-                    if isinstance(i, str):
-                        sub_alpha.append(0.1)
-                    else:
-                        sub_alpha.append(1)
-            else:
-                sub_alpha = np.array([1] * len(nodes_cmap))
-
-            _ = visualize_network(
-                G,
-                output=f"{out_folder}/graph_network_{label}.png",
-                layout=getattr(nx, layout),
-                pos=pos,
-                weight="membership",
-                centroids_labelling=label_centroids,
-                subjects_labelling=label_subjects,
-                centroid_node_shape=centroids_size,
-                centroid_alpha=centroid_alpha,
-                centroid_node_color=centroid_node_color,
-                centroid_edge_color=centroid_edge_color,
-                subject_node_shape=subject_node_size,
-                subject_alpha=sub_alpha,
-                subject_node_color=nodes_cmap,
-                subject_edge_color=subject_edge_color,
-                colormap="gray",
-                title=f"{title} with {label} subjects colored.",
-                legend_title=legend_title,
-            )
+    nx.write_gml(G, f"{out_folder}/network_graph_file.gml")
 
 
 if __name__ == "__main__":

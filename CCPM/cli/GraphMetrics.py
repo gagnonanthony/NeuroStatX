@@ -119,7 +119,7 @@ def GraphMetrics(
 
     # Loading graph network file.
     logging.info("Loading graph network file...")
-    G = nx.read_gexf(operation[1])
+    G = nx.read_gml(operation[1])
 
     # Performing operation.
     try:

@@ -19,9 +19,9 @@ def test_help(script_runner):
 
 def test_set_nodes_attributes(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
-    in_df = os.path.join(get_home(), "data/clustering_data.xlsx")
-    out_file = os.path.join(get_home(), "data/graph_with_attributes.gexf")
+    in_graph = os.path.join(get_home(), "data/graph_file.gml")
+    in_df = os.path.join(get_home(), "data/clusters_membership_3.xlsx")
+    out_file = os.path.join(get_home(), "data/graph_with_attributes.gml")
 
     ret = script_runner.run([
         "AddNodesAttributes",

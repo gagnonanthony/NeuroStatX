@@ -550,13 +550,13 @@ tests = ["pytest", "pytest-cov", "pytest-xdist"]
 
 [[package]]
 name = "cyclopts"
-version = "2.2.0"
+version = "2.3.1"
 description = ""
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "cyclopts-2.2.0-py3-none-any.whl", hash = "sha256:48a274f5e2de009e5b019279a8a630d64000f0683ad3e6baffe4f7908dac8980"},
-    {file = "cyclopts-2.2.0.tar.gz", hash = "sha256:1c942e96fd0b238d8c2e17104ab78051cc750d401341c0272df1050d15f37a59"},
+    {file = "cyclopts-2.3.1-py3-none-any.whl", hash = "sha256:eccfa491c459628cb6941a7ed428920f9939ab982319d79fca5e4336dd5164e9"},
+    {file = "cyclopts-2.3.1.tar.gz", hash = "sha256:62a8e2845e4353474ebe0e7733f0277b5169273e9d6107fcda0a8f2794764016"},
 ]
 
 [package.dependencies]
@@ -1624,13 +1624,13 @@ pytz = "*"
 
 [[package]]
 name = "mkdocs-material"
-version = "9.5.9"
+version = "9.5.10"
 description = "Documentation that simply works"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "mkdocs_material-9.5.9-py3-none-any.whl", hash = "sha256:a5d62b73b3b74349e45472bfadc129c871dd2d4add68d84819580597b2f50d5d"},
-    {file = "mkdocs_material-9.5.9.tar.gz", hash = "sha256:635df543c01c25c412d6c22991872267723737d5a2f062490f33b2da1c013c6d"},
+    {file = "mkdocs_material-9.5.10-py3-none-any.whl", hash = "sha256:3c6c46b57d2ee3c8890e6e0406e68b6863cf65768f0f436990a742702d198442"},
+    {file = "mkdocs_material-9.5.10.tar.gz", hash = "sha256:6ad626dbb31070ebbaedff813323a16a406629620e04b96458f16e6e9c7008fe"},
 ]
 
 [package.dependencies]
@@ -2306,13 +2306,13 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "8.0.0"
+version = "8.0.1"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-8.0.0-py3-none-any.whl", hash = "sha256:50fb9cbe836c3f20f0dfa99c565201fb75dc54c8d76373cd1bde06b06657bdb6"},
-    {file = "pytest-8.0.0.tar.gz", hash = "sha256:249b1b0864530ba251b7438274c4d251c58d868edaaec8762893ad4a0d71c36c"},
+    {file = "pytest-8.0.1-py3-none-any.whl", hash = "sha256:3e4f16fe1c0a9dc9d9389161c127c3edc5d810c38d6793042fb81d9f48a59fca"},
+    {file = "pytest-8.0.1.tar.gz", hash = "sha256:267f6563751877d772019b13aacbe4e860d73fe8f651f28112e9ac37de7513ae"},
 ]
 
 [package.dependencies]
@@ -3181,13 +3181,13 @@ files = [
 
 [[package]]
 name = "urllib3"
-version = "2.2.0"
+version = "2.2.1"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "urllib3-2.2.0-py3-none-any.whl", hash = "sha256:ce3711610ddce217e6d113a2732fafad960a03fd0318c91faa79481e35c11224"},
-    {file = "urllib3-2.2.0.tar.gz", hash = "sha256:051d961ad0c62a94e50ecf1af379c3aba230c66c710493493560c0c223c49f20"},
+    {file = "urllib3-2.2.1-py3-none-any.whl", hash = "sha256:450b20ec296a467077128bff42b73080516e71b56ff59a60a02bef2232c4fa9d"},
+    {file = "urllib3-2.2.1.tar.gz", hash = "sha256:d0570876c61ab9e520d776c38acbbb5b05a776d3f9ff98a5c8fd5162a444cf19"},
 ]
 
 [package.extras]
