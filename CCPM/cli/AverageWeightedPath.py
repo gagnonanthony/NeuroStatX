@@ -169,7 +169,7 @@ def AverageWeightedPath(
     Parameters
     ----------
     in_graph : str
-        Input graph file (.gexf).
+        Input graph file (.gml).
     id_column : str
         Name of the column in --data-for-label containing the subjects ids.
     data_for_label : str
@@ -212,7 +212,7 @@ def AverageWeightedPath(
                 f.writelines(str(param))
 
     logging.info("Loading graph and dataset.")
-    G = nx.read_gexf(in_graph)
+    G = nx.read_gml(in_graph)
 
     # Loading dataset and generating list of nodes to include.
     df = pd.read_excel(data_for_label)

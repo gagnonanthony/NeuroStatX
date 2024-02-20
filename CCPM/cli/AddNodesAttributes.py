@@ -92,7 +92,7 @@ def AddNodesAttributes(
     -------------
     ::
 
-        AddNodesAttributes --in-graph graph.gexf --in-dataset dataset.xlsx
+        AddNodesAttributes --in-graph graph.gml --in-dataset dataset.xlsx
         --id-column ID --labels label1 --labels label2 --labels label3
         --out-file graph_attributes.gexf --verbose
 
@@ -111,7 +111,7 @@ def AddNodesAttributes(
         supplied multiple times or as a .txt file containing all names in a
         line separated format.
     out_file : str, optional
-        Output graph file name (*.gexf).
+        Output graph file name (*.gml).
     verbose : bool, optional
         If true, produce verbose output.
     save_parameters : bool, optional
@@ -136,7 +136,7 @@ def AddNodesAttributes(
                 f.writelines(str(param))
 
     logging.info("Loading graph and dataset.")
-    G = nx.read_gexf(in_graph)
+    G = nx.read_gml(in_graph)
     df = load_df_in_any_format(in_dataset)
 
     # Sorting if labels is a .txt file or not.
@@ -156,7 +156,7 @@ def AddNodesAttributes(
     nx.set_node_attributes(G, attributes)
 
     logging.info("Saving graph.")
-    nx.write_gexf(G, out_file)
+    nx.write_gml(G, out_file)
 
 
 if __name__ == "__main__":

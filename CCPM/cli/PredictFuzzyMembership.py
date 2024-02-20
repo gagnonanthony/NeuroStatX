@@ -174,7 +174,7 @@ def PredictFuzzyMembership(
         Metric to use to compute distance between original points and clusters
         centroids.
     pca : bool, optional
-        If set, will perform PCA decomposition to 2 components before
+        If set, will perform PCA decomposition to 3 components before
         clustering.
     verbose : bool, optional
         If true, produce verbose output.
@@ -224,7 +224,7 @@ def PredictFuzzyMembership(
     # Decomposing into 2 components if asked.
     if pca:
         logging.info("Applying PCA dimensionality reduction.")
-        X, variance, components, chi, kmo = compute_pca(X, 2)
+        X, variance, components, chi, kmo = compute_pca(X, 3)
         logging.info(
             "Bartlett's test of sphericity returned a p-value of {} and "
             "Keiser-Meyer-Olkin (KMO)"
@@ -240,14 +240,15 @@ def PredictFuzzyMembership(
         components_df = pd.DataFrame(components, columns=df_for_clust.columns)
         components_df.to_excel(f"{out_folder}/PCA/components.xlsx", index=True,
                                header=True)
-        out = pd.DataFrame(X, columns=["Component #1", "Component #2"])
+        out = pd.DataFrame(X, columns=["Component #1", "Component #2",
+                                       "Component #3"])
         out.to_excel(f"{out_folder}/PCA/transformed_data.xlsx", index=True,
                      header=True)
 
         flexible_barplot(
             components,
             df_for_clust.columns,
-            2,
+            3,
             title="Loadings values for the two components.",
             filename=f"{out_folder}/PCA/barplot_loadings.png",
             ylabel="Loading value")

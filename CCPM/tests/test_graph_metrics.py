@@ -20,7 +20,7 @@ def test_help(script_runner):
 
 def test_eigencentrality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+    in_graph = os.path.join(get_home(), "data/graph_file.gml")
 
     ret = script_runner.run([
         "GraphMetrics",
@@ -32,7 +32,7 @@ def test_eigencentrality(script_runner):
 
 def test_closenesscentrality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+    in_graph = os.path.join(get_home(), "data/graph_file.gml")
 
     ret = script_runner.run([
         "GraphMetrics",
@@ -44,7 +44,7 @@ def test_closenesscentrality(script_runner):
 
 def test_betweennesscentrality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+    in_graph = os.path.join(get_home(), "data/graph_file.gml")
 
     ret = script_runner.run([
         "GraphMetrics",
@@ -56,7 +56,7 @@ def test_betweennesscentrality(script_runner):
 
 def test_informationcentrality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+    in_graph = os.path.join(get_home(), "data/graph_file.gml")
 
     ret = script_runner.run([
         "GraphMetrics",
@@ -68,7 +68,7 @@ def test_informationcentrality(script_runner):
 
 def test_currentflowbc(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+    in_graph = os.path.join(get_home(), "data/graph_file.gml")
 
     ret = script_runner.run([
         "GraphMetrics",
@@ -80,7 +80,7 @@ def test_currentflowbc(script_runner):
 
 def test_loadcentrality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+    in_graph = os.path.join(get_home(), "data/graph_file.gml")
 
     ret = script_runner.run([
         "GraphMetrics",
@@ -92,7 +92,7 @@ def test_loadcentrality(script_runner):
 
 def test_harmoniccentrality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+    in_graph = os.path.join(get_home(), "data/graph_file.gml")
 
     ret = script_runner.run([
         "GraphMetrics",
@@ -104,7 +104,7 @@ def test_harmoniccentrality(script_runner):
 
 def test_eccentricity(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+    in_graph = os.path.join(get_home(), "data/graph_file.gml")
 
     ret = script_runner.run([
         "GraphMetrics",
@@ -116,7 +116,7 @@ def test_eccentricity(script_runner):
 
 def test_clustering(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+    in_graph = os.path.join(get_home(), "data/graph_file.gml")
 
     ret = script_runner.run([
         "GraphMetrics",
@@ -128,7 +128,7 @@ def test_clustering(script_runner):
 
 # def test_constraint(script_runner):
 #    os.chdir(os.path.expanduser(tmp_dir.name))
-#    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+#    in_graph = os.path.join(get_home(), "data/graph_file.gml")
 
 #    ret = script_runner.run([
     # "GraphMetrics",
@@ -140,7 +140,7 @@ def test_clustering(script_runner):
 
 # def test_effectivesize(script_runner):
 #    os.chdir(os.path.expanduser(tmp_dir.name))
-#    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+#    in_graph = os.path.join(get_home(), "data/graph_file.gml")
 
 #    ret = script_runner.run([
     # "GraphMetrics",
@@ -152,7 +152,7 @@ def test_clustering(script_runner):
 
 def test_closenessvitality(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+    in_graph = os.path.join(get_home(), "data/graph_file.gml")
 
     ret = script_runner.run([
         "GraphMetrics",
@@ -164,7 +164,7 @@ def test_closenessvitality(script_runner):
 
 def test_degree(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gexf")
+    in_graph = os.path.join(get_home(), "data/graph_file.gml")
 
     ret = script_runner.run([
         "GraphMetrics",

@@ -1,8 +1,11 @@
 import unittest
+import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 
-from CCPM.network.viz import creating_node_colormap, create_cmap_from_list
+from CCPM.network.viz import (creating_node_colormap,
+                              create_cmap_from_list,
+                              set_nodes_position)
 
 
 class TestNodeColormapFunctions(unittest.TestCase):
@@ -53,6 +56,27 @@ class TestNodeColormapFunctions(unittest.TestCase):
             else:
                 self.assertEqual(expected_output[i],
                                  create_cmap_from_list(float_array)[i])
+
+
+class TestSetNodesPosition(unittest.TestCase):
+    def test_set_nodes_position(self):
+        # Create a graph
+        G = nx.Graph()
+        G.add_nodes_from([1, 2, 3])
+
+        # Define positions
+        pos = {1: (0, 0), 2: (1, 1), 3: (2, 2)}
+
+        # Call the function
+        set_nodes_position(G, pos)
+
+        # Check if node positions are set correctly
+        self.assertTrue(all("pos" in G.nodes[node] for node in G.nodes))
+        for node, position in pos.items():
+            self.assertAlmostEqual(G.nodes[node]["pos"][0],
+                                   float(position[0]))
+            self.assertAlmostEqual(G.nodes[node]["pos"][1],
+                                   float(position[1]))
 
 
 if __name__ == '__main__':

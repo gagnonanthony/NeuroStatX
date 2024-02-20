@@ -216,7 +216,7 @@ def Plsr(
 
     # Load graph file.
     logging.info("Loading graph and dataset.")
-    G = nx.read_gexf(in_graph)
+    G = nx.read_gml(in_graph)
 
     # Fetching dataframe.
     logging.info("Fetching nodes' attributes dataframe.")

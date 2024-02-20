@@ -55,6 +55,7 @@ GraphMetrics = 'CCPM.cli.GraphMetrics:app'
 PredictFuzzyMembership = 'CCPM.cli.PredictFuzzyMembership:app'
 AddNodesAttributes = 'CCPM.cli.AddNodesAttributes:app'
 Plsr = 'CCPM.cli.Plsr:app'
+VisualizeGraphNetwork = 'CCPM.cli.VisualizeGraphNetwork:app'
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

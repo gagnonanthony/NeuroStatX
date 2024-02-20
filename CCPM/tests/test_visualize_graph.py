@@ -1,4 +1,4 @@
-# !/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -12,27 +12,26 @@ tmp_dir = tempfile.TemporaryDirectory()
 
 
 def test_help(script_runner):
-    ret = script_runner.run(["AddNodesAttributes", "-h"])
+    ret = script_runner.run(["VisualizeGraphNetwork", "-h"])
 
     assert ret.success
 
 
-def test_set_nodes_attributes(script_runner):
+def test_visualize_graph_network(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gml")
-    in_df = os.path.join(get_home(), "data/clusters_membership_3.xlsx")
-    out_file = os.path.join(get_home(), "data/graph_with_attributes.gml")
+    data_label = os.path.join(get_home(), "data/labels.xlsx")
+    out_folder = os.path.join(get_home(), "data/Visualize_graph/")
 
     ret = script_runner.run([
-        "AddNodesAttributes",
+        "VisualizeGraphNetwork",
         "--in-graph", in_graph,
-        "--in-dataset", in_df,
-        "--labels", "gestage",
-        "--labels", "age",
-        "--labels", "iq",
+        "--out-folder", out_folder,
+        "--weight", "membership",
+        "--data-for-label", data_label,
         "--id-column", "subjectkey",
-        "--out-file", out_file,
-        "-f"]
+        "--label-name", "diagnosis",
+        "-f", "-v", "-s"]
     )
 
     assert ret.success
