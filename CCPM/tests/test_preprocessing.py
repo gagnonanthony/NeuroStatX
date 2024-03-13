@@ -98,7 +98,7 @@ class TestFunctions(unittest.TestCase):
         n_components = 3
 
         # Call the function with sample data
-        X_transformed, exp_var, components, p_value, kmo_model = \
+        X_transformed, model, exp_var, components, p_value, kmo_model = \
             compute_pca(X, n_components)
 
         # Check if the output variables have the correct data types

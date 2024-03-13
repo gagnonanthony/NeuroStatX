@@ -281,12 +281,6 @@ def VisualizeGraphNetwork(
     legend_title : str
         Legend title of the graph network.
     """
-    # Saving parameters
-    if save_parameters:
-        parameters = list(locals().items())
-        with open("nodes_attributes_parameters.txt", "w+") as f:
-            for param in parameters:
-                f.writelines(str(param))
 
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
@@ -294,6 +288,13 @@ def VisualizeGraphNetwork(
 
     assert_input(in_graph)
     assert_output_dir_exist(overwrite, out_folder, create_dir=True)
+
+    # Saving parameters
+    if save_parameters:
+        parameters = list(locals().items())
+        with open(f"{out_folder}/nodes_attributes_parameters.txt", "w+") as f:
+            for param in parameters:
+                f.writelines(str(param))
 
     # Loading graph.
     logging.info("Loading graph data.")

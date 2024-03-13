@@ -131,7 +131,7 @@ def AddNodesAttributes(
     # Saving parameters
     if save_parameters:
         parameters = list(locals().items())
-        with open("nodes_attributes_parameters.txt", "w+") as f:
+        with open(f"{out_file}/nodes_attributes_parameters.txt", "w+") as f:
             for param in parameters:
                 f.writelines(str(param))
 

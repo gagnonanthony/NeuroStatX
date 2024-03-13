@@ -9,7 +9,7 @@ style = "semver"
 
 [tool.poetry]
 name = "CCPM"
-version = "0.0.0"
+version = "0.0.0-post.263+4cc60ed"
 description = "Children Cognitive Profiles Mapping Toolbox (CCPM)"
 authors = ["Anthony Gagnon <anthony.gagnon7@usherbrooke.ca>"]
 license = "MIT"

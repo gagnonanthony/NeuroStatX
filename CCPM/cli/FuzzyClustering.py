@@ -5,6 +5,7 @@ import coloredlogs
 import logging
 import os
 import sys
+from joblib import dump
 
 from cyclopts import App, Parameter
 import numpy as np
@@ -236,7 +237,8 @@ def FuzzyClustering(
                         |       |-- parallel_plot_{k}clusters.png
                         |-- PCA (optional)
                         |       |-- transformed_data.xlsx
-                        |       └-- variance_explained.xlsx
+                        |       |-- variance_explained.xlsx
+                        |       └-- pca_model.joblib
                         |-- validation_indices.xlsx
                         └-- viz_multiple_cluster_nb.png
 
@@ -345,12 +347,15 @@ def FuzzyClustering(
     # Decomposing into 2 components if asked.
     if pca:
         logging.info("Applying PCA dimensionality reduction.")
-        X, variance, components, chi, kmo = compute_pca(X, 3)
+        X, model, variance, components, chi, kmo = compute_pca(X, 3)
         logging.info(
             "Bartlett's test of sphericity returned a p-value of {} and "
             "Keiser-Meyer-Olkin (KMO)"
             " test returned a value of {}.".format(chi, kmo)
         )
+        # Exporting model in .joblib format.
+        dump(model, f"{out_folder}/PCA/pca_model.joblib")
+
         # Exporting variance explained data.
         os.mkdir(f"{out_folder}/PCA/")
         var_exp = pd.DataFrame(variance, columns=["Variance Explained"])
@@ -363,6 +368,7 @@ def FuzzyClustering(
                                header=True)
         out = pd.DataFrame(X, columns=["Component #1", "Component #2",
                                        "Component #3"])
+        out = pd.concat([desc_data, out], axis=1)
         out.to_excel(f"{out_folder}/PCA/transformed_data.xlsx", index=True,
                      header=True)
 

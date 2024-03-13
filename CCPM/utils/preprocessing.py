@@ -223,4 +223,4 @@ def compute_pca(X, n_components):
     exp_var = pca.explained_variance_ratio_
     components = pca.components_
 
-    return X, exp_var, components, p_value, kmo_model
+    return X, pca, exp_var, components, p_value, kmo_model
