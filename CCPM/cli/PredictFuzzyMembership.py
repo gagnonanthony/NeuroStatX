@@ -5,6 +5,7 @@ import coloredlogs
 import logging
 import os
 import sys
+from joblib import load
 
 from cyclopts import App, Parameter
 import numpy as np
@@ -100,6 +101,13 @@ def PredictFuzzyMembership(
             group="Clustering Options",
         ),
     ] = False,
+    pca_model: Annotated[
+        str,
+        Parameter(
+            show_default=True,
+            group="Clustering Options",
+        ),
+    ] = None,
     verbose: Annotated[
         bool,
         Parameter(
@@ -223,35 +231,42 @@ def PredictFuzzyMembership(
 
     # Decomposing into 2 components if asked.
     if pca:
-        logging.info("Applying PCA dimensionality reduction.")
-        X, variance, components, chi, kmo = compute_pca(X, 3)
-        logging.info(
-            "Bartlett's test of sphericity returned a p-value of {} and "
-            "Keiser-Meyer-Olkin (KMO)"
-            " test returned a value of {}.".format(chi, kmo)
-        )
-        # Exporting variance explained data.
-        os.mkdir(f"{out_folder}/PCA/")
-        var_exp = pd.DataFrame(variance, columns=["Variance Explained"])
-        var_exp.to_excel(
-            f"{out_folder}/PCA/variance_explained.xlsx", index=True,
-            header=True
-        )
-        components_df = pd.DataFrame(components, columns=df_for_clust.columns)
-        components_df.to_excel(f"{out_folder}/PCA/components.xlsx", index=True,
-                               header=True)
-        out = pd.DataFrame(X, columns=["Component #1", "Component #2",
-                                       "Component #3"])
-        out.to_excel(f"{out_folder}/PCA/transformed_data.xlsx", index=True,
-                     header=True)
+        if pca_model is not None:
+            logging.info("Loading PCA model...")
+            pca_model = load(pca_model)
+            X = pca_model.transform(X)
+        else:
+            logging.info("Applying PCA dimensionality reduction.")
+            X, variance, components, chi, kmo = compute_pca(X, 3)
+            logging.info(
+                "Bartlett's test of sphericity returned a p-value of {} and "
+                "Keiser-Meyer-Olkin (KMO)"
+                " test returned a value of {}.".format(chi, kmo)
+            )
+            # Exporting variance explained data.
+            os.mkdir(f"{out_folder}/PCA/")
+            var_exp = pd.DataFrame(variance, columns=["Variance Explained"])
+            var_exp.to_excel(
+                f"{out_folder}/PCA/variance_explained.xlsx", index=True,
+                header=True
+            )
+            components_df = pd.DataFrame(components,
+                                         columns=df_for_clust.columns)
+            components_df.to_excel(f"{out_folder}/PCA/components.xlsx",
+                                   index=True,
+                                   header=True)
+            out = pd.DataFrame(X, columns=["Component #1", "Component #2",
+                                           "Component #3"])
+            out.to_excel(f"{out_folder}/PCA/transformed_data.xlsx", index=True,
+                         header=True)
 
-        flexible_barplot(
-            components,
-            df_for_clust.columns,
-            3,
-            title="Loadings values for the two components.",
-            filename=f"{out_folder}/PCA/barplot_loadings.png",
-            ylabel="Loading value")
+            flexible_barplot(
+                components,
+                df_for_clust.columns,
+                3,
+                title="Loadings values for the two components.",
+                filename=f"{out_folder}/PCA/barplot_loadings.png",
+                ylabel="Loading value")
 
     logging.info("Predicting membership matrix...")
     u, u0, d, jm, p, fpc = cmeans_predict(
