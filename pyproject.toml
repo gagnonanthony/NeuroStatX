@@ -43,6 +43,7 @@ adjusttext = "^1.0.4"
 strenum = "^0.4.15"
 cyclopts = "^2.2.0"
 openpyxl = "^3.1.2"
+inmoose = "^0.3.1"
 
 [tool.poetry.scripts]
 ComputeGraphNetwork = 'CCPM.cli.ComputeGraphNetwork:app'
