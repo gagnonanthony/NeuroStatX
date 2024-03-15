@@ -353,8 +353,6 @@ def FuzzyClustering(
             "Keiser-Meyer-Olkin (KMO)"
             " test returned a value of {}.".format(chi, kmo)
         )
-        # Exporting model in .joblib format.
-        dump(model, f"{out_folder}/PCA/pca_model.joblib")
 
         # Exporting variance explained data.
         os.mkdir(f"{out_folder}/PCA/")
@@ -379,6 +377,9 @@ def FuzzyClustering(
             title="Loadings values for the two components.",
             filename=f"{out_folder}/PCA/barplot_loadings.png",
             ylabel="Loading value")
+
+        # Exporting model in .joblib format.
+        dump(model, f"{out_folder}/PCA/pca_model.joblib")
 
     # Plotting the dendrogram.
     logging.info("Generating dendrogram.")
