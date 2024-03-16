@@ -12,6 +12,7 @@ name = "CCPM"
 version = "0.0.0-post.263+4cc60ed"
 description = "Children Cognitive Profiles Mapping Toolbox (CCPM)"
 authors = ["Anthony Gagnon <anthony.gagnon7@usherbrooke.ca>"]
+documentation = "https://gagnonanthony.github.io/CCPM/"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/gagnonanthony/CCPM.git"
@@ -43,7 +44,6 @@ adjusttext = "^1.0.4"
 strenum = "^0.4.15"
 cyclopts = "^2.2.0"
 openpyxl = "^3.1.2"
-inmoose = "^0.3.1"
 
 [tool.poetry.scripts]
 ComputeGraphNetwork = 'CCPM.cli.ComputeGraphNetwork:app'
