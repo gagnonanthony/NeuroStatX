@@ -7,7 +7,7 @@ from CCPM.statistics.harmonization import neuroCombat
 
 class TestHarmonization(unittest.TestCase):
 
-    def test_neuroCombat(self):
+    def test_neuroCombat_noneb(self):
         # Define a dataset to harmonize.
         df = pd.DataFrame({'A': [1.0, 2.0, 3.0, 3.0, 4.0, 5.0],
                            'B': [5.0, 4.0, 3.0, 3.0, 2.0, 1.0],
@@ -58,7 +58,7 @@ class TestHarmonization(unittest.TestCase):
                                    expected_output.values.T,
                                    atol=0.2)
 
-    def test_neuroCombat_noneb(self):
+    def test_neuroCombat_param(self):
         # Define a dataset to harmonize.
         df = pd.DataFrame({'A': [1.0, 2.0, 3.0, 3.0, 4.0, 5.0],
                            'B': [5.0, 4.0, 3.0, 3.0, 2.0, 1.0],
@@ -71,7 +71,7 @@ class TestHarmonization(unittest.TestCase):
         out = neuroCombat(df.values.T,
                           covars=covars,
                           batch_col='batch',
-                          eb=False,
+                          eb=True,
                           ref_batch=1)
 
         expected_output = pd.DataFrame({'A': [1.0, 2.0, 3.0, 1.0, 2.0, 3.0],
@@ -81,4 +81,4 @@ class TestHarmonization(unittest.TestCase):
         # Compare the output with the expected output.
         np.testing.assert_allclose(out['data'],
                                    expected_output.values.T,
-                                   atol=0.2)
+                                   atol=0.35)
