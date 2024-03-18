@@ -71,7 +71,7 @@ def flexible_barplot(
                 ax.set_title(df.columns[i])
                 ax.set_xlabel(xlabel)
                 ax.set_ylabel(ylabel)
-
+                ax.grid(False)
                 ax.spines[['top', 'right', 'left', 'bottom']].set(linewidth=2)
 
                 for bars in ax.containers:
