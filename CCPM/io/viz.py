@@ -1,174 +1,173 @@
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MultipleLocator
-from adjustText import adjust_text
-from matplotlib import rc
 import numpy as np
+import seaborn as sns
 
 
-def autolabel(rects, axs):
+def determine_layout(nb_axes):
     """
-    Function to attach a text label over or under the bar in a bar graph.
-    :param rects:       Graphical object from matplotlib.
-    :param axs:         Axe number.
-    :return:            Graphical object with annotated bars.
-    """
-    texts = []
-    for rect in rects:
-        height = rect.get_height()
-        if height > 0:
-            texts.append(
-                axs.text(
-                    rect.get_x() + rect.get_width() / 2.0,
-                    (height * 1.05),
-                    "%.3f" % float(height),
-                    ha="center",
-                    va="bottom",
-                )
-            )
-        else:
-            texts.append(
-                axs.text(
-                    rect.get_x() + rect.get_width() / 2.0,
-                    (height * 1.05) - 0.15,
-                    "%.3f" % float(height),
-                    ha="center",
-                    va="bottom",
-                )
-            )
+    Returns the optimal number of rows and columns for the bar plot.
 
-    # adjust the position of text labels to avoid overlapping
-    adjust_text(texts, ax=axs, add_objects=rects, only_move="y+")
+    Args:
+        nb_axes (int):      Number of axes to plot.
+
+    Returns:
+        int, int:           Number of rows and columns.
+    """
+
+    num_rows = int(np.sqrt(nb_axes))
+    num_cols = int(np.ceil(nb_axes / num_rows))
+
+    return num_rows, num_cols
 
 
 def flexible_barplot(
-    values, labels, num_axes, title, filename, xlabel=None, ylabel=None
+    df, nb_axes, output, cmap='magma', title='Barplot', xlabel=None,
+    ylabel=None
 ):
     """
     Function to generate a bar plot with multiple axes in a publication-ready
     style.
 
-    :param values:
-    :param labels:
-    :param num_axis:
-    :param title:
-    :param xlabel:
-    :param ylabel:
-    :param filename:
-    :return:
+    Args:
+        values (pd.DataFrame):          Dataframe with the values to plot. The
+                                        index represents the x-axis and the
+                                        columns the y-axis.
+        num_axes (int):                 Number of axes to plot.
+        output (str):                   Output filename.
+        cmap (str, optional):           Name of the colormap to use. Defaults
+                                        to "magma". See
+                                        https://matplotlib.org/stable/tutorials/colors/colormaps.html
+        title (str, optional):          Title of the plot.
+        xlabel (str, optional):         Label for the x-axis.
+        ylabel (str, optional):         Label for the y-axis.
     """
-
-    def determine_layout(nb_axes):
-        """
-        Returns the optimal number of rows and columns for the bar plot.
-        :param num_axes:
-        :return:
-        """
-        num_rows = int(np.sqrt(nb_axes))
-        num_cols = int(np.ceil(nb_axes / num_rows))
-
-        return num_rows, num_cols
 
     # Fetch optimal number of rows and columns.
-    num_rows, num_cols = determine_layout(num_axes)
+    num_rows, num_cols = determine_layout(nb_axes)
 
-    # Setting up figure and style.
-    fig, axes = plt.subplots(
-        nrows=num_rows, ncols=num_cols, figsize=(8 * num_cols, 6 * num_rows)
-    )
+    plotting_parameters = {
+        'palette': cmap,
+        'saturation': 1,
+        'orient': 'v',
+    }
 
-    # Generate each bar plot.
-    for i, ax in enumerate(axes.flat):
-        if i < num_axes:
-            # Set theme for plot.
-            ax.spines["right"].set_visible(False)
-            ax.spines["left"].set_visible(False)
-            ax.spines["bottom"].set_visible(False)
-            ax.spines["top"].set_visible(False)
-            ax.yaxis.set_major_locator(MultipleLocator(0.5))
-            ax.yaxis.set_minor_locator(MultipleLocator(0.1))
-            ax.grid(False)
-            rc(
-                "font",
-                **{"family": "sans-serif", "sans-serif": ["DejaVu Sans"],
-                   "size": 10},
-            )
+    with plt.rc_context(
+        {"font.family": "Sans Serif",
+         "font.size": 12, "font.weight": "normal", "axes.titleweight": "bold",
+         }
+    ):
+        # Setting up figure and style.
+        fig, axes = plt.subplots(
+            nrows=num_rows, ncols=num_cols,
+            figsize=(8 * num_cols, 6 * num_rows)
+        )
 
-            # Getting values
-            data = values[i]
+        for i, ax in enumerate(axes.flat):
+            if i < nb_axes:
+                sns.barplot(
+                    data=df, x=df.index, y=df.columns[i],
+                    ax=ax, **plotting_parameters
+                )
+                ax.set_title(df.columns[i])
+                ax.set_xlabel(xlabel)
+                ax.set_ylabel(ylabel)
+                ax.grid(False)
+                ax.spines[['top', 'right', 'left', 'bottom']].set(linewidth=2)
 
-            # Set the bars.
-            num_bars = len(data)
-            bar_width = 0.8 / num_cols
-            x_positions = np.arange(num_bars)
+                for bars in ax.containers:
+                    ax.bar_label(bars, fmt='{:,.3f}', padding=1)
 
-            # Setting limits
-            ax.set_ylim(-1, 1)
+            else:
+                ax.axis('off')
 
-            # Plot the bars.
-            bars = ax.bar(
-                x_positions, data, bar_width, align="center", tick_label=labels
-            )
-
-            # Adding labels to bars.
-            autolabel(bars, ax)
-
-            # Setting labels
-            ax.set_xlabel(xlabel)
-            ax.set_ylabel(ylabel)
-            ax.set_title(f"{title} : Factor {i + 1}")
-
-            # Setting tick labels.
-            label_format = ""
-            ticks_loc = ax.get_xticks().tolist()
-            ax.set_xticks(ax.get_xticks().tolist())
-            ax.set_xticklabels([label_format.format(x) for x in ticks_loc])
-            ax.set_xticklabels(labels, rotation=45)
-            plt.setp(ax.xaxis.get_majorticklabels(), ha="right")
-        else:
-            ax.axis("off")
-
-    plt.tight_layout()
-    plt.savefig(f"{filename}", dpi=300, bbox_inches="tight")
-    plt.close()
+        fig.suptitle(title, fontsize=20, fontweight='bold')
+        plt.tight_layout()
+        plt.savefig(f"{output}", dpi=300, bbox_inches="tight")
+        plt.close()
 
 
-def generate_coef_plot(df, permutation, pval, coefname, varname, output):
+def generate_coef_plot(df, pval, coefname, varname, output, cmap="magma"):
     """
-    Function to generate a coefficient plot.
+    Function to generate a bar plot with the coefficients and their
+    significance.
 
     Args:
-        df (_type_): _description_
-        coefname (_type_): _description_
-        varname (_type_): _description_
-        output (_type_): _description_
+        df (pd.DataFrame):      Dataframe containing the coefficients and their
+                                associated variable names.
+        coefname (str):         Name of the column containing the coefficients.
+        varname (str):          Name of the column containing the variable
+                                names.
+        output (str):           Output filename.
+        cmap (str, optional):   Name of the colormap to use. Defaults to
+                                "magma". See
+                                https://matplotlib.org/stable/tutorials/colors/colormaps.html
     """
-    # Compute standard deviation from permutation testing.
-    stdev = np.std(permutation, axis=0)
+    coef = df[coefname]
+    label = ['*' if p < 0.05 else '' for p in pval]
+    x = [cf + 0.1 if cf < 0 else cf - 0.1 for cf in coef]
+    y = np.arange(0, len(coef))
 
-    # Creating list of colors.
-    colors = []
-    for p, c in zip(pval, df[coefname]):
-        if p < 0.05 and c > 0:
-            colors.append('green')
-        elif p < 0.05 and c < 0:
-            colors.append('red')
-        else:
-            colors.append('black')
+    plotting_parameters = {
+        'data': df,
+        'x': coefname,
+        'y': varname,
+        'palette': cmap,
+        'saturation': 1,
+        'orient': 'h'
+    }
 
-    fig, ax = plt.subplots(figsize=(12, 7))
-    bar = ax.bar(x=varname, height=coefname, data=df, color='none')
-    ax.set_ylabel("Coefficient")
-    ax.set_xlabel("Variables")
-    ax.bar_label(bar, color='black', fontsize=15, label_type='edge',
-                 labels=['*' if p < 0.05 else '' for p in pval],
-                 padding=3)
-    ax.axhline(y=0, color="lightgrey", linestyle="--", linewidth=1)
-    ax.scatter(x=np.arange(df.shape[0]), marker="s", s=20, y=df[coefname],
-               color=colors)
-    ax.fill_between(df[varname], -stdev, stdev, alpha=0.2, color="lightgreen")
-    ax.set_xticklabels(df[varname], fontdict={'fontsize': 5, 'rotation': 90,
-                                              'horizontalalignment': 'center'})
+    with plt.rc_context(
+        {"font.family": "Sans Serif",
+         "font.size": 18, "font.weight": "normal", "axes.titleweight": "bold",
+         }
+    ):
+        fig, ax = plt.subplots(figsize=(10, 10))
+        sns.barplot(ax=ax, **plotting_parameters)
+
+        ax.spines[['left', 'right', 'bottom', 'top']].set(linewidth=2)
+        ax.set_ylabel('')
+        ax.set_xlabel('ß coefficients', fontdict={'fontweight': 'bold',
+                                                  'fontsize': 20})
+
+        for i in range(len(coef)):
+            plt.text(x[i], y[i] + 0.15, label[i], ha='center',
+                     va='center_baseline', color='black', fontsize=35,
+                     weight='bold')
 
     plt.tight_layout()
     plt.savefig(f"{output}")
     plt.close()
+
+
+def flexible_hist(df, output, cmap="magma", title="Histogram",
+                  xlabel=None, ylabel=None):
+    """Function to generate a single histogram representing the distributions
+    of all the columns within the dataset in a publication-ready style.
+
+    Args:
+        df (_type_): _description_
+        output (_type_): _description_
+        cmap (str, optional): _description_. Defaults to "magma".
+        title (str, optional): _description_. Defaults to "Histogram".
+    """
+
+    with plt.rc_context(
+        {"font.family": "Sans Serif",
+         "font.size": 12, "font.weight": "bold", "axes.titleweight": "bold"}
+    ):
+
+        # Setting up figure and style.
+        fig, ax = plt.subplots(figsize=(12, 10))
+
+        sns.histplot(data=df.melt(), x='value', hue='variable', ax=ax,
+                     kde=True, palette=cmap, stat='density')
+
+        ax.spines[['top', 'right', 'left', 'bottom']].set(linewidth=1.5)
+        ax.set_title(title, fontsize=16, fontweight='bold')
+        ax.set_xlabel(xlabel, fontweight='bold')
+        ax.set_ylabel(ylabel, fontweight='bold')
+        ax.legend(df.columns, title='Variables', fontsize=12,
+                  title_fontsize=14)
+
+        plt.tight_layout()
+        plt.savefig(f'{output}')

@@ -271,7 +271,7 @@ def CompareGraphs(
         sub_alpha = np.array([1] * mat.shape[1])
 
     logging.info("Visualizing percentiles on the 1st graph.")
-    _ = visualize_network(
+    visualize_network(
         graph1,
         output=f"{out_folder}/graph1.png",
         weight="membership",
@@ -291,7 +291,7 @@ def CompareGraphs(
     )
 
     logging.info("Visualizing percentiles on the 2nd graph.")
-    _ = visualize_network(
+    visualize_network(
         graph2,
         output=f"{out_folder}/graph2.png",
         weight="membership",

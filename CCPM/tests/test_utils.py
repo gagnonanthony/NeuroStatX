@@ -72,7 +72,8 @@ class TestFunctions(unittest.TestCase):
                                  [0.1, 0.1, 0.8],
                                  [0.7, 0.2, 0.1]],
                                 index=['A', 'B', 'C'],
-                                columns=['c1', 'c2', 'c3'])
+                                columns=['Cluster 1', 'Cluster 2',
+                                         'Cluster 3'])
         pd.testing.assert_frame_equal(df, expected)
 
 

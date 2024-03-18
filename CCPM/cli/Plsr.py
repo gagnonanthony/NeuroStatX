@@ -19,7 +19,7 @@ from CCPM.io.utils import (assert_input, assert_output_dir_exist)
 from CCPM.network.utils import fetch_attributes_df, fetch_edge_data
 from CCPM.statistics.plsr import (plsr_cv, permutation_testing,
                                   ScoringMethod)
-from CCPM.io.viz import generate_coef_plot
+from CCPM.io.viz import generate_coef_plot, flexible_hist
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
@@ -83,6 +83,13 @@ def Plsr(
             show_default=True,
         ),
     ] = 4,
+    plot_distributions: Annotated[
+        bool,
+        Parameter(
+            show_default=True,
+            group="Visualization Options",
+        ),
+    ] = False,
     verbose: Annotated[
         bool,
         Parameter(
@@ -188,6 +195,8 @@ def Plsr(
         Number of processes to use for the cross-validation.
     verbose : bool, optional
         If true, produce verbose output.
+    plot_distributions : bool, optional
+        If true, will plot the distributions of the edges' weights.
     save_parameters : bool, optional
         If true, will save input parameters to .txt file.
     overwrite : bool, optional
@@ -282,12 +291,13 @@ def Plsr(
     with plt.rc_context(
         {"font.size": 10, "font.weight": "bold", "axes.titleweight": "bold"}
     ):
-        # Edge histogram.
-        fig, ax = plt.subplots(figsize=(10, 10))
-        pd.DataFrame(edge, columns=edge_df.columns).hist(ax=ax)
-        plt.tight_layout()
-        plt.savefig(f"{out_folder}/Distributions/edge_histogram.png")
-        plt.close()
+        if plot_distributions:
+            # Edge's distributions.
+            edge_viz = pd.DataFrame(edge, columns=edge_df.columns)
+            flexible_hist(edge_viz,
+                          f"{out_folder}/Distributions/edges_distribution.png",
+                          cmap="magma", title="Edges' distributions",
+                          xlabel="Edges' weights", ylabel="Density")
 
         # MSE plot.
         fig, ax = plt.subplots(figsize=(10, 10))
@@ -315,7 +325,6 @@ def Plsr(
         for i in range(0, len(edge_df.columns)):
             generate_coef_plot(
                 coef_df,
-                perm_coef[:, :, i],
                 coef_pval[:, i],
                 coefname=f'coef{i+1}',
                 varname='varname',

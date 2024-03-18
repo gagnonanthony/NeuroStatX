@@ -23,6 +23,7 @@ from CCPM.clustering.viz import (
     plot_dendrogram,
     plot_parallel_plot,
     plot_grouped_barplot,
+    radar_plot
 )
 from CCPM.clustering.metrics import compute_knee_location, find_optimal_gap
 from CCPM.clustering.distance import DistanceMetrics
@@ -118,6 +119,34 @@ def FuzzyClustering(
             group="Computational Options",
         ),
     ] = 4,
+    parallelplot: Annotated[
+        bool,
+        Parameter(
+            show_default=True,
+            group="Visualization Options",
+        ),
+    ] = False,
+    barplot: Annotated[
+        bool,
+        Parameter(
+            show_default=True,
+            group="Visualization Options",
+        ),
+    ] = False,
+    radarplot: Annotated[
+        bool,
+        Parameter(
+            show_default=True,
+            group="Visualization Options",
+        ),
+    ] = True,
+    cmap: Annotated[
+        str,
+        Parameter(
+            show_default=True,
+            group="Visualization Options",
+        ),
+    ] = "magma",
     verbose: Annotated[
         bool,
         Parameter(
@@ -214,7 +243,7 @@ def FuzzyClustering(
     ::
 
                     [out_folder]
-                        |-- BARPLOTS
+                        |-- BARPLOTS (optional)
                         |       |-- barplot_2clusters.png
                         |       |-- [...]
                         |       └-- barplot_{k}clusters.png
@@ -231,7 +260,7 @@ def FuzzyClustering(
                         |       |-- chi.png
                         |       |-- [...]
                         |       └-- wss.png
-                        |-- PARALLEL_PLOTS
+                        |-- PARALLEL_PLOTS (optional)
                         |       |-- parallel_plot_2clusters.png
                         |       |-- [...]
                         |       |-- parallel_plot_{k}clusters.png
@@ -239,6 +268,10 @@ def FuzzyClustering(
                         |       |-- transformed_data.xlsx
                         |       |-- variance_explained.xlsx
                         |       └-- pca_model.joblib
+                        |-- RADAR_PLOTS (optional)
+                        |       |-- radar_plot_2clusters.png
+                        |       |-- [...]
+                        |       |-- radar_plot_{k}clusters.png
                         |-- validation_indices.xlsx
                         └-- viz_multiple_cluster_nb.png
 
@@ -299,6 +332,18 @@ def FuzzyClustering(
         specified, current folder and default name will be used.
     processes : int, optional
         Number of processes to launch in parallel.
+    parallelplot : bool, optional
+        If true, will output parallel plot for each cluster solution. Default
+        is False.
+    barplot : bool, optional
+        If true, will output barplot for each cluster solution. Default is
+        False.
+    radarplot : bool, optional
+        If true, will output radar plot for each cluster solution. Default is
+        True.
+    cmap : str, optional
+        Colormap to use for plotting. Default is "magma". See
+        https://matplotlib.org/stable/tutorials/colors/colormaps.html.
     verbose : bool, optional
         If true, produce verbose output.
     save_parameters : bool, optional
@@ -371,12 +416,12 @@ def FuzzyClustering(
                      header=True)
 
         flexible_barplot(
-            components,
+            components_df.T,
             df_for_clust.columns,
             3,
-            title="Loadings values for the two components.",
-            filename=f"{out_folder}/PCA/barplot_loadings.png",
-            ylabel="Loading value")
+            title="Loadings values for the three components.",
+            output=f"{out_folder}/PCA/barplot_loadings.png",
+            ylabel="Loading values")
 
         # Exporting model in .joblib format.
         dump(model, f"{out_folder}/PCA/pca_model.joblib")
@@ -484,26 +529,40 @@ def FuzzyClustering(
     os.mkdir(f"{out_folder}/MEMBERSHIP_MAT/")
     os.mkdir(f"{out_folder}/MEMBERSHIP_DF/")
     os.mkdir(f"{out_folder}/PARALLEL_PLOTS/")
+    os.mkdir(f"{out_folder}/RADAR_PLOTS/")
     os.mkdir(f"{out_folder}/CENTROIDS/")
     os.mkdir(f"{out_folder}/BARPLOTS")
 
     # Iterating and saving every elements.
     for i in range(len(u)):
         membership = np.argmax(u[i], axis=0)
-        plot_parallel_plot(
-            df_for_clust,
-            membership,
-            mean_values=True,
-            output=f"{out_folder}/PARALLEL_PLOTS/parallel_plot_{i+2}"
-                   "clusters.png",
-            title=f"Parallel Coordinates plot for {i+2} clusters solution.",
-        )
-        plot_grouped_barplot(
-            df_for_clust,
-            membership,
-            title=f"Barplot of {i+2} clusters solution.",
-            output=f"{out_folder}/BARPLOTS/barplot_{i+2}clusters.png",
-        )
+        if parallelplot:
+            plot_parallel_plot(
+                df_for_clust,
+                membership,
+                mean_values=True,
+                output=f"{out_folder}/PARALLEL_PLOTS/parallel_plot_{i+2}"
+                       "clusters.png",
+                cmap=cmap,
+                title=f"Parallel Coordinates plot for {i+2} clusters solution."
+            )
+        if barplot:
+            plot_grouped_barplot(
+                df_for_clust,
+                membership,
+                title=f"Barplot of {i+2} clusters solution.",
+                cmap=cmap,
+                output=f"{out_folder}/BARPLOTS/barplot_{i+2}clusters.png",
+            )
+        if radarplot:
+            radar_plot(
+                df_for_clust,
+                membership,
+                title=f"Radar plot of {i+2} clusters solution.",
+                frame='circle',
+                cmap=cmap,
+                output=f"{out_folder}/RADAR_PLOTS/radar_plot_{i+2}clusters.png"
+            )
 
         # Converting membership arrays to df.
         member = pd.DataFrame(

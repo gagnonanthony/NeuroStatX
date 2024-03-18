@@ -32,6 +32,9 @@ def test_execution_predict_fuzzy(script_runner):
         "--in-dataset", in_dataset,
         "--desc-columns", 4,
         "--id-column", "subjectkey",
+        "--barplot",
+        "--parallelplot",
+        "--radarplot",
         "-f"]
     )
 

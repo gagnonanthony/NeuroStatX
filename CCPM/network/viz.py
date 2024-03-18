@@ -208,8 +208,6 @@ def visualize_network(
     plt.savefig(output)
     plt.close()
 
-    return pos
-
 
 def membership_distribution(mat, output="./membership_distribution.png"):
     """
@@ -232,42 +230,46 @@ def membership_distribution(mat, output="./membership_distribution.png"):
     # Calculating delta.
     delta = high1st - high2nd
 
-    # Plotting distributions.
-    plt.rcParams["figure.figsize"] = [12, 7]
-    plt.rcParams["figure.autolayout"] = True
-    sns.set_style("white")
-    sns.set_context("poster", 0.5)
+    # Plotting the distribution.
+    with plt.rc_context(
+        {"font.family": "Sans Serif",
+         "font.size": 12, "font.weight": "normal", "axes.titleweight": "bold"}
+    ):
 
-    f, axes = plt.subplots(2, 2)
+        fig, ax = plt.subplots(2, 2, figsize=(16, 16))
 
-    # Plotting 1st highest membership value.
-    sns.histplot(data=high1st, stat="density", bins=50, kde=True,
-                 ax=axes[0, 0])
-    axes[0, 0].set_xlabel(
-        "1st highest membership value distribution amongst all subjects."
-    )
-    axes[0, 0].axvline(x=np.median(high1st), ymin=0, ymax=1)
+        # Plotting 1st highest membership value.
+        sns.histplot(data=high1st, stat="density", bins=50, kde=True,
+                     ax=ax[0, 0], color="lightgray")
+        ax[0, 0].set_xlabel(
+            "1st highest membership value distribution amongst all subjects."
+        )
+        ax[0, 0].axvline(x=np.median(high1st), ymin=0, ymax=1, color="gray",
+                         linestyle="--")
 
-    # Plotting 2nd highest memberhsip value.
-    sns.histplot(data=high2nd, stat="density", bins=50, kde=True,
-                 ax=axes[0, 1])
-    axes[0, 1].set_xlabel(
-        "2nd highest membership value distribution amongst all subjects."
-    )
-    axes[0, 1].axvline(x=np.median(high2nd), ymin=0, ymax=1)
+        # Plotting 2nd highest memberhsip value.
+        sns.histplot(data=high2nd, stat="density", bins=50, kde=True,
+                     ax=ax[0, 1], color="lightgray")
+        ax[0, 1].set_xlabel(
+            "2nd highest membership value distribution amongst all subjects."
+        )
+        ax[0, 1].axvline(x=np.median(high2nd), ymin=0, ymax=1, color="gray",
+                         linestyle="--")
 
-    # Plotting delta.
-    sns.histplot(data=delta, stat="density", bins=50, kde=True, ax=axes[1, 0])
-    axes[1, 0].set_xlabel(
-        "Delta (1st highest value - 2nd highest value) distribution amongst "
-        "all subjects."
-    )
-    axes[1, 0].axvline(x=np.median(delta), ymin=0, ymax=1)
+        # Plotting delta.
+        sns.histplot(data=delta, stat="density", bins=50, kde=True,
+                     ax=ax[1, 0], color="lightgray")
+        ax[1, 0].set_xlabel(
+            "Delta (1st highest value - 2nd highest value) distribution "
+            "amongst all subjects."
+        )
+        ax[1, 0].axvline(x=np.median(delta), ymin=0, ymax=1, color="gray",
+                         linestyle="--")
 
-    axes[1, 1].remove()
-    plt.tight_layout()
-    plt.savefig(f"{output}")
-    plt.close()
+        ax[1, 1].remove()
+        plt.tight_layout()
+        plt.savefig(f"{output}")
+        plt.close()
 
 
 def creating_node_colormap(percentile_dict):

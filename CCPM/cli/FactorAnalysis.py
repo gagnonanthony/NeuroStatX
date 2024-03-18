@@ -463,24 +463,20 @@ def FactorAnalysis(
         efa_loadings = pd.DataFrame(
             efa.loadings_, columns=columns, index=df.columns
         )
-        efa_data_to_plot = [efa_loadings[i].values
-                            for i in efa_loadings.columns]
         if use_only_efa:
             flexible_barplot(
-                efa_data_to_plot,
-                efa_loadings.index,
+                efa_loadings,
                 nfactors,
                 title="Loadings values for the EFA",
-                filename=f"{out_folder}/barplot_loadings.png",
+                output=f"{out_folder}/barplot_loadings.png",
                 ylabel="Loading value",
             )
         else:
             flexible_barplot(
-                efa_data_to_plot,
-                efa_loadings.index,
+                efa_loadings,
                 nfactors,
                 title="Loadings values for the EFA",
-                filename=f"{out_folder}/efa/barplot_loadings.png",
+                output=f"{out_folder}/efa/barplot_loadings.png",
                 ylabel="Loading value",
             )
 

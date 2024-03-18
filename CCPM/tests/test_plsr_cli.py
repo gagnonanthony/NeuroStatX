@@ -30,6 +30,7 @@ def test_plsr(script_runner):
         "--attributes", "age",
         "--attributes", "iq",
         "--permutations", 100,
+        "--plot-distributions",
         "-f"]
     )
 
