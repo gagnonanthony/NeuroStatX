@@ -315,7 +315,6 @@ def Plsr(
         for i in range(0, len(edge_df.columns)):
             generate_coef_plot(
                 coef_df,
-                perm_coef[:, :, i],
                 coef_pval[:, i],
                 coefname=f'coef{i+1}',
                 varname='varname',

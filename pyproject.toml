@@ -40,7 +40,6 @@ matplotlib = "^3.8.2"
 networkx = "^3.2.1"
 coloredlogs = "^15.0.1"
 statannotations = {git = "https://github.com/gagnonanthony/statannotations.git"}
-adjusttext = "^1.0.4"
 strenum = "^0.4.15"
 cyclopts = "^2.2.0"
 openpyxl = "^3.1.2"

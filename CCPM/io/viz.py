@@ -21,7 +21,8 @@ def determine_layout(nb_axes):
 
 
 def flexible_barplot(
-    values, num_axes, output, title='Barplot', xlabel=None, ylabel=None
+    df, num_axes, output, cmap='magma', title='Barplot', xlabel=None,
+    ylabel=None
 ):
     """
     Function to generate a bar plot with multiple axes in a publication-ready
@@ -33,6 +34,9 @@ def flexible_barplot(
                                         columns the y-axis.
         num_axes (int):                 Number of axes to plot.
         output (str):                   Output filename.
+        cmap (str, optional):           Name of the colormap to use. Defaults
+                                        to "magma". See
+                                        https://matplotlib.org/stable/tutorials/colors/colormaps.html
         title (str, optional):          Title of the plot.
         xlabel (str, optional):         Label for the x-axis.
         ylabel (str, optional):         Label for the y-axis.
@@ -42,7 +46,7 @@ def flexible_barplot(
     num_rows, num_cols = determine_layout(num_axes)
 
     plotting_parameters = {
-        'palette': 'magma',
+        'palette': cmap,
         'saturation': 1,
         'orient': 'v',
     }
@@ -61,10 +65,10 @@ def flexible_barplot(
         for i, ax in enumerate(axes.flat):
             if i < num_axes:
                 sns.barplot(
-                    data=values, x=values.index, y=values.columns[i],
+                    data=df, x=df.index, y=df.columns[i],
                     ax=ax, **plotting_parameters
                 )
-                ax.set_title(values.columns[i])
+                ax.set_title(df.columns[i])
                 ax.set_xlabel(xlabel)
                 ax.set_ylabel(ylabel)
 
@@ -82,42 +86,53 @@ def flexible_barplot(
         plt.close()
 
 
-def generate_coef_plot(df, permutation, pval, coefname, varname, output):
+def generate_coef_plot(df, pval, coefname, varname, output, cmap="magma"):
     """
-    Function to generate a coefficient plot.
+    Function to generate a bar plot with the coefficients and their
+    significance.
 
     Args:
-        df (_type_): _description_
-        coefname (_type_): _description_
-        varname (_type_): _description_
-        output (_type_): _description_
+        df (pd.DataFrame):      Dataframe containing the coefficients and their
+                                associated variable names.
+        coefname (str):         Name of the column containing the coefficients.
+        varname (str):          Name of the column containing the variable
+                                names.
+        output (str):           Output filename.
+        cmap (str, optional):   Name of the colormap to use. Defaults to
+                                "magma". See
+                                https://matplotlib.org/stable/tutorials/colors/colormaps.html
     """
-    # Compute standard deviation from permutation testing.
-    stdev = np.std(permutation, axis=0)
+    coef = df[coefname]
+    label = ['*' if p < 0.05 else '' for p in pval]
+    x = [cf + 0.1 if cf < 0 else cf - 0.1 for cf in coef]
+    y = np.arange(0, len(coef))
 
-    # Creating list of colors.
-    colors = []
-    for p, c in zip(pval, df[coefname]):
-        if p < 0.05 and c > 0:
-            colors.append('green')
-        elif p < 0.05 and c < 0:
-            colors.append('red')
-        else:
-            colors.append('black')
+    plotting_parameters = {
+        'data': df,
+        'x': coefname,
+        'y': varname,
+        'palette': cmap,
+        'saturation': 1,
+        'orient': 'h'
+    }
 
-    fig, ax = plt.subplots(figsize=(12, 7))
-    bar = ax.bar(x=varname, height=coefname, data=df, color='none')
-    ax.set_ylabel("Coefficient")
-    ax.set_xlabel("Variables")
-    ax.bar_label(bar, color='black', fontsize=15, label_type='edge',
-                 labels=['*' if p < 0.05 else '' for p in pval],
-                 padding=3)
-    ax.axhline(y=0, color="lightgrey", linestyle="--", linewidth=1)
-    ax.scatter(x=np.arange(df.shape[0]), marker="s", s=20, y=df[coefname],
-               color=colors)
-    ax.fill_between(df[varname], -stdev, stdev, alpha=0.2, color="lightgreen")
-    ax.set_xticklabels(df[varname], fontdict={'fontsize': 5, 'rotation': 90,
-                                              'horizontalalignment': 'center'})
+    with plt.rc_context(
+        {"font.family": "Sans Serif",
+         "font.size": 18, "font.weight": "normal", "axes.titleweight": "bold",
+         }
+    ):
+        fig, ax = plt.subplots(figsize=(10, 10))
+        sns.barplot(ax=ax, **plotting_parameters)
+
+        ax.spines[['left', 'right', 'bottom', 'top']].set(linewidth=2)
+        ax.set_ylabel('')
+        ax.set_xlabel('ß coefficients', fontdict={'fontweight': 'bold',
+                                                  'fontsize': 20})
+
+        for i in range(len(coef)):
+            plt.text(x[i], y[i] + 0.15, label[i], ha='center',
+                     va='center_baseline', color='black', fontsize=35,
+                     weight='bold')
 
     plt.tight_layout()
     plt.savefig(f"{output}")
