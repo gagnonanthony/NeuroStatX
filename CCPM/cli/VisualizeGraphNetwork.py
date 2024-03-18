@@ -302,7 +302,7 @@ def VisualizeGraphNetwork(
 
     # Visualizing and saving network.
     logging.info("Generating graph.")
-    pos = visualize_network(
+    visualize_network(
         G,
         output=f"{out_folder}/graph_network.png",
         weight=weight,
@@ -362,7 +362,7 @@ def VisualizeGraphNetwork(
             else:
                 sub_alpha = np.array([1] * len(nodes_cmap))
 
-            _ = visualize_network(
+            visualize_network(
                 G,
                 output=f"{out_folder}/graph_network_{label}.png",
                 weight=weight,

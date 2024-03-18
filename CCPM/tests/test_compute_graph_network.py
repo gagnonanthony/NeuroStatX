@@ -27,6 +27,7 @@ def test_compute_graph_network(script_runner):
         "--in-dataset", in_matrix,
         "--out-folder", out_folder,
         "--id-column", "subjectkey",
+        "--plot-distribution",
         "--desc-columns", 1, "-f"]
     )
 

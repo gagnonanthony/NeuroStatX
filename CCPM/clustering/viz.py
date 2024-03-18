@@ -303,12 +303,12 @@ def plot_grouped_barplot(X, labels, output, cmap='magma',
         _, results = annotator.annotate()
 
         # Customization options.
-        axes.spines[["top", "right"]].set_visible(False)
-        axes.spines[["left", "bottom"]].set(linewidth=1.5)
+        axes.spines[["left", "bottom", "top", "right"]].set(linewidth=2)
         axes.legend(title="Cluster #", loc="best", title_fontsize="medium")
         axes.set_title(f"{title}")
         axes.set_ylabel("Scores", fontdict={"fontweight": "bold"})
         axes.set_xlabel("")
+        axes.grid(False)
 
         axes.figure.autofmt_xdate()
 

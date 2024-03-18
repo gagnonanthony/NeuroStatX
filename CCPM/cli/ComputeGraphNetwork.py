@@ -77,6 +77,13 @@ def ComputeGraphNetwork(
             group="Optional parameters",
         ),
     ] = False,
+    plot_distribution: Annotated[
+        bool,
+        Parameter(
+            show_default=True,
+            group="Plotting Options",
+        ),
+    ] = False,
     layout: Annotated[
         NetworkLayout,
         Parameter(
@@ -159,18 +166,13 @@ def ComputeGraphNetwork(
         If true, force overwriting of existing output files.
     save_parameters : bool, optional
         If true, save the parameters used in a .txt file.
+    plot_distribution : bool, optional
+        If true, will plot the membership distribution and delta.
     layout : NetworkLayout, optional
         Layout algorithm to determine the nodes position.
     weight : str, optional
         Name of the column containing the edge weight. Default is 'membership'.
     """
-
-    # Saving parameters
-    if save_parameters:
-        parameters = list(locals().items())
-        with open(f"{out_folder}/graph_network_parameters.txt", "w+") as f:
-            for param in parameters:
-                f.writelines(str(param))
 
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
@@ -178,6 +180,13 @@ def ComputeGraphNetwork(
 
     assert_input(in_dataset)
     assert_output_dir_exist(overwrite, out_folder, create_dir=True)
+
+    # Saving parameters
+    if save_parameters:
+        parameters = list(locals().items())
+        with open(f"{out_folder}/graph_network_parameters.txt", "w+") as f:
+            for param in parameters:
+                f.writelines(str(param))
 
     # Loading membership matrix.
     logging.info("Loading membership data.")
@@ -193,9 +202,10 @@ def ComputeGraphNetwork(
                             axis=1)
 
     # Plotting membership distributions and delta.
-    membership_distribution(
-        clean_df.values, output=f"{out_folder}/membership_distribution.png"
-    )
+    if plot_distribution:
+        membership_distribution(
+            clean_df.values, output=f"{out_folder}/membership_distribution.png"
+        )
 
     # Fetching dataframe of nodes and edges.
     df, _, _ = get_nodes_and_edges(df_with_ids)

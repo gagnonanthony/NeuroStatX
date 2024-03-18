@@ -21,7 +21,7 @@ def determine_layout(nb_axes):
 
 
 def flexible_barplot(
-    df, num_axes, output, cmap='magma', title='Barplot', xlabel=None,
+    df, nb_axes, output, cmap='magma', title='Barplot', xlabel=None,
     ylabel=None
 ):
     """
@@ -43,7 +43,7 @@ def flexible_barplot(
     """
 
     # Fetch optimal number of rows and columns.
-    num_rows, num_cols = determine_layout(num_axes)
+    num_rows, num_cols = determine_layout(nb_axes)
 
     plotting_parameters = {
         'palette': cmap,
@@ -63,7 +63,7 @@ def flexible_barplot(
         )
 
         for i, ax in enumerate(axes.flat):
-            if i < num_axes:
+            if i < nb_axes:
                 sns.barplot(
                     data=df, x=df.index, y=df.columns[i],
                     ax=ax, **plotting_parameters
@@ -137,3 +137,37 @@ def generate_coef_plot(df, pval, coefname, varname, output, cmap="magma"):
     plt.tight_layout()
     plt.savefig(f"{output}")
     plt.close()
+
+
+def flexible_hist(df, output, cmap="magma", title="Histogram",
+                  xlabel=None, ylabel=None):
+    """Function to generate a single histogram representing the distributions
+    of all the columns within the dataset in a publication-ready style.
+
+    Args:
+        df (_type_): _description_
+        output (_type_): _description_
+        cmap (str, optional): _description_. Defaults to "magma".
+        title (str, optional): _description_. Defaults to "Histogram".
+    """
+
+    with plt.rc_context(
+        {"font.family": "Sans Serif",
+         "font.size": 12, "font.weight": "bold", "axes.titleweight": "bold"}
+    ):
+
+        # Setting up figure and style.
+        fig, ax = plt.subplots(figsize=(12, 10))
+
+        sns.histplot(data=df.melt(), x='value', hue='variable', ax=ax,
+                     kde=True, palette=cmap, stat='density')
+
+        ax.spines[['top', 'right', 'left', 'bottom']].set(linewidth=1.5)
+        ax.set_title(title, fontsize=16, fontweight='bold')
+        ax.set_xlabel(xlabel, fontweight='bold')
+        ax.set_ylabel(ylabel, fontweight='bold')
+        ax.legend(df.columns, title='Variables', fontsize=12,
+                  title_fontsize=14)
+
+        plt.tight_layout()
+        plt.savefig(f'{output}')

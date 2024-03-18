@@ -18,7 +18,8 @@ from CCPM.io.utils import (load_df_in_any_format, assert_input,
                            assert_output_dir_exist)
 from CCPM.clustering.viz import (
     plot_parallel_plot,
-    plot_grouped_barplot)
+    plot_grouped_barplot,
+    radar_plot)
 from CCPM.io.viz import flexible_barplot
 from CCPM.utils.preprocessing import merge_dataframes, compute_pca
 from CCPM.clustering.distance import DistanceMetrics
@@ -108,6 +109,34 @@ def PredictFuzzyMembership(
             group="Clustering Options",
         ),
     ] = None,
+    parallelplot: Annotated[
+        bool,
+        Parameter(
+            show_default=True,
+            group="Visualization Options",
+        ),
+    ] = False,
+    barplot: Annotated[
+        bool,
+        Parameter(
+            show_default=True,
+            group="Visualization Options",
+        ),
+    ] = False,
+    radarplot: Annotated[
+        bool,
+        Parameter(
+            show_default=True,
+            group="Visualization Options",
+        ),
+    ] = True,
+    cmap: Annotated[
+        str,
+        Parameter(
+            show_default=True,
+            group="Visualization Options",
+        ),
+    ] = "magma",
     verbose: Annotated[
         bool,
         Parameter(
@@ -184,6 +213,18 @@ def PredictFuzzyMembership(
     pca : bool, optional
         If set, will perform PCA decomposition to 3 components before
         clustering.
+    parallelplot : bool, optional
+        If true, will output parallel plot for each cluster solution. Default
+        is False.
+    barplot : bool, optional
+        If true, will output barplot for each cluster solution. Default is
+        False.
+    radarplot : bool, optional
+        If true, will output radar plot for each cluster solution. Default is
+        True.
+    cmap : str, optional
+        Colormap to use for plotting. Default is "magma". See
+        https://matplotlib.org/stable/tutorials/colors/colormaps.html.
     verbose : bool, optional
         If true, produce verbose output.
     save_parameters : bool, optional
@@ -296,22 +337,38 @@ def PredictFuzzyMembership(
 
     os.mkdir(f"{out_folder}/PARALLEL_PLOTS/")
     os.mkdir(f"{out_folder}/BARPLOTS/")
+    os.mkdir(f"{out_folder}/RADAR_PLOTS/")
     membership = np.argmax(u, axis=0)
-    plot_parallel_plot(
-        df_for_clust,
-        membership,
-        mean_values=True,
-        output=f"{out_folder}/PARALLEL_PLOTS/parallel_plot_{u.shape[0]}"
-               "clusters.png",
-        title=f"Parallel Coordinates plot for {u.shape[0]} clusters "
-        "solution.",
-    )
-    plot_grouped_barplot(
-        df_for_clust,
-        membership,
-        title=f"Barplot of {u.shape[0]} clusters solution.",
-        output=f"{out_folder}/BARPLOTS/barplot_{u.shape[0]}clusters.png",
-    )
+    if parallelplot:
+        plot_parallel_plot(
+            df_for_clust,
+            membership,
+            mean_values=True,
+            output=f"{out_folder}/PARALLEL_PLOTS/parallel_plot_{u.shape[0]}"
+                   "clusters.png",
+            title=f"Parallel Coordinates plot for {u.shape[0]} clusters "
+            "solution.",
+            cmap=cmap
+        )
+    if barplot:
+        plot_grouped_barplot(
+            df_for_clust,
+            membership,
+            title=f"Barplot of {u.shape[0]} clusters solution.",
+            cmap=cmap,
+            output=f"{out_folder}/BARPLOTS/barplot_{u.shape[0]}clusters.png",
+        )
+    if radarplot:
+        radar_plot(
+            df_for_clust,
+            membership,
+            title=f"Radar plot of {u.shape[0]} clusters solution.",
+            frame='circle',
+            cmap=cmap,
+            output=(
+                f"{out_folder}/RADAR_PLOTS/radar_plot_{u.shape[0]}clusters.png"
+            ),
+        )
 
 
 if __name__ == "__main__":

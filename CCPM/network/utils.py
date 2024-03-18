@@ -170,6 +170,7 @@ def fetch_edge_data(G, weight='membership'):
         [i for i in range(1, len(cntr_node) + 1)],
         axis=0)
     df = pd.DataFrame(adj[:, 1:(len(cntr_node) + 1)], index=sub_node,
-                      columns=cntr_node)
+                      columns=[f'Cluster {i+1}' for i in range(len(cntr_node))]
+                      )
 
     return df

@@ -56,6 +56,13 @@ def CompareClustering(
             show_default=True,
         )
     ] = [],
+    cmap: Annotated[
+        str,
+        Parameter(
+            show_default=True,
+            group="Visualization Options",
+        )
+    ] = "magma",
     title: Annotated[
         str,
         Parameter(
@@ -145,6 +152,9 @@ def CompareClustering(
     columns_name : List[str], optional
         Name given to each input dataset (needs to be in the same order as
         the input datasets).
+    cmap : str, optional
+        Name of the colormap to use. Defaults to "magma". See
+        https://matplotlib.org/stable/tutorials/colors/colormaps.html
     title : str, optional
         Heatmap title.
     verbose : bool, optional
@@ -185,10 +195,6 @@ def CompareClustering(
     ari = compute_rand_index(dict_df)
 
     logging.info("Plotting and saving results...")
-    # Create heatmap.
-    fig = plt.figure(figsize=(12, 7))
-    axes = fig.add_subplot(111)
-
     # Exporting symmetric matrix.
     if len(columns_name) == 0:
         columns_name = [f'{i+1}' for i in range(0, len(in_dataset))]
@@ -196,11 +202,17 @@ def CompareClustering(
                        index=columns_name)
     mat.to_excel(f'{out_folder}/ari_matrix.xlsx', index=True, header=True)
 
-    # Plotting heatmap.
-    sns.heatmap(mat, annot=True, ax=axes)
-    axes.set_title(title)
-    plt.savefig(f"{out_folder}/ari_heatmap.png")
-    plt.close()
+    # Create heatmap.
+    with plt.rc_context(
+        {"font.family": "Sans Serif", "font.size": 12, "font.weight": "normal",
+         "axes.titleweight": "bold"}
+    ):
+        fig, ax = plt.subplots(figsize=(12, 10))
+        sns.heatmap(mat, annot=True, ax=ax, cmap=cmap, linewidths=1,
+                    vmin=-1, vmax=1)
+        ax.set_title(title)
+        plt.savefig(f"{out_folder}/ari_heatmap.png")
+        plt.close()
 
 
 if __name__ == "__main__":
