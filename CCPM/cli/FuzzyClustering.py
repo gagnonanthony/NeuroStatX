@@ -418,12 +418,12 @@ def FuzzyClustering(
                      header=True)
 
         flexible_barplot(
-            components,
+            components_df.T,
             df_for_clust.columns,
             3,
-            title="Loadings values for the two components.",
-            filename=f"{out_folder}/PCA/barplot_loadings.png",
-            ylabel="Loading value")
+            title="Loadings values for the three components.",
+            output=f"{out_folder}/PCA/barplot_loadings.png",
+            ylabel="Loading values")
 
     # Plotting the dendrogram.
     logging.info("Generating dendrogram.")
