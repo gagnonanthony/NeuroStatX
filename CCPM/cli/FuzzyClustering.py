@@ -577,7 +577,7 @@ def FuzzyClustering(
         )
 
         # Appending subject ids and descriptive columns.
-        member_out = pd.concat([desc_data, member], axis=1)
+        member_out = pd.concat([raw_df, member], axis=1)
         member_out.to_excel(
             f"{out_folder}/MEMBERSHIP_DF/clusters_membership_{i+2}.xlsx",
             header=True,
