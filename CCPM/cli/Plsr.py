@@ -302,13 +302,13 @@ def Plsr(
         # MSE plot.
         fig, ax = plt.subplots(figsize=(10, 10))
         plt.plot(
-            np.arange(1, len(attr_df.columns)),
+            np.arange(1, len(attr_df.columns) + 1),
             np.array(mse),
             '-v',
             color='blue',
             mfc='blue')
         plt.plot(
-            np.arange(1, len(attr_df.columns))[np.argmin(mse)],
+            np.arange(1, len(attr_df.columns) + 1)[np.argmin(mse)],
             np.array(mse)[np.argmin(mse)],
             'P',
             ms=10,
