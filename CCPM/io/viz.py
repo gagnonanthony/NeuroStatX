@@ -145,10 +145,11 @@ def flexible_hist(df, output, cmap="magma", title="Histogram",
     of all the columns within the dataset in a publication-ready style.
 
     Args:
-        df (_type_): _description_
-        output (_type_): _description_
-        cmap (str, optional): _description_. Defaults to "magma".
-        title (str, optional): _description_. Defaults to "Histogram".
+        df (pd.DataFrame):          Dataframe containing the values to plot.
+        output (str):               Output filename.
+        cmap (str, optional):       Colormap. Defaults to "magma". See
+                                    https://matplotlib.org/stable/tutorials/colors/colormaps.html
+        title (str, optional):      Title of the plot. Defaults to "Histogram".
     """
 
     with plt.rc_context(
@@ -171,3 +172,4 @@ def flexible_hist(df, output, cmap="magma", title="Histogram",
 
         plt.tight_layout()
         plt.savefig(f'{output}')
+        plt.close()
