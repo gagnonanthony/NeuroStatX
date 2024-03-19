@@ -104,7 +104,6 @@ def generate_coef_plot(df, pval, coefname, varname, output, cmap="magma"):
     """
     coef = df[coefname]
     label = ['*' if p < 0.05 else '' for p in pval]
-    x = [cf + 0.1 if cf < 0 else cf - 0.1 for cf in coef]
     y = np.arange(0, len(coef))
 
     plotting_parameters = {
@@ -130,9 +129,14 @@ def generate_coef_plot(df, pval, coefname, varname, output, cmap="magma"):
                                                   'fontsize': 20})
 
         for i in range(len(coef)):
-            plt.text(x[i], y[i] + 0.15, label[i], ha='center',
-                     va='center_baseline', color='black', fontsize=35,
-                     weight='bold')
+            if coef[i] < 0:
+                plt.text(coef[i], y[i] + 0.05, label[i], ha='right',
+                         va='center_baseline', color='black', fontsize=35,
+                         weight='bold')
+            else:
+                plt.text(coef[i], y[i] + 0.05, label[i], ha='left',
+                         va='center_baseline', color='black', fontsize=35,
+                         weight='bold')
 
     plt.tight_layout()
     plt.savefig(f"{output}")
@@ -145,10 +149,11 @@ def flexible_hist(df, output, cmap="magma", title="Histogram",
     of all the columns within the dataset in a publication-ready style.
 
     Args:
-        df (_type_): _description_
-        output (_type_): _description_
-        cmap (str, optional): _description_. Defaults to "magma".
-        title (str, optional): _description_. Defaults to "Histogram".
+        df (pd.DataFrame):          Dataframe containing the values to plot.
+        output (str):               Output filename.
+        cmap (str, optional):       Colormap. Defaults to "magma". See
+                                    https://matplotlib.org/stable/tutorials/colors/colormaps.html
+        title (str, optional):      Title of the plot. Defaults to "Histogram".
     """
 
     with plt.rc_context(
@@ -171,3 +176,4 @@ def flexible_hist(df, output, cmap="magma", title="Histogram",
 
         plt.tight_layout()
         plt.savefig(f'{output}')
+        plt.close()

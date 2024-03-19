@@ -23,3 +23,7 @@ class TestImputation(unittest.TestCase):
 
         # Compare the output with the expected output.
         pd.testing.assert_frame_equal(out, ref_df)
+
+
+if __name__ == '__main__':
+    unittest.main()

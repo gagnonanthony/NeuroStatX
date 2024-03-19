@@ -79,7 +79,7 @@ def plsr_cv(X,
     v = False if verbose else False
 
     mse = []
-    component = np.arange(1, nb_comp)
+    component = np.arange(1, nb_comp + 1)
     kf_10 = KFold(n_splits=splits, shuffle=True, random_state=1)
 
     # Initialize a PLSR object.
