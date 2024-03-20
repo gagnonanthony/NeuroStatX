@@ -28,6 +28,7 @@ def test_compute_graph_network(script_runner):
         "--out-folder", out_folder,
         "--id-column", "subjectkey",
         "--plot-distribution",
+        "--import-data",
         "--desc-columns", 1, "-f"]
     )
 

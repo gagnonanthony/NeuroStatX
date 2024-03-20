@@ -20,13 +20,11 @@ def test_help(script_runner):
 def test_compute_weighted_path(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gml")
-    data_label = os.path.join(get_home(), "data/labels.xlsx")
     out_folder = os.path.join(get_home(), "data/weighted_path/")
 
     ret = script_runner.run([
         "AverageWeightedPath",
         "--in-graph", in_graph,
-        "--data-for-label", data_label,
         "--id-column", "subjectkey",
         "--label-name", "diagnosis",
         "--out-folder", out_folder,

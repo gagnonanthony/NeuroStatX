@@ -20,7 +20,6 @@ def test_help(script_runner):
 def test_visualize_graph_network(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_file.gml")
-    data_label = os.path.join(get_home(), "data/labels.xlsx")
     out_folder = os.path.join(get_home(), "data/Visualize_graph/")
 
     ret = script_runner.run([
@@ -28,8 +27,6 @@ def test_visualize_graph_network(script_runner):
         "--in-graph", in_graph,
         "--out-folder", out_folder,
         "--weight", "membership",
-        "--data-for-label", data_label,
-        "--id-column", "subjectkey",
         "--label-name", "diagnosis",
         "-f", "-v", "-s"]
     )
