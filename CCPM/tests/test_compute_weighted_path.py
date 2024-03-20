@@ -25,7 +25,6 @@ def test_compute_weighted_path(script_runner):
     ret = script_runner.run([
         "AverageWeightedPath",
         "--in-graph", in_graph,
-        "--id-column", "subjectkey",
         "--label-name", "diagnosis",
         "--out-folder", out_folder,
         "--iterations", 10,
