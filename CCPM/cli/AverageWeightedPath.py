@@ -120,7 +120,8 @@ def AverageWeightedPath(
     (default: 5000) and the resulting distribution is used to compute the
     p-value. Please note that for large graphs, the null distribution could
     take a long time to compute. It is recommended to use the --distribution
-    option to provide a pre-computed null distribution (see below). One could
+    option to provide a pre-computed null distribution of this script has
+    already been run on for the same number of nodes (see below). One could
     also reduce the number of iterations to speed up the process and have a
     rough estimate of the p-value.
 
@@ -140,14 +141,14 @@ def AverageWeightedPath(
     REFERENCE
     ---------
     [1]
-    https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.shortest_paths.generic.average_shortest_path_length.html#networkx.algorithms.shortest_paths.generic.average_shortest_path_length
+    [NetworkX
+    Algorithm](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.shortest_paths.generic.average_shortest_path_length.html#networkx.algorithms.shortest_paths.generic.average_shortest_path_length)
 
     EXAMPLE USAGE
     -------------
     ::
 
-        AverageWeightedPath --in-graph ./graph.gexf --id-column ID
-        --data-for-label ./data_for_label.xlsx --label-name Group1
+        AverageWeightedPath --in-graph ./graph.gexf --label-name Group1
         --label-name Group2 --out-folder ./results --iterations 5000
         --weight membership --method Dijkstra
 

@@ -154,26 +154,7 @@ def CompareGraphs(
     CompareGraphs is a script that compares 2 undirected weighted
     graph network. As of now, the only comparison implemented is the
     extraction of the Xth percentile nodes from --in-graph1 and label those
-    nodes on --in-graph2.
-
-    LAYOUT ALGORITHMS
-    -----------------
-    In order to generate a graph network, the nodes positions need to be
-    determined in relation with their connections to other nodes (and the
-    weigth of those connections). Those connections are also called edges and
-    contain a weight in the case of a weighted graph network. Possible
-    algorithms to choose from are :
-
-    Kamada Kawai Layout: Use the Kamada-Kawai path-length cost-function. Not
-                         the optimal solution for large network as it is
-                         computer intensive. For details, see [2].
-
-    Spectral Layout: Position is determined using the eigenvectors of the
-                     graph Laplacian. For details, see [2].
-
-    Spring Layout: Use the Fruchterman-Reingold force-directed algorithm.
-                   Suitable for large network with high number of nodes.
-                   For details, see [2]. This is the default method.
+    nodes on --in-graph2. The percentile value is set by --percentile.
 
     GRAPH NETWORK CUSTOMIZATION
     ---------------------------
@@ -228,7 +209,7 @@ def CompareGraphs(
     colormap : str, optional
         Colormap to use when coloring the edges of the network based on the
         membership values to each clusters. Available colormap are those from
-        plt.cm.
+        [Matplotlib](https://matplotlib.org/stable/tutorials/colors/colormaps.html).
     legend_title : str, optional
         Legend title (colormap).
     """

@@ -224,7 +224,7 @@ def PredictFuzzyMembership(
         True.
     cmap : str, optional
         Colormap to use for plotting. Default is "magma". See
-        https://matplotlib.org/stable/tutorials/colors/colormaps.html.
+        [Matplotlib](https://matplotlib.org/stable/tutorials/colors/colormaps.html).
     verbose : bool, optional
         If true, produce verbose output.
     save_parameters : bool, optional
