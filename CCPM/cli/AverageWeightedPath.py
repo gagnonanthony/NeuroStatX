@@ -12,6 +12,7 @@ from typing import List
 
 from CCPM.io.utils import assert_input, assert_output_dir_exist
 from CCPM.network.metrics import weightedpath, PathLengthsMethods
+from CCPM.network.utils import fetch_attributes_df
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
@@ -20,20 +21,6 @@ app = App(default_parameter=Parameter(negative=()))
 @app.default()
 def AverageWeightedPath(
     in_graph: Annotated[
-        str,
-        Parameter(
-            show_default=False,
-            group="Essential Files Options",
-        ),
-    ],
-    id_column: Annotated[
-        str,
-        Parameter(
-            show_default=False,
-            group="Essential Files Options",
-        ),
-    ],
-    data_for_label: Annotated[
         str,
         Parameter(
             show_default=False,
@@ -168,10 +155,6 @@ def AverageWeightedPath(
     ----------
     in_graph : str
         Input graph file (.gml).
-    id_column : str
-        Name of the column in --data-for-label containing the subjects ids.
-    data_for_label : str
-        Dataset containing binary columns used to select nodes.
     label_name : List[str]
         Label(s) name(s) to select group(s) of nodes. Can be multiple.
     out_folder : str, optional
@@ -200,7 +183,7 @@ def AverageWeightedPath(
         logging.getLogger().setLevel(logging.INFO)
         coloredlogs.install(level=logging.INFO)
 
-    assert_input(in_graph, data_for_label)
+    assert_input(in_graph)
     assert_output_dir_exist(overwrite, out_folder, create_dir=True)
 
     if save_parameters:
@@ -209,11 +192,13 @@ def AverageWeightedPath(
             for param in parameters:
                 f.writelines(str(param))
 
-    logging.info("Loading graph and dataset.")
+    logging.info("Loading graph.")
     G = nx.read_gml(in_graph)
 
+    # Fetching labels from nodes' attributes.
+    df = fetch_attributes_df(G, attributes=label_name)
+
     # Loading dataset and generating list of nodes to include.
-    df = pd.read_excel(data_for_label)
     if distribution is not None:
         dist = pd.read_excel(distribution)
     else:
@@ -227,7 +212,6 @@ def AverageWeightedPath(
             G,
             df,
             label_name=var,
-            id_column=id_column,
             iterations=iterations,
             weight=weight,
             method=method,

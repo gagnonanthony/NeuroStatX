@@ -11,7 +11,7 @@ from typing_extensions import Annotated
 
 from CCPM.io.utils import (assert_input, assert_output_dir_exist,
                            load_df_in_any_format)
-from CCPM.network.utils import get_nodes_and_edges
+from CCPM.network.utils import get_nodes_and_edges, construct_attributes_dict
 from CCPM.network.viz import (
     compute_layout,
     set_nodes_position,
@@ -82,6 +82,13 @@ def ComputeGraphNetwork(
         Parameter(
             show_default=True,
             group="Plotting Options",
+        ),
+    ] = False,
+    import_data: Annotated[
+        bool,
+        Parameter(
+            show_default=True,
+            group="Essential Files Options",
         ),
     ] = False,
     layout: Annotated[
@@ -168,6 +175,9 @@ def ComputeGraphNetwork(
         If true, save the parameters used in a .txt file.
     plot_distribution : bool, optional
         If true, will plot the membership distribution and delta.
+    import_data : bool, optional
+        If true, will import the data from the input dataset within the graph
+        network file.
     layout : NetworkLayout, optional
         Layout algorithm to determine the nodes position.
     weight : str, optional
@@ -219,6 +229,13 @@ def ComputeGraphNetwork(
 
     logging.info("Setting nodes position.")
     set_nodes_position(G, pos)
+
+    if import_data:
+        logging.info("Importing data within the .gml file.")
+        attributes = construct_attributes_dict(desc_data,
+                                               desc_data.columns[1:],
+                                               id_column)
+        nx.set_node_attributes(G, attributes)
 
     # Saving graph as a .gexf object for easy reloading.
     nx.write_gml(G, f"{out_folder}/network_graph_file.gml")

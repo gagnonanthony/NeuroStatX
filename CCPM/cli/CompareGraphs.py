@@ -10,7 +10,7 @@ import numpy as np
 from typing_extensions import Annotated
 
 from CCPM.io.utils import assert_input, assert_output_dir_exist
-from CCPM.network.utils import extract_subject_percentile
+from CCPM.network.utils import extract_subject_percentile, fetch_edge_data
 from CCPM.network.viz import (visualize_network,
                               creating_node_colormap)
 
@@ -28,7 +28,7 @@ def CompareGraphs(
             group="Essential Files Options",
         ),
     ],
-    in_matrix: Annotated[
+    weight: Annotated[
         str,
         Parameter(
             show_default=False,
@@ -154,9 +154,7 @@ def CompareGraphs(
     CompareGraphs is a script that compares 2 undirected weighted
     graph network. As of now, the only comparison implemented is the
     extraction of the Xth percentile nodes from --in-graph1 and label those
-    nodes on --in-graph2. It is essential to provide the membership matrix
-    used to create the graph #1 in order to extract the percentile data. In
-    future release, this will be done directly from the graph file (hopefully).
+    nodes on --in-graph2.
 
     LAYOUT ALGORITHMS
     -----------------
@@ -191,16 +189,13 @@ def CompareGraphs(
         CompareGraphs --in-graph1 graph1.gml --in-matrix membership_mat.npy
         --percentile 80 --in-graph2 graph2.gml
 
-    **For large graphs (~10 000 nodes), it might take ~5 mins to run using**
-    **the spring layout and depending on your hardware.**
-
     Parameters
     ----------
     in_graph1 : str
         1st graph from which subjects above --percentile will be extracted and
         colored.
-    in_matrix : str
-        Numpy array containing the fuzzy clustering membership values (.npy).
+    weight : str
+        Edge's weight to use for the graph.
     percentile : float
         Percentile value used to extract subjects.
     in_graph2 : str
@@ -242,19 +237,21 @@ def CompareGraphs(
         logging.getLogger().setLevel(logging.INFO)
         coloredlogs.install(level=logging.INFO)
 
-    assert_input(in_matrix)
+    assert_input(in_graph1, in_graph2)
     assert_output_dir_exist(overwrite, out_folder, create_dir=True)
 
     # Loading membership matrix.
-    logging.info("Loading graphs and membership matrix.")
-    mat = np.load(in_matrix)
+    logging.info("Loading graphs.")
     graph1 = nx.read_gml(in_graph1)
     graph2 = nx.read_gml(in_graph2)
+
+    # Fetch data from graph #1.
+    mat = fetch_edge_data(graph1, weight=weight)
 
     # Extracting percentiles.
     logging.info("Extracting percentiles.")
     # Extracting the Xth percentile subjects.
-    percentile_dict = extract_subject_percentile(mat, percentile)
+    percentile_dict = extract_subject_percentile(mat.values.T, percentile)
 
     # Mapping the nodes' cmap.
     nodes_cmap = creating_node_colormap(percentile_dict)
@@ -268,7 +265,7 @@ def CompareGraphs(
             else:
                 sub_alpha.append(1)
     else:
-        sub_alpha = np.array([1] * mat.shape[1])
+        sub_alpha = np.array([1] * mat.values.shape[0])
 
     logging.info("Visualizing percentiles on the 1st graph.")
     visualize_network(

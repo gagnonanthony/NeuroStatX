@@ -3,7 +3,6 @@
 
 import coloredlogs
 import logging
-import sys
 
 from cyclopts import App, Parameter
 import networkx as nx
@@ -11,10 +10,9 @@ import numpy as np
 from typing import List
 from typing_extensions import Annotated
 
-from CCPM.io.utils import (assert_input, assert_output_dir_exist,
-                           load_df_in_any_format)
+from CCPM.io.utils import (assert_input, assert_output_dir_exist)
 from CCPM.network.viz import (visualize_network, create_cmap_from_list)
-from CCPM.network.utils import filter_node_subjects
+from CCPM.network.utils import fetch_attributes_df
 
 
 # Initializing the app.
@@ -61,20 +59,6 @@ def VisualizeGraphNetwork(
             group="Optional parameters",
         ),
     ] = False,
-    data_for_label: Annotated[
-        str,
-        Parameter(
-            show_default=True,
-            group="Label Options",
-        ),
-    ] = None,
-    id_column: Annotated[
-        str,
-        Parameter(
-            show_default=False,
-            group="Label Options",
-        ),
-    ] = 'subjectkey',
     label_name: Annotated[
         List[str],
         Parameter(
@@ -244,10 +228,6 @@ def VisualizeGraphNetwork(
         Overwrite existing files.
     save_parameters : bool
         Save parameters to a .txt file.
-    data_for_label : str
-        Dataframe containing the column(s) to use for labelling.
-    id_column : str
-        Column name containing the IDs.
     label_name : List[str]
         List of label names to subsequently use for labelling.
     background_alpha : bool
@@ -322,33 +302,16 @@ def VisualizeGraphNetwork(
     )
 
     # Plotting network with custom label.
-    if data_for_label is not None:
-        if label_name is None:
-            sys.exit(
-                "If --data-for-label is provided, you need to specify which "
-                "column to use with --label-name."
-            )
+    if label_name is not None:
 
         logging.info("Constructing graph(s) with custom labels.")
 
         # Loading df.
-        df_for_label = load_df_in_any_format(data_for_label)
-
-        # Fetching nodes ids.
-        sub_node = nx.subgraph_view(G, filter_node_subjects)
-        nodes_id = np.array(sub_node.nodes())
-
-        # Validating subject nodes and subject in data for label are equal.
-        if not np.array_equal(nodes_id, df_for_label[id_column].to_numpy()):
-            sys.exit(
-                "Subject nodes and subject in data for label are not equal. "
-                "Please verify that the order of the subjects is the same in "
-                "the dataset and the graph network."
-            )
+        df = fetch_attributes_df(G, attributes=label_name)
 
         # Fetching data for label as array.
         for label in label_name:
-            labels = df_for_label[label]
+            labels = df[label]
 
             nodes_cmap = create_cmap_from_list(labels)
 

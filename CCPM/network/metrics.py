@@ -169,7 +169,6 @@ def weightedpath(
     graph,
     df,
     label_name,
-    id_column,
     iterations=1000,
     weight=None,
     method="dijkstra",
@@ -187,8 +186,6 @@ def weightedpath(
         df (pandas.DataFrame):                  Dataframe containing the nodes
         label_name (str):                       Name of the column containing
                                                 the group label.
-        id_column (str):                        Name of the column containing
-                                                the nodes IDs.
         iterations (int, optional):             Number of iterations to run.
                                                 Defaults to 1000.
         weight (str, optional):                 Edge attributes to use as
@@ -208,7 +205,7 @@ def weightedpath(
     """
     # Setting lists.
     group_exclude = df.loc[df[label_name] == 0]
-    nodes_exclude = group_exclude[id_column].to_list()
+    nodes_exclude = group_exclude.index.to_list()
     nodes_include = [node for node in list(graph) if node not in nodes_exclude]
 
     logging.info("Computing weighted path for the set of nodes.")
@@ -218,7 +215,7 @@ def weightedpath(
     )
 
     # Fetching all possible nodes.
-    nodes_list = df[id_column].to_list()
+    nodes_list = df.index.to_list()
 
     # Setting partial function to pass common arguments between iterations.
     if distribution is None:
