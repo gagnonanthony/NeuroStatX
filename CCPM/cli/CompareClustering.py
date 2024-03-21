@@ -115,18 +115,19 @@ def CompareClustering(
 
     REFERENCES
     ----------
-    [1] Hubert, L., & Arabie, P. (1985). Comparing partitions. Journal of
-    classification, 2(1), 193-218.
+    [1] [Hubert, L., & Arabie, P. (1985). Comparing partitions. Journal of
+    classification, 2(1), 193-218.](https://doi.org/10.1007/BF01908075)
 
-    [2] Rand, W. M. (1971). Objective criteria for the evaluation of
+    [2] [Rand, W. M. (1971). Objective criteria for the evaluation of
     clustering methods. Journal of the American Statistical Association,
-    66(336), 846-850.
+    66(336), 846-850.](https://doi.org/10.2307/2284239)
 
-    [3] D. Steinley, Properties of the Hubert-Arabie adjusted Rand index,
-    Psychological Methods 2004
+    [3] [D. Steinley, Properties of the Hubert-Arabie adjusted Rand index,
+    Psychological Methods
+    2004](https://psycnet.apa.org/doi/10.1037/1082-989X.9.3.386)
 
-    [4]
-    https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_rand_score.html
+    [4] [Scikit-Learn Documentation - Adjusted Rand Index
+    (ARI)](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_rand_score.html)
 
     EXAMPLE USAGE
     -------------

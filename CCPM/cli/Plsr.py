@@ -140,7 +140,7 @@ def Plsr(
     file and will perform the PLSR analysis on the attributes and edges'
     weights. If no attributes are provided, the script will use all attributes
     found in the graph file. To set attributes to the nodes in the graph file,
-    please see CCPM_set_nodes_attributes.py.
+    please see AddNodesAttributes.
 
     SCORING OPTIONS
     ---------------
@@ -165,8 +165,8 @@ def Plsr(
 
     REFERENCES
     ----------
-    [1]
-    https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter
+    [1] [Scikit-learn scoring
+    methods](https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter)
 
     EXAMPLE USAGE
     -------------

@@ -83,10 +83,11 @@ def AddNodesAttributes(
     """SETTING NODES ATTRIBUTES
     ------------------------
     AddNodesAttributes is a script that sets the attributes of the
-    nodes of a graph. The attributes are provided via a xlsx file. The script
-    will automatically match the IDs of the nodes with the IDs of the subjects
-    in the xlsx file. Name of the variables to add as attributes can be
-    supplied either via a .txt file or with multiple --labels arguments.
+    nodes of a graph. The attributes are provided via a tabulated data format
+    (.csv, .xlsx or .txt) file. The script will automatically match the IDs of
+    the nodes with the IDs of the subjects in the file. Name of the variables
+    to add as attributes can be supplied either via a .txt file or with
+    multiple --labels arguments.
 
     EXAMPLE USAGE
     -------------
