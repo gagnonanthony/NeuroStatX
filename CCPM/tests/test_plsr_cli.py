@@ -12,7 +12,7 @@ tmp_dir = tempfile.TemporaryDirectory()
 
 
 def test_help(script_runner):
-    ret = script_runner.run(["Plsr", "-h"])
+    ret = script_runner.run(["PartialLeastSquareRegression", "-h"])
 
     assert ret.success
 
@@ -23,7 +23,7 @@ def test_plsr(script_runner):
     out_folder = os.path.join(get_home(), "data/PLSR_results")
 
     ret = script_runner.run([
-        "Plsr",
+        "PartialLeastSquareRegression",
         "--in-graph", in_graph,
         "--out-folder", out_folder,
         "--attributes", "gestage",
