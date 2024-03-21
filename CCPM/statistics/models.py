@@ -84,13 +84,30 @@ def plsr_cv(X,
             splits=10,
             processes=4,
             verbose=False):
-    """
-    Function to perform a PLSR model with cross-validation.
+    """Function to perform a PLSR model with cross-validation between a set of
+    predictor and dependent variables.
 
     Args:
-        X (_type_): _description_
-        Y (_type_): _description_
-        nb_comp (_type_): _description_
+        X (pd.DataFrame):               Dataframe containing the predictor
+                                        variables.
+        Y (pd.DataFrame):               Dataframe containing the dependent
+                                        variables.
+        nb_comp (int):                  Number of components to use.
+        splits (int, optional):         Number of fold to use in
+                                        cross-validation. Defaults to 10.
+        processes (int, optional):      Number of cpus to use during
+                                        processing. Defaults to 4.
+        verbose (bool, optional):       Verbose mode. Defaults to False.
+
+    Returns:
+        plsr:                           PLSR model.
+        mse:                            List of mean squared errors.
+        score_c:                        R2 score for the model.
+        score_cv:                       R2 score for the cross-validation.
+        rscore:                         Square root of the R2 score.
+        mse_c:                          Mean squared error for the model.
+        mse_cv:                         Mean squared error for the
+                                        cross-validation.
     """
     v = True if verbose else False
 
@@ -137,17 +154,35 @@ def permutation_testing(estimator,
                         splits=10,
                         processes=4,
                         verbose=False):
-    """
-    Function to perform permutation testing on a PLSR model.
+    """Function to perform permutation testing on a model.
 
     Args:
-        X (_type_): _description_
-        Y (_type_): _description_
-        nb_permutations (int, optional): _description_. Defaults to 1000.
-        scoring (str, optional): _description_. Defaults to 'r2'.
-        splits (int, optional): _description_. Defaults to 10.
-        processes (int, optional): _description_. Defaults to 4.
-        verbose (bool, optional): _description_. Defaults to False.
+        X (pd.DataFrame):                   Dataframe containing the predictor
+                                            variables.
+        Y (pd.DataFrame):                   Dataframe containing the dependent
+                                            variables.
+        binary (bool, optional):            If the dependent variable is
+                                            binary. Defaults to False.
+        nb_permutations (int, optional):    Number of iterations to perform.
+                                            Defaults to 1000.
+        scoring (str, optional):            Scoring method to use. Defaults
+                                            to 'r2'.
+        splits (int, optional):             Number of fold to use in
+                                            cross-validation. Defaults to 10.
+        processes (int, optional):          Number of cpus to use during
+                                            processing. Defaults to 4.
+        verbose (bool, optional):           Verbose mode. Defaults to False.
+
+    Returns:
+        mod:                                Model.
+        score:                              Score for the model.
+        coef:                               Coefficients for the model.
+        perm_score:                         Scores for the permutation
+                                            testing.
+        score_pvalue:                       P-value for the model.
+        perm_coef:                          Coefficients for the permutation
+                                            testing.
+        coef_pvalue:                        P-value for the coefficients.
     """
     v = 1 if verbose else 0
 
@@ -178,6 +213,26 @@ def _permutation_scorer(estimator,
                         cv,
                         scorer,
                         fit_params):
+    """Core worker for permutation testing.
+
+    Args:
+        estimator (Model):              Model to use.
+        X (pd.DataFrame):               Dataframe containing the predictor
+                                        variables.
+        Y (pd.DataFrame):               Dataframe containing the dependent
+                                        variables.
+        groups (pd.DataFrame):          Dataframe containing the groups.
+        cv (int):                       Number of fold to use in
+                                        cross-validation.
+        scorer (str):                   Scoring method to use.
+        fit_params (dict, optional):    Parameters to use during fitting.
+                                        Defaults to None.
+
+    Returns:
+        estimator:                      Model.
+        avg_score:                      Average score.
+        coefficients:                   Coefficients.
+    """
 
     fit_params = fit_params if fit_params is not None else {}
     avg_score = []
@@ -206,6 +261,39 @@ def permutation_test(estimator,
                      verbose=0,
                      scoring=None,
                      fit_params=None):
+    """Core function to perform permutation testing.
+
+    Args:
+        estimator (Model):                  Model to use.
+        X (pd.DataFrame):                   Dataframe containing the predictor
+                                            variables.
+        Y (pd.DataFrame):                   Dataframe containing the dependent
+                                            variables.
+        groups (str, optional):             Group variable. Defaults to None.
+        cv (int, optional):                 Number of fold to use in
+                                            cross-validation. Defaults to None.
+        n_permutations (int, optional):     Number of permutations to perform.
+                                            Defaults to 100.
+        n_jobs (int, optional):             Number of jobs to run in parallel.
+                                            Defaults to None.
+        random_state (int, optional):       Random state seed. Defaults to 0.
+        verbose (int, optional):            Verbose mode. Defaults to 0.
+        scoring (str, optional):            Scoring method to use. Defaults
+                                            to None.
+        fit_params (dict, optional):        Parameters to use during fitting.
+                                            Defaults to None.
+
+    Returns:
+        mod:                                Model.
+        score:                              Score for the model.
+        coef:                               Coefficients for the model.
+        perm_score:                         Scores for the permutation
+                                            testing.
+        score_pvalue:                       P-value for the model.
+        perm_coef:                          Coefficients for the permutation
+                                            testing.
+        coef_pvalue:                        P-value for the coefficients.
+    """
 
     warnings.filterwarnings("ignore")
 

@@ -186,13 +186,10 @@ def VisualizeGraphNetwork(
     LABELLING GRAPH NETWORK NODES
     -----------------------------
     It is possible to label specific nodes based on a condition (e.g. a
-    diagnosis, etc.). To do so, use --data-for-label argument to provide a
-    dataframe containing the column(s) to use for labelling. You also need to
-    specify the --label-name in order to use the correct column. It is also
-    possible to provide multiple label name by using --label-name x
-    --label-name y. The script will output multiple graphs for each label name.
-    **LABEL DATA NEEDS TO BE IN THE SAME ORDER AS THE DATASET PROVIDED DURING**
-    **CLUSTERING, IF NOT, LABEL AND SUBJECT WILL NOT MATCH**
+    diagnosis, etc.). To do so, use the --label-name to indicate with binary
+    node attribute to use for labelling. It is also possible to provide
+    multiple label name by using --label-name x --label-name y. The script will
+    output multiple graphs for each label name.
 
     GRAPH NETWORK CUSTOMIZATION
     ---------------------------
@@ -205,15 +202,14 @@ def VisualizeGraphNetwork(
 
     REFERENCES
     ----------
-    [1] https://gephi.org/
+    [1] [GEPHI](https://gephi.org/)
 
     EXAMPLE USAGE
     -------------
     ::
 
         VisualizeGraphNetwork --in-graph graph_network.gml
-        --out-folder output/ --data-for-label label_data.csv
-        --id-column subjectkey --label-name diagnosis
+        --out-folder output/ --label-name diagnosis
         --weight membership -v -f -s
 
     Parameters
