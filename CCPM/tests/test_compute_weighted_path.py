@@ -19,7 +19,7 @@ def test_help(script_runner):
 
 def test_compute_weighted_path(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_graph = os.path.join(get_home(), "data/graph_file.gml")
+    in_graph = os.path.join(get_home(), "data/graph_with_attributes.gml")
     out_folder = os.path.join(get_home(), "data/weighted_path/")
 
     ret = script_runner.run([
