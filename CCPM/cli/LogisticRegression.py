@@ -30,7 +30,7 @@ app = App(default_parameter=Parameter(negative=()))
 
 
 @app.default()
-def Plsr(
+def LogisticRegression(
     in_graph: Annotated[
         str,
         Parameter(
@@ -46,6 +46,13 @@ def Plsr(
         ),
     ],
     attributes: Annotated[
+        List[str],
+        Parameter(
+            group="Model Parameters",
+            show_default=False,
+        ),
+    ],
+    covariates: Annotated[
         List[str],
         Parameter(
             group="Model Parameters",
@@ -158,14 +165,14 @@ def Plsr(
 ):
     """LOGISTIC REGRESSION ANALYSIS
     --------------------------------------
-    Plsr performs a Partial Least Square Regression (PLSR) on a graph
-    using the nodes' attributes as predictors and the edges' weights as
-    response variable. The script will perform a cross-validation to determine
-    the optimal number of components to use for the PLSR model. It will then
+    This script performs a Logistic Regression on a graph
+    using the edges' weights as predictors and the nodes' attributes as
+    response variable. The script will perform a cross-validation within a
+    training dataset before testing the model on test data. It will then
     perform a permutation testing to determine if the model is statistically
-    significant. Finally, it will output the PLSR coefficients and statistics
+    significant. Finally, it will output the coefficients and statistics
     as well as plots of the distributions of the attributes and edges' weights
-    and the PLSR coefficients.
+    and the coefficients.
 
     PREPROCESSING
     -------------
@@ -177,20 +184,20 @@ def Plsr(
     NODES' ATTRIBUTES
     -----------------
     The script takes only one graph file as input. The graph file must be in
-    .gexf format. The script will then fetch the attributes from the graph
-    file and will perform the PLSR analysis on the attributes and edges'
-    weights. If no attributes are provided, the script will use all attributes
-    found in the graph file. To set attributes to the nodes in the graph file,
-    please see CCPM_set_nodes_attributes.py.
+    .gml format. The script will then fetch the attributes from the graph
+    file and will perform the analysis on the attributes and edges'
+    weights. At least one attribute needs to be provided in order to fit a
+    model. To set attributes to the nodes in the graph file,
+    please see AddNodesAttributes.
 
     SCORING OPTIONS
     ---------------
     The script will perform a permutation testing to determine if the model is
     statistically significant. The script will compute the p-value for the
-    permutation testing using the R2 score by default. However, the user can
-    also choose multiple scores to compute the p-value. The available scores
-    can be seen in [1]. The equation used to compute the single-tailed p-value
-    is:
+    permutation testing using the area under the curve (AUC) by default.
+    However, the user can also choose multiple scores to compute the p-value.
+    The available scores can be seen in [1]. The equation used to compute
+    the single-tailed p-value is:
 
         p-value = ∑(score_perm >= score) / (nb_permutations)
 
@@ -198,7 +205,7 @@ def Plsr(
     ------------------------
     The script will also compute the p-value for the coefficients using the
     permutation testing. The p-value for the coefficients is computed by
-    comparing the coefficients obtained from the PLSR model with the
+    comparing the coefficients obtained from the model with the
     coefficients obtained from the permutation testing. The equation used to
     compute the two-tailed p-value is:
 
@@ -219,14 +226,16 @@ def Plsr(
     Parameters
     ----------
     in_graph : str
-        Graph file containing the data for the PLSR model.
+        Graph file containing the data for the model.
     out_folder : str
         Output folder.
-    attributes : List[str], optional
-        Attributes names to include in the PLSR model. If None are provided,
-        all attributes will be included.
+    attributes : List[str],
+        Attributes names to include in the model. Must be present in the graph
+        file. At least one attribute is required.
+    covariates : List[str], optional
+        Covariates to include in the model. Must be present in the graph file.
     weight : str, optional
-        Edge weight to use for the PLSR model.
+        Edge weight to use for the model.
     splits : int, optional
         Number of splits to use for the cross-validation.
     test_size : float, optional
@@ -280,22 +289,25 @@ def Plsr(
     logging.info("Loading graph and dataset.")
     G = nx.read_gml(in_graph)
 
-    # Fetching attributes and edge data.
-    logging.info("Fetching attributes and edge data.")
+    # Fetching covariates, attributes and edge data.
+    logging.info("Fetching covariates, attributes and edge data.")
     attributes_df = fetch_attributes_df(G, attributes)
     edge_df = fetch_edge_data(G, weight)
+    covariates_df = fetch_attributes_df(G, covariates)
 
     # Preprocessing data.
     logging.info("Scaling data.")
     edge = edge_df.apply(lambda x: np.log(x))
-    edge = scale(edge)
-
+    predictor = pd.concat([pd.DataFrame(scale(edge), columns=edge_df.columns,
+                                        index=edge_df.index),
+                          covariates_df], axis=1)
+    print(predictor)
     # Performing Cross-Validation.
     logging.info("Fitting model with permutation testing.")
 
     # Splitting into a training and testing set.
     X_train, X_test, y_train, y_test = train_test_split(
-        edge,
+        predictor,
         attributes_df,
         test_size=test_size,
         random_state=1234
@@ -323,8 +335,8 @@ def Plsr(
     mod, score, coef, perm_score, score_pval, coef_perm, coef_pval = \
         permutation_testing(
             classifier,
-            edge,
-            attributes_df,
+            X_train,
+            y_train,
             splits=splits,
             nb_permutations=permutations,
             scoring=scoring,
@@ -364,12 +376,13 @@ def Plsr(
     coef = {
         f'coef{i+1}': coef[:, i].T for i in range(0, coef.shape[1])
     }
-    coef['varname'] = edge_df.columns
+    coef['varname'] = predictor.columns
+    print(coef)
     coef_df = pd.DataFrame(coef)
     coef_df.to_excel(f"{out_folder}/Coefficients/coefficients.xlsx")
 
     coef_pval_df = pd.DataFrame(coef_pval,
-                                index=edge_df.columns,
+                                index=predictor.columns,
                                 columns=attributes_df.columns)
     coef_pval_df.to_excel(f"{out_folder}/Coefficients/coefficients_pval.xlsx")
 
