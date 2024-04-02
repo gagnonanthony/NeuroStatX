@@ -12,7 +12,7 @@ tmp_dir = tempfile.TemporaryDirectory()
 
 
 def test_help(script_runner):
-    ret = script_runner.run(["FactorAnalysis", "-h"])
+    ret = script_runner.run(["ExploratoryFA", "-h"])
 
     assert ret.success
 
@@ -23,7 +23,7 @@ def test_execution_factor_analysis(script_runner):
     out_folder = os.path.join(get_home(), "data/factor_results/")
 
     ret = script_runner.run([
-        "FactorAnalysis",
+        "ExploratoryFA",
         "--in-dataset", in_dataset,
         "--out-folder", out_folder,
         "--desc-columns", 1,

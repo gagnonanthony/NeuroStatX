@@ -73,6 +73,7 @@ def flexible_barplot(
                 ax.set_ylabel(ylabel)
                 ax.grid(False)
                 ax.spines[['top', 'right', 'left', 'bottom']].set(linewidth=2)
+                ax.tick_params(axis='x', rotation=45)
 
                 for bars in ax.containers:
                     ax.bar_label(bars, fmt='{:,.3f}', padding=1)
@@ -81,6 +82,7 @@ def flexible_barplot(
                 ax.axis('off')
 
         fig.suptitle(title, fontsize=20, fontweight='bold')
+
         plt.tight_layout()
         plt.savefig(f"{output}", dpi=300, bbox_inches="tight")
         plt.close()

@@ -53,14 +53,3 @@ echo "export CCPMPATH=${ENVPATH}" >> ~/.bashrc
 > ``semopy`` package used within CCPM. If you do not have Graphviz installed on
 > your machine, please run the following if you are on Linux `sudo apt get graphviz`
 > or `brew install graphviz` if you are on MacOS. 
-
-## License
-
-``CCPM`` is licensed under the terms of the MIT license. See the file
-"LICENSE" for information on the history of this software, terms & conditions
-for usage, and a DISCLAIMER OF ALL WARRANTIES.
-
-All trademarks referenced herein are property of their respective holders.
-
-Copyright (c) 2022, Anthony Gagnon,
-Université de Sherbrooke

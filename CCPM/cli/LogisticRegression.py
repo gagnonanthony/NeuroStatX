@@ -301,7 +301,7 @@ def LogisticRegression(
     predictor = pd.concat([pd.DataFrame(scale(edge), columns=edge_df.columns,
                                         index=edge_df.index),
                           covariates_df], axis=1)
-    print(predictor)
+
     # Performing Cross-Validation.
     logging.info("Fitting model with permutation testing.")
 
@@ -336,7 +336,7 @@ def LogisticRegression(
         permutation_testing(
             classifier,
             X_train,
-            y_train,
+            y_train.values.ravel(),
             splits=splits,
             nb_permutations=permutations,
             scoring=scoring,
@@ -377,7 +377,6 @@ def LogisticRegression(
         f'coef{i+1}': coef[:, i].T for i in range(0, coef.shape[1])
     }
     coef['varname'] = predictor.columns
-    print(coef)
     coef_df = pd.DataFrame(coef)
     coef_df.to_excel(f"{out_folder}/Coefficients/coefficients.xlsx")
 
