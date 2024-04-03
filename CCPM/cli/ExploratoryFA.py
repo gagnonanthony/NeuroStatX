@@ -3,9 +3,9 @@
 
 # Import required libraries.
 import coloredlogs
+import dill as pickle
 import logging
 import sys
-from joblib import dump
 
 from cyclopts import App, Parameter
 from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity
@@ -39,7 +39,7 @@ app = App(default_parameter=Parameter(negative=()))
 
 
 @app.default()
-def FactorAnalysis(
+def ExploratoryFA(
     in_dataset: Annotated[
         List[str],
         Parameter(
@@ -263,8 +263,11 @@ def FactorAnalysis(
                  "dataset for EFA.")
     train, test = train_test_split(df, train_size=train_dataset_size,
                                    random_state=random_state)
-    train.to_excel(f"{out_folder}/train_dataset.xlsx", header=True, index=True)
-    test.to_excel(f"{out_folder}/test_dataset.xlsx", header=True, index=True)
+    train.reset_index(inplace=True, drop=True)
+    train.to_excel(f"{out_folder}/train_dataset.xlsx", header=True,
+                   index=False)
+    test.reset_index(inplace=True, drop=True)
+    test.to_excel(f"{out_folder}/test_dataset.xlsx", header=True, index=False)
 
     record_id = train[id_column]
     desc_col = train[train.columns[descriptive_columns]]
@@ -370,7 +373,8 @@ def FactorAnalysis(
     )
 
     # Export EFA model.
-    dump(efa_mod, f"{out_folder}/EFA_model.joblib")
+    with open(f"{out_folder}/EFA_model.pkl", "wb") as f:
+        pickle.dump(efa_mod, f)
 
 
 if __name__ == "__main__":

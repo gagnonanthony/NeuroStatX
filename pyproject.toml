@@ -45,6 +45,7 @@ cyclopts = "^2.2.0"
 openpyxl = "^3.1.2"
 
 [tool.poetry.scripts]
+ApplyModel = 'CCPM.cli.ApplyModel:app'
 ComputeGraphNetwork = 'CCPM.cli.ComputeGraphNetwork:app'
 CompareClustering = 'CCPM.cli.CompareClustering:app' 
 CompareGraphs = 'CCPM.cli.CompareGraphs:app'

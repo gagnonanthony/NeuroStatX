@@ -5,7 +5,7 @@ import coloredlogs
 import logging
 import os
 import sys
-from joblib import dump
+import dill as pickle
 
 from cyclopts import App, Parameter
 import numpy as np
@@ -426,7 +426,8 @@ def FuzzyClustering(
             ylabel="Loading values")
 
         # Exporting model in .joblib format.
-        dump(model, f"{out_folder}/PCA/pca_model.joblib")
+        with open(f"{out_folder}/PCA/pca_model.pkl", "wb") as f:
+            pickle.dump(model, f)
 
     # Plotting the dendrogram.
     logging.info("Generating dendrogram.")
