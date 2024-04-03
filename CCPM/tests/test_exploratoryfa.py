@@ -28,7 +28,7 @@ def test_execution_factor_analysis(script_runner):
         "--out-folder", out_folder,
         "--desc-columns", 1,
         "--id-column", "subjectkey",
-        "-f"]
+        "-f", "-v", "-s"]
     )
 
     assert ret.success

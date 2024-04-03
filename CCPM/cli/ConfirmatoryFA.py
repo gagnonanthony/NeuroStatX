@@ -3,6 +3,7 @@
 
 # Import required libraries.
 import coloredlogs
+import dill as pickle
 import logging
 import sys
 
@@ -122,7 +123,7 @@ def ConfirmatoryFA(
         ),
     ] = False,
 ):
-    r"""CONFIRMATORY FACTORIAL ANALYSIS
+    """CONFIRMATORY FACTORIAL ANALYSIS
     -------------------------------
     ConfirmatoryFA is a script that can be used to perform a confirmatory
     factorial analysis (CFA) to test a hypothesized model of the relationships
@@ -314,6 +315,10 @@ def ConfirmatoryFA(
     semopy.semplot(cfa_mod, f"{out_folder}/semplot.png",
                    plot_covs=True)
     semopy.report(cfa_mod, f"{out_folder}/CFA_report")
+
+    # Saving the model.
+    with open(f'{out_folder}/cfa_model.pkl', 'wb') as f:
+        pickle.dump(cfa_mod, f)
 
 
 if __name__ == "__main__":

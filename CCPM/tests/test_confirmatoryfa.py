@@ -30,7 +30,7 @@ def test_execution_factor_analysis(script_runner):
         "--id-column", "subjectkey",
         "--model", "efa1 =~ v1 + v3 + v6 + v7",
         "--model", "efa2 =~ v2 + v4 + v5",
-        "-f"]
+        "-f", "-v", "-s"]
     )
 
     assert ret.success
