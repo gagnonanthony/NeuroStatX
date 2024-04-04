@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from typing import List
 from typing_extensions import Annotated
@@ -79,6 +78,13 @@ def ExploratoryFA(
             group="Factorial Analysis parameters",
         ),
     ] = MethodTypes.minres,
+    nb_factors: Annotated[
+        int,
+        Parameter(
+            "--nb_factors",
+            group="Factorial Analysis parameters",
+        ),
+    ] = None,
     train_dataset_size: Annotated[
         float,
         Parameter(
@@ -194,6 +200,10 @@ def ExploratoryFA(
         Select the type of rotation to apply on your data.
     method : MethodTypes, optional
         Select the method for fitting the data.
+    nb_factors : int, optional
+        Specify the number of factors to extract from the data. If not
+        specified, the script will use Horn's parallel analysis to determine
+        the optimal number of factors.
     train_dataset_size : float, optional
         Specify the proportion of the input dataset to use as training dataset
         in the EFA. (value from 0 to 1)
@@ -259,27 +269,27 @@ def ExploratoryFA(
         )
         df.dropna(inplace=True)
 
-    logging.info("Splitting into train and test datasets. Using training "
-                 "dataset for EFA.")
-    train, test = train_test_split(df, train_size=train_dataset_size,
-                                   random_state=random_state)
-    train.reset_index(inplace=True, drop=True)
-    train.to_excel(f"{out_folder}/train_dataset.xlsx", header=True,
-                   index=False)
-    test.reset_index(inplace=True, drop=True)
-    test.to_excel(f"{out_folder}/test_dataset.xlsx", header=True, index=False)
+    if train_dataset_size != 1:
+        logging.info("Splitting into train and test datasets. Using training "
+                     "dataset for EFA.")
+        train, test = train_test_split(df, train_size=train_dataset_size,
+                                       random_state=random_state)
+        train.reset_index(inplace=True, drop=True)
+        train.to_excel(f"{out_folder}/train_dataset.xlsx", header=True,
+                       index=False)
+        test.reset_index(inplace=True, drop=True)
+        test.to_excel(f"{out_folder}/test_dataset.xlsx", header=True,
+                      index=False)
+    else:
+        logging.info("Using the full dataset for EFA.")
+        train = df
 
-    record_id = train[id_column]
     desc_col = train[train.columns[descriptive_columns]]
     train.drop(df.columns[descriptive_columns], axis=1, inplace=True)
 
-    # Scaling the dataset.
-    scaled_df = pd.DataFrame(StandardScaler().fit_transform(train),
-                             columns=train.columns)
-
     # Requirement for factorial analysis.
-    chi_square_value, p_value = calculate_bartlett_sphericity(scaled_df)
-    kmo_all, kmo_model = calculate_kmo(scaled_df)
+    chi_square_value, p_value = calculate_bartlett_sphericity(train)
+    kmo_all, kmo_model = calculate_kmo(train)
     logging.info(
         "Bartlett's test of sphericity returned a p-value of {} and "
         "Keiser-Meyer-Olkin (KMO)"
@@ -288,17 +298,19 @@ def ExploratoryFA(
 
     # Horn's parallel analysis.
     suggfactor, suggcomponent = horn_parallel_analysis(
-        scaled_df.values, out_folder, rotation=None, method=method
+        train.values, out_folder, rotation=None, method=method
     )
+    if nb_factors is None:
+        nb_factors = suggfactor
 
     efa_mod, ev, v, scores, loadings, communalities = efa(
-        scaled_df, rotation=rotation, method=method, nfactors=suggfactor
+        train, rotation=rotation, method=method, nfactors=nb_factors
     )
 
     # Plot scree plot to determine the optimal number of factors using
     # the Kaiser's method. (eigenvalues > 1)
-    plt.scatter(range(1, scaled_df.shape[1] + 1), ev)
-    plt.plot(range(1, scaled_df.shape[1] + 1), ev)
+    plt.scatter(range(1, train.shape[1] + 1), ev)
+    plt.plot(range(1, train.shape[1] + 1), ev)
     sns.set_style("whitegrid")
     plt.title("Scree Plot of the eigenvalues for each factor")
     plt.xlabel("Factors")
@@ -307,7 +319,7 @@ def ExploratoryFA(
     plt.savefig(f"{out_folder}/scree_plot.png")
     plt.close()
 
-    columns = [f"Factor {i}" for i in range(1, suggfactor + 1)]
+    columns = [f"Factor {i}" for i in range(1, nb_factors + 1)]
 
     # Export EFA and CFA transformed data.
     efa_out = pd.DataFrame(
@@ -350,7 +362,7 @@ def ExploratoryFA(
 
     flexible_barplot(
         efa_loadings,
-        suggfactor,
+        nb_factors,
         title="Loadings values for the EFA",
         output=f"{out_folder}/barplot_loadings.png",
         ylabel="Loading value",

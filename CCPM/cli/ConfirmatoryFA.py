@@ -10,7 +10,6 @@ import sys
 from cyclopts import App, Parameter
 import pandas as pd
 import semopy
-from sklearn.preprocessing import StandardScaler
 from typing import List
 from typing_extensions import Annotated
 
@@ -270,10 +269,6 @@ def ConfirmatoryFA(
     desc_col = df[df.columns[descriptive_columns]]
     df.drop(df.columns[descriptive_columns], axis=1, inplace=True)
 
-    # Scaling the dataset.
-    scaled_df = pd.DataFrame(StandardScaler().fit_transform(df),
-                             columns=df.columns)
-
     if loadings_df is not None:
         logging.info("Creating model's specification.")
         loadings_df = load_df_in_any_format(loadings_df)
@@ -297,7 +292,7 @@ def ConfirmatoryFA(
     logging.info("Performing Confirmatory Factorial Analysis (CFA) with"
                  " the following model specification:\n{}".format(mod))
 
-    cfa_mod, scores, stats = cfa(scaled_df, mod)
+    cfa_mod, scores, stats = cfa(df, mod)
 
     logging.info("Exporting results and statistics.")
     scores = pd.concat([desc_col, scores], axis=1)

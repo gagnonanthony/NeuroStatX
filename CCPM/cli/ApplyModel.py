@@ -9,7 +9,6 @@ import sys
 
 from cyclopts import App, Parameter
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
 from typing import List
 from typing_extensions import Annotated
 
@@ -161,10 +160,6 @@ def ApplyModel(
     descriptive_columns = [n for n in range(0, desc_columns)]
     desc_data = df.iloc[:, descriptive_columns]
     df.drop(df.columns[descriptive_columns], axis=1, inplace=True)
-
-    # Scaling features.
-    logging.info("Scaling features")
-    df = StandardScaler().fit_transform(df)
 
     # Loading model.
     logging.info("Loading model")
