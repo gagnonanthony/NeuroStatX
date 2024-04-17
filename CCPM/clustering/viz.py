@@ -392,7 +392,6 @@ def radar_plot(X, labels, output, frame='circle', title="Radar plot",
     ):
         fig = plt.figure(figsize=(12, 12))
         ax = fig.add_subplot(111, polar=True)
-        #fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.5)
 
         # Set radar plot parameters.
         theta = create_radar_plot(len(X.columns), frame=frame)
