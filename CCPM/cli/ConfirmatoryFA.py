@@ -82,7 +82,7 @@ def ConfirmatoryFA(
             "--iterations",
             group="Factorial Analysis parameters",
         ),
-    ] = 1000,
+    ] = None,
     mean: Annotated[
         bool,
         Parameter(
@@ -305,7 +305,9 @@ def ConfirmatoryFA(
     )
 
     # Bootstrapping the model.
-    semopy.bias_correction(cfa_mod, n=iterations)
+    if iterations is not None:
+        logging.info("Bootstrapping the model.")
+        semopy.bias_correction(cfa_mod, n=iterations)
 
     semopy.semplot(cfa_mod, f"{out_folder}/semplot.png",
                    plot_covs=True)
