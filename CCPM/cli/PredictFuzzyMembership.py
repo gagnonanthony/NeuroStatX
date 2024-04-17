@@ -213,6 +213,8 @@ def PredictFuzzyMembership(
     pca : bool, optional
         If set, will perform PCA decomposition to 3 components before
         clustering.
+    pca_model : str, optional
+        If set, will load a pre-trained PCA model to apply on the dataset.
     parallelplot : bool, optional
         If true, will output parallel plot for each cluster solution. Default
         is False.
@@ -328,7 +330,7 @@ def PredictFuzzyMembership(
         index=None,
         columns=[f"Cluster #{n+1}" for n in range(u.shape[0])],
     )
-    out = pd.concat([desc_data, member], axis=1)
+    out = pd.concat([raw_df, member], axis=1)
     out.to_excel(
         f"{out_folder}/predicted_membership_matrix.xlsx",
         header=True,
