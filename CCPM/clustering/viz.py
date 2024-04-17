@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import math
+
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import get_cmap
 from matplotlib.colors import rgb2hex
@@ -13,6 +15,7 @@ import numpy as np
 import pandas as pd
 from pandas.plotting import parallel_coordinates
 import scipy.cluster.hierarchy as shc
+from scipy.stats import f_oneway
 import seaborn as sns
 from statannotations.Annotator import Annotator
 
@@ -346,6 +349,18 @@ def radar_plot(X, labels, output, frame='circle', title="Radar plot",
     # Make labels start at 1 rather than 0, better for viz.
     labels = labels + 1
 
+    # Axis labels.
+    var_labels = X.columns.tolist()
+    var_labels.append(var_labels[0])
+
+    # Computing ANOVA for each features.
+    anova = []
+    i = 0
+    for col in X.columns:
+        f, p = f_oneway(*[X.loc[labels == k, col] for k in np.unique(labels)])
+        anova.append(p)
+        i += 1
+
     # Computing mean values for each features for each clusters.
     mean_df = pd.DataFrame()
     i = 0
@@ -355,52 +370,104 @@ def radar_plot(X, labels, output, frame='circle', title="Radar plot",
             mean.append(X.loc[labels == k, col].mean())
         mean_df.insert(i, col, mean)
         i += 1
-    mean_df.insert(i, "Clusters", np.unique(labels))
 
-    # Set radar plot parameters.
-    theta = create_radar_plot(len(X.columns), frame=frame)
+    # Computing stds for each features for each clusters.
+    std_df = pd.DataFrame()
+    i = 0
+    for col in X.columns:
+        std = list()
+        for k in np.unique(labels):
+            std.append(X.loc[labels == k, col].std())
+        std_df.insert(i, col, std)
+        i += 1
+    max_val = math.ceil((mean_df + std_df).max().max())
+    min_val = math.floor((mean_df - std_df).min().min())
+
+    mean_df.insert(i, "Clusters", np.unique(labels))
+    std_df.insert(i, "Clusters", np.unique(labels))
 
     with plt.rc_context(
         {"font.size": 12, "font.weight": "bold", "axes.titleweight": "bold",
          "font.family": "Sans Serif"}
     ):
-        fig, ax = plt.subplots(1, 1, figsize=(12, 12),
-                               subplot_kw=dict(projection='radar'))
-        fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.5)
+        fig = plt.figure(figsize=(12, 12))
+        ax = fig.add_subplot(111, polar=True)
+        #fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.5)
 
-        ax.grid(which='major', axis='x')
+        # Set radar plot parameters.
+        theta = create_radar_plot(len(X.columns), frame=frame)
 
         for idx, cluster in enumerate(np.unique(labels)):
             values = mean_df.iloc[idx].drop('Clusters').values.tolist()
-            ax.plot(theta, values, c=colors[idx], linewidth=1.5,
-                    label=f'Cluster {cluster}')
-            ax.fill(theta, values, facecolor=colors[idx], alpha=0.20,
-                    label='_nolegend_')
+            values.append(values[0])
+            stds = std_df.iloc[idx].drop('Clusters').values.tolist()
+            stds.append(stds[0])
+            stds_pos = [np.sum(x) for x in zip(values, stds)]
+            stds_neg = [s - d for s, d in zip(values, stds)]
+            ax.plot(theta, values, c=colors[idx], linewidth=2,
+                    label=f'Cluster {cluster}', markersize=4, zorder=3)
+            plot = ax.errorbar(theta, values, yerr=stds, fmt='o-',
+                               color=colors[idx], linewidth=0,
+                               label=f'Cluster {cluster}')
+            ax.fill_between(theta, values, stds_pos, alpha=0.2,
+                            color=colors[idx], edgecolor='none',
+                            label='_nolegend_')
+            ax.fill_between(theta, values, stds_neg, alpha=0.2,
+                            color=colors[idx], edgecolor='none',
+                            label='_nolegend_')
+
+            plot[-1][0].set_color(colors[idx])
+
+    # Add p-values to the plot.
+    for i, p in enumerate(anova):
+        if 0.01 < p < 0.05:
+            ax.text(theta[i], max_val * 0.95, '*', fontsize=18, color='black',
+                    weight='bold', rotation=math.degrees(theta[i]) + 90)
+        elif 0.001 < p < 0.01:
+            ax.text(theta[i], max_val * 0.95, '**', fontsize=18, color='black',
+                    weight='bold', rotation=math.degrees(theta[i]) + 90)
+        elif p < 0.001:
+            ax.text(theta[i], max_val * 0.95, '***', fontsize=18,
+                    color='black', weight='bold',
+                    rotation=math.degrees(theta[i]) + 90,
+                    ha='center', va='center')
 
     # Set legend and variables parameters.
-    legend = ax.legend(np.unique(labels), loc=(0.95, 0.9), title='Cluster #',
-                       fontsize=12)
+    legend = ax.legend(np.unique(labels), loc='best', title='Profile #',
+                       fontsize=14)
     frame = legend.get_frame()
-    frame.set_facecolor('lightgray')
+    frame.set_facecolor('#eef0eb')
     frame.set_edgecolor('gray')
-    ax.set_varlabels(X.columns)
-    ax.set_rlabel_position(180)
+    ax.set_thetagrids(theta * 180 / np.pi, var_labels, zorder=1)
+    ax.set_rlabel_position(-36)
+    ax.set_ylim(min_val, max_val)
+    yticks = np.arange(min_val, max_val, 0.5)
+    ax.set_yticks(yticks)
 
-    # Setting title.
+    # Set spines and title parameters.
+    for spine in ax.spines.values():
+        spine.set_color('black')
+    ax.grid(axis='y', color='white', linewidth=1, zorder=3)
+    ax.grid(axis='x', color='white', linewidth=.5, zorder=2)
+    ax.set_facecolor('#eef0eb')
+    ax.set_xticklabels(var_labels)
+
     ax.set_title(f"{title}", weight='bold', size=16,
                  horizontalalignment='center')
 
     # Set the position for the labels.
     for label, angle in zip(ax.get_xticklabels(), theta):
-        if angle in (0, np.pi):
-            label.set_horizontalalignment('center')
-        elif 0 < angle < np.pi:
-            label.set_horizontalalignment('right')
-        else:
+        if angle == 0:
             label.set_horizontalalignment('left')
+        elif angle == np.pi:
+            label.set_horizontalalignment('right')
+        elif 0 < angle < np.pi / 2 or angle > 3 * np.pi / 2:
+            label.set_horizontalalignment('left')
+        else:
+            label.set_horizontalalignment('right')
 
     plt.tight_layout()
-    plt.savefig(f"{output}")
+    plt.savefig(f"{output}", dpi=300)
     plt.close()
 
 
@@ -419,6 +486,7 @@ def create_radar_plot(nb_vars, frame='circle'):
 
     # Compute evenly spaced axis angles.
     theta = np.linspace(0, 2 * np.pi, nb_vars, endpoint=False)
+    theta = np.concatenate((theta, [theta[0]]))
 
     class RadarTransform(PolarAxes.PolarTransform):
 
