@@ -445,7 +445,7 @@ def FuzzyClustering(
 
     # Computing a range of C-means clustering method.
     logging.info("Computing FCM from k=2 to k={}".format(k))
-    cntr, u, d, wss, fpcs, ss, chi, dbi, gap, sk = fuzzyCmeans(
+    cntr, u, wss, fpcs, ss, chi, dbi, gap, sk = fuzzyCmeans(
         X,
         max_cluster=k,
         m=m,
