@@ -29,7 +29,6 @@ def test_execution_fuzzy(script_runner):
         "--desc-columns", 4,
         "--id-column", "subjectkey",
         "--k", 3,
-        "--barplot",
         "--parallelplot",
         "--radarplot",
         "-f"]
