@@ -432,7 +432,7 @@ def radar_plot(X, labels, output, frame='circle', title="Radar plot",
                     ha='center', va='center')
 
     # Set legend and variables parameters.
-    legend = ax.legend(np.unique(labels), loc='best', title='Profile #',
+    legend = ax.legend(np.unique(labels), loc=(0.95, 0.9), title='Profile #',
                        fontsize=14)
     frame = legend.get_frame()
     frame.set_facecolor('#eef0eb')

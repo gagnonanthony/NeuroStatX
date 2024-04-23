@@ -13,9 +13,9 @@ class TestNodeColormapFunctions(unittest.TestCase):
     def test_creating_node_colormap(self):
         percentile_dict = {'cluster1': [0, 1, 0, 1, 0],
                            'cluster2': [0, 0, 1, 0, 0]}
-        expected_output = ['black', np.array(plt.cm.tab10(1)),
+        expected_output = ['darkgrey', np.array(plt.cm.tab10(1)),
                            np.array(plt.cm.tab10(1)),
-                           np.array(plt.cm.tab10(1)), 'black']
+                           np.array(plt.cm.tab10(1)), 'darkgrey']
         for i in range(0, len(expected_output)):
             if isinstance(expected_output[i], np.ndarray):
                 self.assertEqual(
@@ -27,7 +27,7 @@ class TestNodeColormapFunctions(unittest.TestCase):
 
     def test_create_cmap_from_list_integer_array(self):
         integer_array = np.array([0, 1, 2, 3, 4])
-        expected_output = ['black',
+        expected_output = ['darkgrey',
                            np.array(plt.cm.tab10(1)),
                            np.array(plt.cm.tab10(2)),
                            np.array(plt.cm.tab10(3)),
