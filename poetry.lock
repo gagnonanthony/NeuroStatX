@@ -2930,28 +2930,6 @@ pure-eval = "*"
 tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 
 [[package]]
-name = "statannotations"
-version = "0.6.0"
-description = "add statistical significance or custom annotations on seaborn plots. Based on statannot 0.2.3"
-optional = false
-python-versions = ">=3.6"
-files = []
-develop = false
-
-[package.dependencies]
-matplotlib = ">=2.2.2"
-numpy = ">=1.12.1"
-pandas = ">=0.23.0"
-scipy = ">=1.1.0"
-seaborn = ">=0.9.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/gagnonanthony/statannotations.git"
-reference = "HEAD"
-resolved_reference = "e6f15a87a4e611eb96707501353767ec18539a69"
-
-[[package]]
 name = "statsmodels"
 version = "0.14.2"
 description = "Statistical computations and models for Python"
@@ -3240,4 +3218,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a1705459b7029445a290524feec29b1423ddce9a6bf74b5cb1bbcac2c040a0d0"
+content-hash = "ed1ff4be4ea74b4e02796a978e9e794bbd2746696a66414e4a060179005f40e0"

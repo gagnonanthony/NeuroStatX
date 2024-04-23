@@ -22,7 +22,6 @@ from CCPM.clustering.viz import (
     plot_clustering_results,
     plot_dendrogram,
     plot_parallel_plot,
-    plot_grouped_barplot,
     radar_plot
 )
 from CCPM.clustering.metrics import compute_knee_location, find_optimal_gap
@@ -120,13 +119,6 @@ def FuzzyClustering(
         ),
     ] = 4,
     parallelplot: Annotated[
-        bool,
-        Parameter(
-            show_default=True,
-            group="Visualization Options",
-        ),
-    ] = False,
-    barplot: Annotated[
         bool,
         Parameter(
             show_default=True,
@@ -243,10 +235,6 @@ def FuzzyClustering(
     ::
 
                     [out_folder]
-                        |-- BARPLOTS (optional)
-                        |       |-- barplot_2clusters.png
-                        |       |-- [...]
-                        |       └-- barplot_{k}clusters.png
                         |-- CENTROIDS
                         |       |-- clusters_centroids_2.xlsx
                         |       |-- [...]
@@ -337,9 +325,6 @@ def FuzzyClustering(
     parallelplot : bool, optional
         If true, will output parallel plot for each cluster solution. Default
         is False.
-    barplot : bool, optional
-        If true, will output barplot for each cluster solution. Default is
-        False.
     radarplot : bool, optional
         If true, will output radar plot for each cluster solution. Default is
         True.
@@ -534,7 +519,6 @@ def FuzzyClustering(
     os.mkdir(f"{out_folder}/PARALLEL_PLOTS/")
     os.mkdir(f"{out_folder}/RADAR_PLOTS/")
     os.mkdir(f"{out_folder}/CENTROIDS/")
-    os.mkdir(f"{out_folder}/BARPLOTS")
 
     # Iterating and saving every elements.
     for i in range(len(u)):
@@ -548,14 +532,6 @@ def FuzzyClustering(
                        "clusters.png",
                 cmap=cmap,
                 title=f"Parallel Coordinates plot for {i+2} clusters solution."
-            )
-        if barplot:
-            plot_grouped_barplot(
-                df_for_clust,
-                membership,
-                title=f"Barplot of {i+2} clusters solution.",
-                cmap=cmap,
-                output=f"{out_folder}/BARPLOTS/barplot_{i+2}clusters.png",
             )
         if radarplot:
             radar_plot(

@@ -39,7 +39,6 @@ factor-analyzer = "^0.5.0"
 matplotlib = "^3.8.2"
 networkx = "^3.2.1"
 coloredlogs = "^15.0.1"
-statannotations = {git = "https://github.com/gagnonanthony/statannotations.git"}
 strenum = "^0.4.15"
 cyclopts = "^2.2.0"
 openpyxl = "^3.1.2"

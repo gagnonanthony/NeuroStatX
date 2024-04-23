@@ -16,8 +16,6 @@ import pandas as pd
 from pandas.plotting import parallel_coordinates
 import scipy.cluster.hierarchy as shc
 from scipy.stats import f_oneway
-import seaborn as sns
-from statannotations.Annotator import Annotator
 
 
 def plot_clustering_results(lst, title, metric, output, errorbar=None,
@@ -223,97 +221,6 @@ def plot_parallel_plot(
         ax.spines[["left", "right", "top", "bottom"]].set(linewidth=1.5)
 
         ax.figure.autofmt_xdate()
-
-        plt.savefig(f"{output}")
-        plt.close()
-
-
-def plot_grouped_barplot(X, labels, output, cmap='magma',
-                         title="Barplot"):
-    """
-    Function to plot a barplot for all features in the original dataset
-    stratified by clusters. T-test between clusters' mean within a feature is
-    also computed and annotated directly on the plot. When plotting a high
-    number of clusters, plotting of significant annotation is polluting the
-    plot, will be fixed in the future.
-
-    Args:
-        X (DataFrame):                      Input dataset of shape (S, F).
-        labels (Array):                     Array of hard membership value
-                                            (S, ).
-        output (str):                       Filename of the png file.
-        cmap (str, optional):               Colormap to use for the plot.
-                                            Defaults to 'magma'. See
-                                            https://matplotlib.org/stable/tutorials/colors/colormaps.html
-        title (str, optional):              Title of the plot.
-                                            Defaults to 'Barplot'.
-    """
-    # Make labels start at 1 rather than 0, better for viz.
-    labels = labels + 1
-
-    features = list(X.columns)
-    features.append("Clusters")
-
-    # Merging the labels with the original dataset.
-    df = pd.concat([X, pd.DataFrame(labels, columns=["Clusters"])], axis=1)
-
-    # Melting the dataframe for plotting.
-    viz_df = df.melt(id_vars="Clusters")
-
-    # Setting up matplotlib figure.
-    fig = plt.figure(figsize=(15, 8))
-    axes = fig.add_subplot()
-
-    # Setting parameters for the barplot.
-    plotting_parameters = {
-        "data": viz_df,
-        "x": "variable",
-        "y": "value",
-        "hue": "Clusters",
-        "palette": cmap,
-        "saturation": 0.5,
-    }
-
-    with plt.rc_context(
-        {"font.size": 10, "font.weight": "bold", "axes.titleweight": "bold"}
-    ):
-        # Plotting barplot using Seaborn.
-        sns.barplot(ax=axes, **plotting_parameters)
-
-        # Setting pairs for statistical testing between clusters for each
-        # feature.
-        clusters = np.unique(labels)
-        features = list(X.columns)
-
-        pairs = [
-            [(var, cluster1), (var, cluster2)]
-            for var in features
-            for i, cluster1 in enumerate(clusters)
-            for cluster2 in clusters
-            if (cluster1 != cluster2) and not (cluster1 > cluster2)
-        ]
-
-        # Plotting statistical difference.
-        annotator = Annotator(
-            axes, pairs, verbose=False, **plotting_parameters
-        )
-        annotator.configure(
-            test="Mann-Whitney", text_format="star", show_test_name=False,
-            verbose=0, hide_non_significant=True, comparisons_correction='BH',
-            correction_format='replace', line_height=0.005
-        )
-        annotator.apply_test()
-        _, results = annotator.annotate()
-
-        # Customization options.
-        axes.spines[["left", "bottom", "top", "right"]].set(linewidth=2)
-        axes.legend(title="Cluster #", loc="best", title_fontsize="medium")
-        axes.set_title(f"{title}")
-        axes.set_ylabel("Scores", fontdict={"fontweight": "bold"})
-        axes.set_xlabel("")
-        axes.grid(False)
-
-        axes.figure.autofmt_xdate()
 
         plt.savefig(f"{output}")
         plt.close()
