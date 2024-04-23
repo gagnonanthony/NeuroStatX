@@ -169,6 +169,7 @@ def weightedpath(
     graph,
     df,
     label_name,
+    cohort=None,
     iterations=1000,
     weight=None,
     method="dijkstra",
@@ -203,10 +204,19 @@ def weightedpath(
         dist (list):                            Null distribution.
         pvalue (float):                         P-value.
     """
+    # Cohort selection.
+    if cohort is not None:
+        subset = df.loc[df['cohort'] == cohort]
+    else:
+        subset = df.copy()
+
     # Setting lists.
-    group_exclude = df.loc[df[label_name] == 0]
+    group_exclude = subset.loc[subset[label_name] == 0]
     nodes_exclude = group_exclude.index.to_list()
-    nodes_include = [node for node in list(graph) if node not in nodes_exclude]
+    nodes_include = [node for node in list(subset.index) if node
+                     not in nodes_exclude]
+    centroid_nodes = [node for node in list(graph) if 'c' in node]
+    nodes_include = nodes_include + centroid_nodes
 
     logging.info("Computing weighted path for the set of nodes.")
     sub_G = nx.induced_subgraph(graph, nodes_include)

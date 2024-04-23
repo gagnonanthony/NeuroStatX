@@ -66,6 +66,13 @@ def VisualizeGraphNetwork(
             group="Label Options",
         ),
     ] = None,
+    cohort: Annotated[
+        int,
+        Parameter(
+            show_default=False,
+            group="Essential Files Options",
+        ),
+    ] = None,
     background_alpha: Annotated[
         bool,
         Parameter(
@@ -135,7 +142,7 @@ def VisualizeGraphNetwork(
             show_default=True,
             group="Network Visualization Options",
         ),
-    ] = 0.3,
+    ] = 0.1,
     subject_node_color: Annotated[
         str,
         Parameter(
@@ -191,6 +198,16 @@ def VisualizeGraphNetwork(
     multiple label name by using --label-name x --label-name y. The script will
     output multiple graphs for each label name.
 
+    COHORT SELECTION
+    ----------------
+    In some case, the graph network file can contain data from multiple cohort
+    at the same time. It might be useful to single out a specific cohort to
+    visualize some data. Using --cohort, the script will fetch data from
+    the specified cohort and filter the --label-name. In order for the script
+    to run successfully, your graph network needs to contain the cohort
+    attributes. If it does not, please add it using the AddNodesAttributes
+    script.
+
     GRAPH NETWORK CUSTOMIZATION
     ---------------------------
     To customize the graph appearance, please see the Network Visualization
@@ -226,6 +243,9 @@ def VisualizeGraphNetwork(
         Save parameters to a .txt file.
     label_name : List[str]
         List of label names to subsequently use for labelling.
+    cohort: int, optional
+        Cohort identifier. If your graph contains data from multiple cohort,
+        you can specify the cohort you want for visulization.
     background_alpha : bool
         Use background alpha for the graph.
     weight : str
@@ -302,11 +322,25 @@ def VisualizeGraphNetwork(
 
         logging.info("Constructing graph(s) with custom labels.")
 
+        if cohort is not None:
+            label_name.append('cohort')
+
         # Loading df.
         df = fetch_attributes_df(G, attributes=label_name)
 
         # Fetching data for label as array.
         for label in label_name:
+            if label == 'cohort':
+                continue
+
+            # If subject is not within the specified cohort, impute 0.
+            if cohort is not None:
+                df.loc[:, label] = np.where(df.loc[:, label] == 1,
+                                            np.where(
+                                                df.loc[:, 'cohort'] == cohort,
+                                                1,
+                                                0),
+                                            0)
             labels = df[label]
 
             nodes_cmap = create_cmap_from_list(labels)
@@ -335,7 +369,7 @@ def VisualizeGraphNetwork(
                 subject_alpha=sub_alpha,
                 subject_node_color=nodes_cmap,
                 subject_edge_color=subject_edge_color,
-                colormap="gray",
+                colormap=colormap,
                 title=f"{title} with {label} subjects colored.",
                 legend_title=legend_title,
             )
