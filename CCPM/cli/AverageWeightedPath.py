@@ -218,12 +218,13 @@ def AverageWeightedPath(
     G = nx.read_gml(in_graph)
 
     # If a cohort is specified.
+    attr = label_name.copy()
     if cohort is not None:
-        label_name.append('cohort')
+        attr.append('cohort')
 
     # Fetching labels from nodes' attributes.
     df = fetch_attributes_df(G,
-                             attributes=label_name)
+                             attributes=attr)
 
     # Loading dataset and generating list of nodes to include.
     if distribution is not None:
