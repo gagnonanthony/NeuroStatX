@@ -57,3 +57,30 @@ def KNNimputation(ref_df, df, n_neighbors=5, weights='distance',
     out = pd.DataFrame(KNN.transform(df), columns=df.columns)
 
     return out
+
+
+def apply_various_models(df, mod):
+    """Function to apply various models to a dataset.
+
+    Args:
+        df (pd.DataFrame):              Dataframe to use.
+        mod (Model):                    Model to use.
+
+    Returns:
+        y:                              Predicted values.
+    """
+
+    if "semopy" in str(type(mod)):
+        y = mod.predict_factors(df)
+    elif "sklearn" in str(type(mod)):
+        y = pd.DataFrame(mod.transform(df),
+                         columns=list(mod.get_feature_names_out()))
+    elif "factor_analyzer" in str(type(mod)):
+        y = pd.DataFrame(mod.transform(df),
+                         columns=["factor_{}".format(i)
+                                  for i in range(0, mod.n_factors)])
+    else:
+        raise TypeError("Model of type {} currently not supported, please"
+                        "open an issue on GitHub.".format(type(mod)))
+
+    return y

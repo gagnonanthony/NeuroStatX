@@ -12,26 +12,25 @@ tmp_dir = tempfile.TemporaryDirectory()
 
 
 def test_help(script_runner):
-    ret = script_runner.run(["FuzzyClustering", "-h"])
+    ret = script_runner.run(["ConfirmatoryFA", "-h"])
 
     assert ret.success
 
 
-def test_execution_fuzzy(script_runner):
+def test_execution_factor_analysis(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_dataset = os.path.join(get_home(), "data/clustering_data.xlsx")
-    out_folder = os.path.join(get_home(), "data/Fuzzy_Clustering/")
+    in_dataset = os.path.join(get_home(), "data/factor_data.xlsx")
+    out_folder = os.path.join(get_home(), "data/factor_results/")
 
     ret = script_runner.run([
-        "FuzzyClustering",
-        "--out-folder", out_folder,
+        "ConfirmatoryFA",
         "--in-dataset", in_dataset,
-        "--desc-columns", 4,
+        "--out-folder", out_folder,
+        "--desc-columns", 1,
         "--id-column", "subjectkey",
-        "--k", 3,
-        "--parallelplot",
-        "--radarplot",
-        "-f"]
+        "--model", "efa1 =~ v1 + v3 + v6 + v7",
+        "--model", "efa2 =~ v2 + v4 + v5",
+        "-f", "-v", "-s"]
     )
 
     assert ret.success

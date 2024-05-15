@@ -7,8 +7,9 @@ from enum import Enum
 import numpy as np
 from sklearn.base import clone, is_classifier
 from sklearn.cross_decomposition import PLSRegression
-from sklearn.model_selection import (cross_val_predict, KFold, check_cv)
-from sklearn.metrics import mean_squared_error, r2_score, check_scoring
+from sklearn.model_selection import (cross_val_predict, KFold, check_cv,
+                                     StratifiedKFold)
+from sklearn.metrics import (mean_squared_error, r2_score, check_scoring)
 from sklearn.utils import indexable, check_random_state
 from sklearn.utils.metaestimators import _safe_split
 from sklearn.utils.parallel import Parallel, delayed
@@ -62,6 +63,21 @@ class ScoringMethod(StrEnum, Enum):
     d2_tweedie_score = "d2_tweedie_score"
 
 
+class Penalty(StrEnum, Enum):
+    l1 = "l1"
+    l2 = "l2"
+    elasticnet = "elasticnet"
+
+
+class Solver(StrEnum, Enum):
+    newton_cg = "newton-cg"
+    newton_cholesky = "newton-cholesky"
+    lbfgs = "lbfgs"
+    liblinear = "liblinear"
+    sag = "sag"
+    saga = "saga"
+
+
 def plsr_cv(X,
             Y,
             nb_comp,
@@ -93,7 +109,7 @@ def plsr_cv(X,
         mse_cv:                         Mean squared error for the
                                         cross-validation.
     """
-    v = False if verbose else False
+    v = True if verbose else False
 
     mse = []
     component = np.arange(1, nb_comp + 1)
@@ -129,9 +145,10 @@ def plsr_cv(X,
     return plsr, mse, score_c, score_cv, rscore, mse_c, mse_cv
 
 
-def permutation_testing(X,
+def permutation_testing(estimator,
+                        X,
                         Y,
-                        nb_comp,
+                        binary=False,
                         nb_permutations=1000,
                         scoring='r2',
                         splits=10,
@@ -144,7 +161,8 @@ def permutation_testing(X,
                                             variables.
         Y (pd.DataFrame):                   Dataframe containing the dependent
                                             variables.
-        nb_comp (int):                      Number of components to use.
+        binary (bool, optional):            If the dependent variable is
+                                            binary. Defaults to False.
         nb_permutations (int, optional):    Number of iterations to perform.
                                             Defaults to 1000.
         scoring (str, optional):            Scoring method to use. Defaults
@@ -156,8 +174,10 @@ def permutation_testing(X,
         verbose (bool, optional):           Verbose mode. Defaults to False.
 
     Returns:
-        score:                              R2 score for the model.
-        perm_score:                         R2 scores for the permutation
+        mod:                                Model.
+        score:                              Score for the model.
+        coef:                               Coefficients for the model.
+        perm_score:                         Scores for the permutation
                                             testing.
         score_pvalue:                       P-value for the model.
         perm_coef:                          Coefficients for the permutation
@@ -166,21 +186,24 @@ def permutation_testing(X,
     """
     v = 1 if verbose else 0
 
-    plsr = PLSRegression(n_components=nb_comp)
-    kf_10 = KFold(n_splits=splits, shuffle=True, random_state=1)
+    if binary:
+        kf_10 = StratifiedKFold(n_splits=splits, shuffle=True, random_state=1)
+    else:
+        kf_10 = KFold(n_splits=splits, shuffle=True, random_state=1)
 
     # Lauching permutation testing.
-    score, perm_score, score_pvalue, perm_coef, coef_pvalue = permutation_test(
-        plsr,
-        X,
-        Y,
-        scoring=scoring,
-        cv=kf_10,
-        n_permutations=nb_permutations,
-        n_jobs=processes,
-        verbose=v)
+    mod, score, coef, perm_score, score_pvalue, perm_coef, coef_pvalue = \
+        permutation_test(
+            estimator,
+            X,
+            Y,
+            scoring=scoring,
+            cv=kf_10,
+            n_permutations=nb_permutations,
+            n_jobs=processes,
+            verbose=v)
 
-    return score, perm_score, score_pvalue, perm_coef, coef_pvalue
+    return mod, score, coef, perm_score, score_pvalue, perm_coef, coef_pvalue
 
 
 def _permutation_scorer(estimator,
@@ -189,7 +212,7 @@ def _permutation_scorer(estimator,
                         groups,
                         cv,
                         scorer,
-                        fit_params=None):
+                        fit_params):
     """Core worker for permutation testing.
 
     Args:
@@ -206,6 +229,7 @@ def _permutation_scorer(estimator,
                                         Defaults to None.
 
     Returns:
+        estimator:                      Model.
         avg_score:                      Average score.
         coefficients:                   Coefficients.
     """
@@ -221,7 +245,8 @@ def _permutation_scorer(estimator,
         avg_score.append(scorer(estimator, X_test, y_test))
         coefficients.append(estimator.coef_.T)
 
-    return np.mean(avg_score), np.mean(np.array(coefficients), axis=0)
+    return estimator, np.mean(avg_score), np.mean(np.array(coefficients),
+                                                  axis=0)
 
 
 def permutation_test(estimator,
@@ -259,8 +284,10 @@ def permutation_test(estimator,
                                             Defaults to None.
 
     Returns:
-        score:                              R2 score for the model.
-        perm_score:                         R2 scores for the permutation
+        mod:                                Model.
+        score:                              Score for the model.
+        coef:                               Coefficients for the model.
+        perm_score:                         Scores for the permutation
                                             testing.
         score_pvalue:                       P-value for the model.
         perm_coef:                          Coefficients for the permutation
@@ -276,9 +303,9 @@ def permutation_test(estimator,
     scorer = check_scoring(estimator, scoring=scoring)
     random_state = check_random_state(random_state)
 
-    score = _permutation_scorer(clone(estimator),
-                                X, y, groups, cv, scorer,
-                                fit_params=fit_params)
+    mod, score, coef = _permutation_scorer(clone(estimator),
+                                           X, y, groups, cv, scorer,
+                                           fit_params=fit_params)
 
     results = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(_permutation_scorer)(
@@ -293,12 +320,12 @@ def permutation_test(estimator,
         for _ in range(n_permutations)
     )
 
-    perm_score, perm_coef = zip(*results)
+    models, perm_score, perm_coef = zip(*results)
 
     perm_score = np.array(perm_score)
     perm_coef = np.array(perm_coef)
-    score_pvalue = (np.sum(perm_score >= score[0]) + 1) / (n_permutations + 1)
-    coef_pvalue = (np.sum(abs(perm_coef) >= abs(score[1]),
+    score_pvalue = (np.sum(perm_score >= score) + 1) / (n_permutations + 1)
+    coef_pvalue = (np.sum(abs(perm_coef) >= abs(coef),
                           axis=0) + 1) / (n_permutations + 1)
 
-    return score, perm_score, score_pvalue, perm_coef, coef_pvalue
+    return mod, score, coef, perm_score, score_pvalue, perm_coef, coef_pvalue

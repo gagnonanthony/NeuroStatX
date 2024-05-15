@@ -27,7 +27,7 @@ class TestNodeColormapFunctions(unittest.TestCase):
 
     def test_create_cmap_from_list_integer_array(self):
         integer_array = np.array([0, 1, 2, 3, 4])
-        expected_output = ['black',
+        expected_output = ['darkgrey',
                            np.array(plt.cm.tab10(1)),
                            np.array(plt.cm.tab10(2)),
                            np.array(plt.cm.tab10(3)),

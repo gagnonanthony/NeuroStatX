@@ -12,23 +12,25 @@ tmp_dir = tempfile.TemporaryDirectory()
 
 
 def test_help(script_runner):
-    ret = script_runner.run(["AverageWeightedPath", "-h"])
+    ret = script_runner.run(["PartialLeastSquareRegression", "-h"])
 
     assert ret.success
 
 
-def test_compute_weighted_path(script_runner):
+def test_partial_least_square(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_with_attributes.gml")
-    out_folder = os.path.join(get_home(), "data/weighted_path/")
+    out_folder = os.path.join(get_home(), "data/PLSR_results")
 
     ret = script_runner.run([
-        "AverageWeightedPath",
+        "PartialLeastSquareRegression",
         "--in-graph", in_graph,
-        "--label-name", "diagnosis",
         "--out-folder", out_folder,
-        "--iterations", 10,
-        "--processes", 1,
+        "--attributes", "gestage",
+        "--attributes", "age",
+        "--attributes", "iq",
+        "--permutations", 100,
+        "--plot-distributions",
         "-f"]
     )
 

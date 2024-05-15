@@ -41,6 +41,13 @@ def AverageWeightedPath(
             group="Essential Files Options",
         ),
     ] = None,
+    cohort: Annotated[
+        int,
+        Parameter(
+            show_default=False,
+            group="Essential Files Options",
+        ),
+    ] = None,
     iterations: Annotated[
         int,
         Parameter(
@@ -103,7 +110,7 @@ def AverageWeightedPath(
         ),
     ] = False,
 ):
-    """AVEARGE WEIGHTED PATH
+    """AVERAGE WEIGHTED PATH
     ---------------------
     AverageWeightedPath is a script that computes the average
     weighted shortest path length for a group of nodes. The script will
@@ -124,6 +131,17 @@ def AverageWeightedPath(
     already been run on for the same number of nodes (see below). One could
     also reduce the number of iterations to speed up the process and have a
     rough estimate of the p-value.
+
+    COHORT SELECTION
+    ----------------
+    In some case, the graph network file can contain data from multiple cohort
+    at the same time. It might be useful to single out a specific cohort to
+    compute the AWP metric. Using --cohort, the script will fetch data from
+    the specified cohort and filter the --label-name. The AWP will be
+    computed only on subject with the --label-name for the specified cohort.
+    In order for the script to run successfully, your graph network needs to
+    contain the cohort attributes. If it does not, please add it using the
+    AddNodesAttributes script.
 
     MULTIPROCESSING
     ---------------
@@ -160,6 +178,9 @@ def AverageWeightedPath(
         Label(s) name(s) to select group(s) of nodes. Can be multiple.
     out_folder : str, optional
         Output folder where files will be exported.
+    cohort: int, optional
+        Cohort identifier. If your graph contains data from multiple cohort,
+        you can specify the cohort you want to compute the AWP.
     iterations : int, optional
         Number of iterations to perform to generate the null distribution.
     weight : str, optional
@@ -196,8 +217,14 @@ def AverageWeightedPath(
     logging.info("Loading graph.")
     G = nx.read_gml(in_graph)
 
+    # If a cohort is specified.
+    attr = label_name.copy()
+    if cohort is not None:
+        attr.append('cohort')
+
     # Fetching labels from nodes' attributes.
-    df = fetch_attributes_df(G, attributes=label_name)
+    df = fetch_attributes_df(G,
+                             attributes=attr)
 
     # Loading dataset and generating list of nodes to include.
     if distribution is not None:
@@ -213,6 +240,7 @@ def AverageWeightedPath(
             G,
             df,
             label_name=var,
+            cohort=cohort,
             iterations=iterations,
             weight=weight,
             method=method,

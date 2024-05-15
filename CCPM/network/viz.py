@@ -329,7 +329,7 @@ def create_cmap_from_list(array):
         nodes_cmap = []
         for i in array:
             if i == 0:
-                nodes_cmap.append("black")
+                nodes_cmap.append("darkgrey")
             else:
                 nodes_cmap.append(cmap[i])
 

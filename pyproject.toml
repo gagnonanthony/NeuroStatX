@@ -30,7 +30,7 @@ scipy = "1.11.4"
 semopy = "^2.3.10"
 graphviz = "^0.20.1"
 p-tqdm = "^1.4.0"
-seaborn = "0.12.2"
+seaborn = "0.13.0"
 gdown = "5.1.0"
 kneed = "^0.8.5"
 detect-delimiter = "^0.1.1"
@@ -39,23 +39,25 @@ factor-analyzer = "^0.5.0"
 matplotlib = "^3.8.2"
 networkx = "^3.2.1"
 coloredlogs = "^15.0.1"
-statannotations = {git = "https://github.com/gagnonanthony/statannotations.git"}
 strenum = "^0.4.15"
 cyclopts = "^2.2.0"
 openpyxl = "^3.1.2"
 
 [tool.poetry.scripts]
+ApplyModel = 'CCPM.cli.ApplyModel:app'
 ComputeGraphNetwork = 'CCPM.cli.ComputeGraphNetwork:app'
 CompareClustering = 'CCPM.cli.CompareClustering:app' 
 CompareGraphs = 'CCPM.cli.CompareGraphs:app'
+ConfirmatoryFA = 'CCPM.cli.ConfirmatoryFA:app'
 AverageWeightedPath = 'CCPM.cli.AverageWeightedPath:app'
-FactorAnalysis = 'CCPM.cli.FactorAnalysis:app'
+ExploratoryFA = 'CCPM.cli.ExploratoryFA:app'
 FuzzyClustering = 'CCPM.cli.FuzzyClustering:app'
 GraphMetrics = 'CCPM.cli.GraphMetrics:app'
 PredictFuzzyMembership = 'CCPM.cli.PredictFuzzyMembership:app'
 AddNodesAttributes = 'CCPM.cli.AddNodesAttributes:app'
-Plsr = 'CCPM.cli.Plsr:app'
+PartialLeastSquareRegression = 'CCPM.cli.PartialLeastSquareRegression:app'
 VisualizeGraphNetwork = 'CCPM.cli.VisualizeGraphNetwork:app'
+LogisticRegression = 'CCPM.cli.LogisticRegression:app'
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

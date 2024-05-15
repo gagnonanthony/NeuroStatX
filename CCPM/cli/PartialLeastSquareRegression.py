@@ -17,8 +17,8 @@ from typing_extensions import Annotated
 
 from CCPM.io.utils import (assert_input, assert_output_dir_exist)
 from CCPM.network.utils import fetch_attributes_df, fetch_edge_data
-from CCPM.statistics.plsr import (plsr_cv, permutation_testing,
-                                  ScoringMethod)
+from CCPM.statistics.models import (plsr_cv, permutation_testing,
+                                    ScoringMethod)
 from CCPM.io.viz import generate_coef_plot, flexible_hist
 
 # Initializing the app.
@@ -26,7 +26,7 @@ app = App(default_parameter=Parameter(negative=()))
 
 
 @app.default()
-def Plsr(
+def PartialLeastSquareRegression(
     in_graph: Annotated[
         str,
         Parameter(
@@ -172,7 +172,8 @@ def Plsr(
     -------------
     ::
 
-        Plsr --in-graph graph.gexf --out-folder output_folder -v -s
+        PartialLeastSquareRegression --in-graph graph.gexf
+        --out-folder output_folder -v -s
 
     Parameters
     ----------
@@ -254,20 +255,21 @@ def Plsr(
 
     # Permutation testing.
     logging.info("Performing permutation testing.")
-    score, perm_score, score_pval, perm_coef, coef_pval = permutation_testing(
-        attr,
-        edge,
-        nb_comp=np.argmin(mse) + 1,
-        nb_permutations=permutations,
-        scoring=scoring,
-        splits=splits,
-        processes=processes,
-        verbose=verbose)
+    mod, score, coef, perm_score, score_pval, perm_coef, coef_pval = \
+        permutation_testing(
+            plsr,
+            attr,
+            edge,
+            nb_permutations=permutations,
+            scoring=scoring,
+            splits=splits,
+            processes=processes,
+            verbose=verbose)
 
     # Exporting statistics.
     logging.info("Exporting statistics.")
     coef = {
-        f'coef{i+1}': plsr.coef_[i, :] for i in range(0, plsr.coef_.shape[0])}
+        f'coef{i+1}': coef[:, i] for i in range(0, coef.shape[0])}
     coef['varname'] = attr_df.columns
     coef_df = pd.DataFrame(coef)
     coef_df.to_excel(f"{out_folder}/Coefficients/coef_df.xlsx")

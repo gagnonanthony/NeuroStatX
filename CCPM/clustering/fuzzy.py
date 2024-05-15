@@ -2,14 +2,11 @@
 
 import math
 
-from functools import partial
 from matplotlib import pyplot as plt
-from matplotlib.pyplot import get_cmap
 from matplotlib.colors import rgb2hex
-import multiprocessing
 import numpy as np
-from p_tqdm import p_map
 import skfuzzy as fuzz
+from sklearn.utils.parallel import Parallel, delayed
 
 from CCPM.clustering.metrics import (
     compute_evaluation_metrics,
@@ -47,7 +44,6 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init,
         fpc:                            Fuzzy partition coefficient.
         cntr:                           Cluster centroids array.
         u:                              Membership array.
-        d:                              Distance array.
         wss:                            Within-cluster Sum of Square Error.
         ss:                             Silhouette Coefficient Score.
         chi:                            Calinski-Harabasz Index.
@@ -66,14 +62,15 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init,
         else:
             init_mat = None
 
-        cntr, u, u0, d, jm, p, fpc = fuzz.cmeans(
+        cntr, u, _, _, _, p, fpc = fuzz.cmeans(
             X.T,
             n_cluster,
             m=m,
             error=error,
             maxiter=maxiter,
             metric=metric,
-            init=init_mat)
+            init=init_mat,
+            seed=0)
 
         cluster_membership = np.argmax(u, axis=0)
 
@@ -113,7 +110,6 @@ def process_cluster(X, n_cluster, max_clusters, m, error, maxiter, init,
             fpc,
             cntr,
             u,
-            d,
             wss,
             ss,
             chi,
@@ -165,6 +161,7 @@ def fuzzyCmeans(
         output (String, optional):      Output folder. Defaults to './'.
         processes (int, optional):      Number of processes to use for
                                         multiprocessing. Defaults to 4.
+        verbose (bool, optional):       Set verbose output. Defaults to False.
 
     Returns:
         cntr:                           List of cluster centroids arrays for
@@ -186,103 +183,82 @@ def fuzzyCmeans(
     """
 
     num_clusters = max_cluster
-
     grid = math.ceil(math.sqrt(num_clusters))
 
-    fig1, axes = plt.subplots(grid, grid, figsize=(8, 8))
-
-    # Partial function to pass common arguments
-    process_cluster_partial = partial(
-        process_cluster,
-        X,
-        max_clusters=num_clusters,
-        m=m,
-        error=error,
-        maxiter=maxiter,
-        init=init,
-        metric=metric,
+    # Spawing multiprocessing using sklearn parallel and delayed function.
+    results = Parallel(n_jobs=processes, verbose=verbose)(
+        delayed(process_cluster)(
+            X,
+            k,
+            max_clusters=num_clusters,
+            m=m,
+            error=error,
+            maxiter=maxiter,
+            init=init,
+            metric=metric
+        )
+        for k in range(2, num_clusters + 2)
     )
 
-    multiprocessing.set_start_method("spawn", force=True)
-    pool = multiprocessing.Pool(processes=processes)
-    if verbose:
-        results = p_map(process_cluster_partial,
-                        range(2, num_clusters + 1))
-    else:
-        results = pool.map(process_cluster_partial,
-                           range(2, num_clusters + 1))
-    pool.close()
-    pool.join()
+    # Process results.
+    valid_results = [r for r in results if r is not None]
 
-    for result in results:
-        if result is not None:
-            (
-                n_cluster,
-                p,
-                fpc_,
-                cntr_,
-                u_,
-                d_,
-                wss_,
-                ss_,
-                chi_,
-                dbi_,
-                gap_,
-                sk_,
-                xpts_for_viz,
-                ypts_for_viz,
-                cluster_membership_for_viz,
-            ) = result
+    # Prepare outputs.
+    _, _, fpc, cntr, u, wss, ss, chi, dbi, gap, sk, _, _, _ = zip(
+        *valid_results)
 
-            ax = axes[(n_cluster - 2) // grid, (n_cluster - 2) % grid]
+    # Save viz.
+    fig, axes = plt.subplots(grid, grid, figsize=(8, 8))
 
-            cmap = get_cmap("plasma", n_cluster)
-            colors = [rgb2hex(cmap(i)) for i in range(cmap.N)]
+    for result in valid_results:
+        (
+            n_cluster,
+            p,
+            fpc_,
+            cntr_,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            xpts_for_viz,
+            ypts_for_viz,
+            cluster_membership_for_viz,
+        ) = result
 
-            for j in range(n_cluster):
-                ax.plot(
-                    xpts_for_viz[cluster_membership_for_viz == j],
-                    ypts_for_viz[cluster_membership_for_viz == j],
-                    ".",
-                    color=colors[j],
-                )
+        ax = axes[(n_cluster - 2) // grid, (n_cluster - 2) % grid]
 
-            for pt in cntr_:
-                ax.plot(pt[0], pt[1], "rs")
+        cmap = plt.cm.get_cmap("plasma", n_cluster)
+        colors = [rgb2hex(cmap(i)) for i in range(cmap.N)]
 
-            ax.set_title(
-                "Clusters = {0}; FPC = {1:.2f}\nIterations = {iteration}"
-                .format(
-                    n_cluster, fpc_, iteration=p
-                ),
-                fontdict={"fontsize": 8},
+        for j in range(n_cluster):
+            ax.plot(
+                xpts_for_viz[cluster_membership_for_viz == j],
+                ypts_for_viz[cluster_membership_for_viz == j],
+                ".",
+                color=colors[j],
             )
-            ax.axis("off")
+
+        for pt in cntr_:
+            ax.plot(pt[0], pt[1], "rs")
+
+        ax.set_title(
+            "Clusters = {0}; FPC = {1:.2f}\nIterations = {iteration}"
+            .format(
+                n_cluster, fpc_, iteration=p
+            ),
+            fontdict={"fontsize": 8},
+        )
+        ax.axis("off")
 
     # Removing unused axis.
     for ax in axes.flat[(num_clusters - 1):]:
         ax.remove()
 
-    fig1.tight_layout()
-    fig1.savefig(f"{output}/viz_multiple_cluster_nb.png")
+    plt.tight_layout()
+    plt.savefig(f"{output}/viz_multiple_cluster_nb.png")
     plt.close()
 
-    (
-        n_cluster,
-        p,
-        fpc,
-        cntr,
-        u,
-        d,
-        wss,
-        ss,
-        chi,
-        dbi,
-        gap,
-        sk,
-        xpts_for_viz,
-        ypts_for_viz,
-        cluster_membership_for_viz,
-    ) = zip(*results)
-
-    return cntr, u, d, wss, fpc, ss, chi, dbi, gap, sk
+    return cntr, u, wss, fpc, ss, chi, dbi, gap, sk

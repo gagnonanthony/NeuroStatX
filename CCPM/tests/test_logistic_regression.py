@@ -12,24 +12,24 @@ tmp_dir = tempfile.TemporaryDirectory()
 
 
 def test_help(script_runner):
-    ret = script_runner.run(["Plsr", "-h"])
+    ret = script_runner.run(["LogisticRegression", "-h"])
 
     assert ret.success
 
 
-def test_plsr(script_runner):
+def test_logistic_regression(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
     in_graph = os.path.join(get_home(), "data/graph_with_attributes.gml")
-    out_folder = os.path.join(get_home(), "data/PLSR_results")
+    out_folder = os.path.join(get_home(), "data/LogisticRegression_results")
 
     ret = script_runner.run([
-        "Plsr",
+        "LogisticRegression",
         "--in-graph", in_graph,
         "--out-folder", out_folder,
-        "--attributes", "gestage",
-        "--attributes", "age",
-        "--attributes", "iq",
-        "--permutations", 100,
+        "--attributes", "diagnosis",
+        "--covariates", "age",
+        "--covariates", "iq",
+        "--permutations", 10,
         "--plot-distributions",
         "-f"]
     )

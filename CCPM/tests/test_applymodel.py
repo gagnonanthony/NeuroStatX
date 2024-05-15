@@ -12,26 +12,25 @@ tmp_dir = tempfile.TemporaryDirectory()
 
 
 def test_help(script_runner):
-    ret = script_runner.run(["FuzzyClustering", "-h"])
+    ret = script_runner.run(["ApplyModel", "-h"])
 
     assert ret.success
 
 
-def test_execution_fuzzy(script_runner):
+def test_execution_apply_model(script_runner):
     os.chdir(os.path.expanduser(tmp_dir.name))
-    in_dataset = os.path.join(get_home(), "data/clustering_data.xlsx")
-    out_folder = os.path.join(get_home(), "data/Fuzzy_Clustering/")
+    in_dataset = os.path.join(get_home(), "data/factor_data.xlsx")
+    out_folder = os.path.join(get_home(), "data/apply_model/")
+    model = os.path.join(get_home(), "data/EFA_model.pkl")
 
     ret = script_runner.run([
-        "FuzzyClustering",
-        "--out-folder", out_folder,
+        "ApplyModel",
         "--in-dataset", in_dataset,
-        "--desc-columns", 4,
+        "--out-folder", out_folder,
+        "--desc-columns", 1,
         "--id-column", "subjectkey",
-        "--k", 3,
-        "--parallelplot",
-        "--radarplot",
-        "-f"]
+        "--model", model,
+        "-f", "-v", "-s"]
     )
 
     assert ret.success

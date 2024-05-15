@@ -53,7 +53,7 @@ def flexible_barplot(
 
     with plt.rc_context(
         {"font.family": "Sans Serif",
-         "font.size": 12, "font.weight": "normal", "axes.titleweight": "bold",
+         "font.size": 10, "font.weight": "normal", "axes.titleweight": "bold",
          }
     ):
         # Setting up figure and style.
@@ -73,6 +73,8 @@ def flexible_barplot(
                 ax.set_ylabel(ylabel)
                 ax.grid(False)
                 ax.spines[['top', 'right', 'left', 'bottom']].set(linewidth=2)
+                plt.setp(ax.get_xticklabels(), rotation=45, ha='right',
+                         va='top', rotation_mode='anchor')
 
                 for bars in ax.containers:
                     ax.bar_label(bars, fmt='{:,.3f}', padding=1)
@@ -81,6 +83,7 @@ def flexible_barplot(
                 ax.axis('off')
 
         fig.suptitle(title, fontsize=20, fontweight='bold')
+
         plt.tight_layout()
         plt.savefig(f"{output}", dpi=300, bbox_inches="tight")
         plt.close()

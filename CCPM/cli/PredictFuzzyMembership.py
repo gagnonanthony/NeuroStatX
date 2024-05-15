@@ -18,7 +18,6 @@ from CCPM.io.utils import (load_df_in_any_format, assert_input,
                            assert_output_dir_exist)
 from CCPM.clustering.viz import (
     plot_parallel_plot,
-    plot_grouped_barplot,
     radar_plot)
 from CCPM.io.viz import flexible_barplot
 from CCPM.utils.preprocessing import merge_dataframes, compute_pca
@@ -116,13 +115,6 @@ def PredictFuzzyMembership(
             group="Visualization Options",
         ),
     ] = False,
-    barplot: Annotated[
-        bool,
-        Parameter(
-            show_default=True,
-            group="Visualization Options",
-        ),
-    ] = False,
     radarplot: Annotated[
         bool,
         Parameter(
@@ -213,12 +205,11 @@ def PredictFuzzyMembership(
     pca : bool, optional
         If set, will perform PCA decomposition to 3 components before
         clustering.
+    pca_model : str, optional
+        If set, will load a pre-trained PCA model to apply on the dataset.
     parallelplot : bool, optional
         If true, will output parallel plot for each cluster solution. Default
         is False.
-    barplot : bool, optional
-        If true, will output barplot for each cluster solution. Default is
-        False.
     radarplot : bool, optional
         If true, will output radar plot for each cluster solution. Default is
         True.
@@ -328,7 +319,7 @@ def PredictFuzzyMembership(
         index=None,
         columns=[f"Cluster #{n+1}" for n in range(u.shape[0])],
     )
-    out = pd.concat([desc_data, member], axis=1)
+    out = pd.concat([raw_df, member], axis=1)
     out.to_excel(
         f"{out_folder}/predicted_membership_matrix.xlsx",
         header=True,
@@ -349,14 +340,6 @@ def PredictFuzzyMembership(
             title=f"Parallel Coordinates plot for {u.shape[0]} clusters "
             "solution.",
             cmap=cmap
-        )
-    if barplot:
-        plot_grouped_barplot(
-            df_for_clust,
-            membership,
-            title=f"Barplot of {u.shape[0]} clusters solution.",
-            cmap=cmap,
-            output=f"{out_folder}/BARPLOTS/barplot_{u.shape[0]}clusters.png",
         )
     if radarplot:
         radar_plot(

@@ -18,7 +18,7 @@ class TestFuzzyCmeans(unittest.TestCase):
 
     def test_fuzzyCmeans(self):
         # Test the function with generated data
-        cntr, _, _, _, _, _, _, _, _, _ = fuzzyCmeans(self.X, max_cluster=3)
+        cntr, _, _, _, _, _, _, _, _ = fuzzyCmeans(self.X, max_cluster=3)
 
         # Check if the returned centroids are close to the initially chosen
         # centroids

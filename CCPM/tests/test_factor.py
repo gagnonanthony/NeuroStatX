@@ -6,8 +6,8 @@ import semopy
 from sklearn.datasets import load_iris
 
 from CCPM.utils.factor import (horn_parallel_analysis,
-                               apply_efa_only,
-                               apply_efa_and_cfa)
+                               efa,
+                               cfa)
 
 
 class TestFunctions(unittest.TestCase):
@@ -35,7 +35,7 @@ class TestFunctions(unittest.TestCase):
         self.assertTrue(
             os.path.exists(f"{output_folder}/horns_parallel_screeplot.png"))
 
-    def test_apply_efa_only(self):
+    def test_efa(self):
         # Not optimal to test this function, but it is a good start.
         # Define test data
         np.random.seed(123)
@@ -45,10 +45,11 @@ class TestFunctions(unittest.TestCase):
         rotation = 'varimax'
 
         # Call function
-        efa = apply_efa_only(df, method, nfactors, rotation)
+        efa_mod, ev, v, scores, loadings, communalities = \
+            efa(df, method, rotation, nfactors)
 
         # Perform assertions
-        self.assertIsInstance(efa, FactorAnalyzer)
+        self.assertIsInstance(efa_mod, FactorAnalyzer)
 
     def test_apply_efa_and_cfa(self):
         # Not optimal to test this function, but it is a good start.
@@ -56,21 +57,16 @@ class TestFunctions(unittest.TestCase):
         df = pd.DataFrame(load_iris().data, columns=load_iris().feature_names)
         df.columns = ['sepal_length', 'sepal_width', 'petal_length',
                       'petal_width']
-        method = "minres"
-        nfactors = 2
-        rotation = 'varimax'
-        train_size = 0.5
-        threshold = 0.4
-        random_state = 42
+        model = ""
+        model += "efa1 =~ sepal_length + petal_length\n"
+        model += "efa2 =~ sepal_width + petal_length"
 
         # Call function
-        efa, cfa = apply_efa_and_cfa(
-            df, method, nfactors, rotation, train_size, threshold,
-            random_state)
+        cfa_mod, scores, stats = cfa(
+            df, model)
 
         # Perform assertions
-        self.assertIsInstance(efa, FactorAnalyzer)
-        self.assertIsInstance(cfa, semopy.Model)
+        self.assertIsInstance(cfa_mod, semopy.Model)
 
 
 if __name__ == '__main__':
