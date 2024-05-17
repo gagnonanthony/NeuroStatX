@@ -4,7 +4,8 @@
 [![CI](https://github.com/gagnonanthony/NeuroStatX/actions/workflows/build-dev.yml/badge.svg?branch=main)](https://github.com/gagnonanthony/NeuroStatX/actions/workflows/build-dev.yml)
 [![Docs](https://github.com/gagnonanthony/NeuroStatX/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/gagnonanthony/NeuroStatX/actions/workflows/build-dev.yml)
 
-[![NeuroStatX](https://github.com/gagnonanthony/NeuroStatX/blob/naming/data/logo_with_text.png)]
+![logo_with_text](https://github.com/gagnonanthony/NeuroStatX/assets/79757265/def2209e-e494-4427-9c3c-b8349c0c289b)
+
 
 NeuroStatX is a command-line toolbox to perform statistical analysis on
 neuroscience data. It had been developped mostly as part of my PhD project,
