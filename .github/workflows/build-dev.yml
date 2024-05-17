@@ -6,7 +6,7 @@ on:
       - main
     types: [opened,reopened,synchronize]
     paths:
-      - 'CCPM/**/*.py'
+      - 'neurostatx/**/*.py'
       - 'pyproject.toml'
       - '!.github/**'
       - '.github/workflows/*.yml'
@@ -52,7 +52,7 @@ jobs:
             virtualenvs-create: true
             virtualenvs-in-project: true
             installer-parallel: true
-      - name: Install CCPM & dependencies
+      - name: Install NeuroStatX & dependencies
         run: |
           poetry install --with=dev
 
@@ -76,7 +76,7 @@ jobs:
             version: 1.7.1
             virtualenvs-create: true
             installer-parallel: true
-      - name: Install CCPM & dependencies
+      - name: Install NeuroStatX & dependencies
         run: |
           poetry install --with=dev --no-root --no-interaction
           # Weird workaround to get gdown to work.

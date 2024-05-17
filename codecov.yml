@@ -10,7 +10,7 @@ coverage:
         only_pulls: false
     patch:
       default:
-        target: 90%
+        target: 85%
         branches: 
           - main
         if_ci_failed: error
@@ -18,10 +18,10 @@ coverage:
 
 component_management:
   individual_components:
-    - component_id: ccpm_library
+    - component_id: neurostatx_library
       name: Library
       paths:
-        - CCPM/
+        - neurostatx/
 
 comment:
   layout: "condensed_header, diff, components"

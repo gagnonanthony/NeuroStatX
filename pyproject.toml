@@ -8,16 +8,16 @@ vcs = "git"
 style = "semver"
 
 [tool.poetry]
-name = "CCPM"
+name = "NeuroStatX"
 version = "0.0.0-post.289+9ec052a"
-description = "Children Cognitive Profiles Mapping Toolbox (CCPM)"
+description = "Command-line toolbox to perform various statistical analysis on neuroscience data."
 authors = ["Anthony Gagnon <anthony.gagnon7@usherbrooke.ca>"]
-documentation = "https://gagnonanthony.github.io/CCPM/"
+documentation = "https://gagnonanthony.github.io/NeuroStatX/"
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/gagnonanthony/CCPM.git"
+repository = "https://github.com/gagnonanthony/NeuroStatX.git"
 packages = [
-    { include = "CCPM" }
+    { include = "neurostatx" }
 ]
 
 [tool.poetry.dependencies]
@@ -44,20 +44,20 @@ cyclopts = "^2.2.0"
 openpyxl = "^3.1.2"
 
 [tool.poetry.scripts]
-ApplyModel = 'CCPM.cli.ApplyModel:app'
-ComputeGraphNetwork = 'CCPM.cli.ComputeGraphNetwork:app'
-CompareClustering = 'CCPM.cli.CompareClustering:app' 
-CompareGraphs = 'CCPM.cli.CompareGraphs:app'
-ConfirmatoryFA = 'CCPM.cli.ConfirmatoryFA:app'
-AverageWeightedPath = 'CCPM.cli.AverageWeightedPath:app'
-ExploratoryFA = 'CCPM.cli.ExploratoryFA:app'
-FuzzyClustering = 'CCPM.cli.FuzzyClustering:app'
-GraphMetrics = 'CCPM.cli.GraphMetrics:app'
-PredictFuzzyMembership = 'CCPM.cli.PredictFuzzyMembership:app'
-AddNodesAttributes = 'CCPM.cli.AddNodesAttributes:app'
-PartialLeastSquareRegression = 'CCPM.cli.PartialLeastSquareRegression:app'
-VisualizeGraphNetwork = 'CCPM.cli.VisualizeGraphNetwork:app'
-LogisticRegression = 'CCPM.cli.LogisticRegression:app'
+ApplyModel = 'neurostatx.cli.ApplyModel:app'
+ComputeGraphNetwork = 'neurostatx.cli.ComputeGraphNetwork:app'
+CompareClustering = 'neurostatx.cli.CompareClustering:app' 
+CompareGraphs = 'neurostatx.cli.CompareGraphs:app'
+ConfirmatoryFA = 'neurostatx.cli.ConfirmatoryFA:app'
+AverageWeightedPath = 'neurostatx.cli.AverageWeightedPath:app'
+ExploratoryFA = 'neurostatx.cli.ExploratoryFA:app'
+FuzzyClustering = 'neurostatx.cli.FuzzyClustering:app'
+GraphMetrics = 'neurostatx.cli.GraphMetrics:app'
+PredictFuzzyMembership = 'neurostatx.cli.PredictFuzzyMembership:app'
+AddNodesAttributes = 'neurostatx.cli.AddNodesAttributes:app'
+PartialLeastSquareRegression = 'neurostatx.cli.PartialLeastSquareRegression:app'
+VisualizeGraphNetwork = 'neurostatx.cli.VisualizeGraphNetwork:app'
+LogisticRegression = 'neurostatx.cli.LogisticRegression:app'
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
