@@ -15,7 +15,7 @@ from typing import List
 from typing_extensions import Annotated
 
 from neurostatx.io.utils import (load_df_in_any_format, assert_input,
-                           assert_output_dir_exist)
+                                 assert_output_dir_exist)
 from neurostatx.clustering.viz import (
     plot_parallel_plot,
     radar_plot)

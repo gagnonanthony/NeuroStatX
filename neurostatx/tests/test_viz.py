@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from neurostatx.network.viz import (creating_node_colormap,
-                              create_cmap_from_list,
-                              set_nodes_position)
+                                    create_cmap_from_list,
+                                    set_nodes_position)
 
 
 class TestNodeColormapFunctions(unittest.TestCase):

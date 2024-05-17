@@ -10,8 +10,9 @@ import pandas as pd
 from typing_extensions import Annotated
 
 from neurostatx.io.utils import (assert_input, assert_output_dir_exist,
-                           load_df_in_any_format)
-from neurostatx.network.utils import get_nodes_and_edges, construct_attributes_dict
+                                 load_df_in_any_format)
+from neurostatx.network.utils import (get_nodes_and_edges,
+                                      construct_attributes_dict)
 from neurostatx.network.viz import (
     compute_layout,
     set_nodes_position,

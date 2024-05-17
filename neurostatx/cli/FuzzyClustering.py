@@ -14,7 +14,7 @@ from typing import List
 from typing_extensions import Annotated
 
 from neurostatx.io.utils import (load_df_in_any_format, assert_input,
-                           assert_output_dir_exist)
+                                 assert_output_dir_exist)
 from neurostatx.io.viz import flexible_barplot
 from neurostatx.clustering.fuzzy import fuzzyCmeans
 from neurostatx.utils.preprocessing import merge_dataframes, compute_pca
@@ -24,7 +24,8 @@ from neurostatx.clustering.viz import (
     plot_parallel_plot,
     radar_plot
 )
-from neurostatx.clustering.metrics import compute_knee_location, find_optimal_gap
+from neurostatx.clustering.metrics import (compute_knee_location,
+                                           find_optimal_gap)
 from neurostatx.clustering.distance import DistanceMetrics
 
 

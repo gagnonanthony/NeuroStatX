@@ -11,7 +11,7 @@ from typing import List
 from typing_extensions import Annotated
 
 from neurostatx.io.utils import (assert_input, assert_output,
-                           load_df_in_any_format)
+                                 load_df_in_any_format)
 from neurostatx.network.utils import construct_attributes_dict
 
 # Initializing the app.
