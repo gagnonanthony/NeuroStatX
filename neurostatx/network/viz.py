@@ -7,7 +7,8 @@ import matplotlib
 import seaborn as sns
 from strenum import StrEnum
 
-from neurostatx.network.utils import filter_node_centroids, filter_node_subjects
+from neurostatx.network.utils import (filter_node_centroids,
+                                      filter_node_subjects)
 
 
 class NetworkLayout(StrEnum, Enum):

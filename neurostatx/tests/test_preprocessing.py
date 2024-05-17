@@ -3,10 +3,10 @@ import pandas as pd
 import numpy as np
 
 from neurostatx.utils.preprocessing import (merge_dataframes,
-                                      compute_pca,
-                                      remove_nans,
-                                      compute_shapiro_wilk_test,
-                                      compute_correlation_coefficient)
+                                            compute_pca,
+                                            remove_nans,
+                                            compute_shapiro_wilk_test,
+                                            compute_correlation_coefficient)
 
 
 class TestFunctions(unittest.TestCase):

@@ -22,7 +22,7 @@ from typing_extensions import Annotated
 from neurostatx.io.utils import (assert_input, assert_output_dir_exist)
 from neurostatx.network.utils import fetch_attributes_df, fetch_edge_data
 from neurostatx.statistics.models import (permutation_testing, ScoringMethod,
-                                    Penalty, Solver)
+                                          Penalty, Solver)
 from neurostatx.io.viz import generate_coef_plot, flexible_hist
 
 # Initializing the app.

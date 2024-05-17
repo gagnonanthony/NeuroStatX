@@ -6,11 +6,11 @@ from sklearn.datasets import make_blobs
 from sklearn.metrics import adjusted_rand_score
 
 from neurostatx.clustering.metrics import (compute_evaluation_metrics,
-                                     compute_knee_location,
-                                     compute_sse,
-                                     compute_gap_stats,
-                                     find_optimal_gap,
-                                     compute_rand_index)
+                                           compute_knee_location,
+                                           compute_sse,
+                                           compute_gap_stats,
+                                           find_optimal_gap,
+                                           compute_rand_index)
 
 
 class TestComputeEvaluationMetrics(unittest.TestCase):

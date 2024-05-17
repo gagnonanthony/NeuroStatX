@@ -6,8 +6,8 @@ import semopy
 from sklearn.datasets import load_iris
 
 from neurostatx.utils.factor import (horn_parallel_analysis,
-                               efa,
-                               cfa)
+                                     efa,
+                                     cfa)
 
 
 class TestFunctions(unittest.TestCase):

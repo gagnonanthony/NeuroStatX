@@ -12,7 +12,7 @@ from typing_extensions import Annotated
 import seaborn as sns
 
 from neurostatx.io.utils import (assert_input, assert_output_dir_exist,
-                           load_df_in_any_format)
+                                 load_df_in_any_format)
 from neurostatx.clustering.metrics import compute_rand_index
 
 # Initializing the app.

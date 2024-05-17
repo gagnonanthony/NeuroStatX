@@ -10,9 +10,10 @@ import numpy as np
 from typing_extensions import Annotated
 
 from neurostatx.io.utils import assert_input, assert_output_dir_exist
-from neurostatx.network.utils import extract_subject_percentile, fetch_edge_data
+from neurostatx.network.utils import (extract_subject_percentile,
+                                      fetch_edge_data)
 from neurostatx.network.viz import (visualize_network,
-                              creating_node_colormap)
+                                    creating_node_colormap)
 
 
 # Initializing the app.

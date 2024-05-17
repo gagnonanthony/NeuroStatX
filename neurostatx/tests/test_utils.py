@@ -3,12 +3,12 @@ import pandas as pd
 import networkx as nx
 
 from neurostatx.network.utils import (get_nodes_and_edges,
-                                filter_node_centroids,
-                                filter_node_subjects,
-                                extract_subject_percentile,
-                                construct_attributes_dict,
-                                fetch_attributes_df,
-                                fetch_edge_data)
+                                      filter_node_centroids,
+                                      filter_node_subjects,
+                                      extract_subject_percentile,
+                                      construct_attributes_dict,
+                                      fetch_attributes_df,
+                                      fetch_edge_data)
 
 
 class TestFunctions(unittest.TestCase):

@@ -230,7 +230,7 @@ def fuzzyCmeans(
 
         ax = axes[(n_cluster - 2) // grid, (n_cluster - 2) % grid]
 
-        cmap = plt.cm.get_cmap("plasma", n_cluster)
+        cmap = plt.get_cmap("plasma", n_cluster)
         colors = [rgb2hex(cmap(i)) for i in range(cmap.N)]
 
         for j in range(n_cluster):
