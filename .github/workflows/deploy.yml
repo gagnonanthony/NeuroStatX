@@ -24,7 +24,7 @@ jobs:
           version: 1.7.1
           virtualenvs-create: true
           installer-parallel: true
-      - name: Install CCPM & dependencies
+      - name: Install NeuroStatX & dependencies
         run: |
           poetry install --with=docs --no-root --no-interaction
           poetry install --with=docs --no-interaction

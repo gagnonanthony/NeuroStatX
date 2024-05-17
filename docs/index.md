@@ -1,13 +1,14 @@
-# Welcome to CCPM!
+# Welcome to NeuroStatX!
 
-Children Cognitive Profiles Mapping (CCPM) is a small toolbox allowing for the
-creation, evaluating and modelisation of cognitive and behavioral profiles.
-It leverages fuzzy clustering, graph theory and statistical approaches to
-investigate links between cognition/behavior and neurophysiology. 
+NeuroStatX is a command-line toolbox to perform statistical analysis on neuroscience data.
+It had been developped mostly as part of my PhD project, which aims to understand the
+relationship between the brain, cognition and behavior, hence the focus on neuroscience data.
+As my project goes forward, new functionalities and scripts will be added.
+**Contributions are welcome!**.
 
 ## Dependencies
 
-Some of the statistical analyses available within CCPM comes from the `semopy`
+Some of the statistical analyses available within NeuroStatX comes from the `semopy`
 package which requires Graphviz to properly visualize semplot. If you do not
 have Graphviz installed on your machine, please run the following: 
 `sudo apt get graphviz` for Linux users or `brew install graphviz` for MacOS
@@ -19,8 +20,8 @@ do not plan on using factorial analysis.**
 To install the project, please follow these steps:
 
 ```
-git clone https://github.com/gagnonanthony/CCPM.git
-cd CCPM/
+git clone https://github.com/gagnonanthony/NeuroStatX.git
+cd NeuroStatX/
 poetry install
 ```
 
@@ -28,8 +29,8 @@ If you plan on developping code, please use these steps to install all the
 required packages:
 
 ```
-git clone https://github.com/gagnonanthony/CCPM.git
-cd CCPM/
+git clone https://github.com/gagnonanthony/NeuroStatX.git
+cd NeuroStatX/
 poetry install --with=dev,docs
 ```
 
@@ -41,11 +42,11 @@ Simply use these commands **from within the project directory**:
 
 ```
 ENVPATH=$(poetry env info --path)
-echo "export CCPMPATH=${ENVPATH}" >> ~/.bashrc
+echo "export NeuroStatXPATH=${ENVPATH}" >> ~/.bashrc
 ```
 
 Restart your terminal. You should be able to activate the project virtual
-environment by using `source $ENVPATH/bin/activate`. 
+environment by using `source $NeuroStatXPATH/bin/activate`. 
 
 ## How to use?
 

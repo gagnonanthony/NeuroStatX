@@ -1,6 +1,6 @@
-site_name: Child Cognitive Profile Mapping (CCPM) Toolbox
-repo_url: https://github.com/gagnonanthony/CCPM
-repo_name: gagnonanthony/CCPM
+site_name: NeuroStatX Documentation
+repo_url: https://github.com/gagnonanthony/NeuroStatX
+repo_name: gagnonanthony/NeuroStatX
 
 
 theme:
@@ -36,7 +36,7 @@ plugins:
   - git-revision-date-localized
   - mkapi:
       exclude:
-        - CCPM.tests
+        - neurostatx.tests
       config: config.py
 
 nav:
@@ -55,7 +55,7 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/gagnonanthony/CCPM.git
+      link: https://github.com/gagnonanthony/NeuroStatX.git
   version:
     default: latest
 
