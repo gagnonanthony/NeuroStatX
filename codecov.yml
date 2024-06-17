@@ -2,7 +2,7 @@ coverage:
   status:
     project:
       default:
-        target: 75%
+        target: 85%
         threshold: 2%
         branches: 
           - main
@@ -22,6 +22,9 @@ component_management:
       name: Library
       paths:
         - neurostatx/
+
+ignore:
+  - "**/test_*"
 
 comment:
   layout: "condensed_header, diff, components"
