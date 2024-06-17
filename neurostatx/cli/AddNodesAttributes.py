@@ -112,7 +112,7 @@ def AddNodesAttributes(
         supplied multiple times or as a .txt file containing all names in a
         line separated format.
     out_file : str, optional
-        Output graph file name (*.gml).
+        Output graph file name (.gml).
     verbose : bool, optional
         If true, produce verbose output.
     save_parameters : bool, optional
