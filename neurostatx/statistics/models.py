@@ -7,8 +7,7 @@ from enum import Enum
 import numpy as np
 from sklearn.base import clone, is_classifier
 from sklearn.cross_decomposition import PLSRegression
-from sklearn.model_selection import (cross_val_predict, KFold, check_cv,
-                                     StratifiedKFold)
+from sklearn.model_selection import (cross_val_predict, KFold, check_cv)
 from sklearn.metrics import (mean_squared_error, r2_score, check_scoring)
 from sklearn.utils import indexable, check_random_state
 from sklearn.utils.metaestimators import _safe_split
@@ -186,11 +185,6 @@ def permutation_testing(estimator,
     """
     v = 1 if verbose else 0
 
-    if binary:
-        kf_10 = StratifiedKFold(n_splits=splits, shuffle=True, random_state=1)
-    else:
-        kf_10 = KFold(n_splits=splits, shuffle=True, random_state=1)
-
     # Lauching permutation testing.
     mod, score, coef, perm_score, score_pvalue, perm_coef, coef_pvalue = \
         permutation_test(
@@ -198,7 +192,7 @@ def permutation_testing(estimator,
             X,
             Y,
             scoring=scoring,
-            cv=kf_10,
+            cv=splits,
             n_permutations=nb_permutations,
             n_jobs=processes,
             verbose=v)
