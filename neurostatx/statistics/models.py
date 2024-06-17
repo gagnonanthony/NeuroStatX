@@ -7,8 +7,7 @@ from enum import Enum
 import numpy as np
 from sklearn.base import clone, is_classifier
 from sklearn.cross_decomposition import PLSRegression
-from sklearn.model_selection import (cross_val_predict, KFold, check_cv,
-                                     StratifiedKFold)
+from sklearn.model_selection import (cross_val_predict, KFold, check_cv)
 from sklearn.metrics import (mean_squared_error, r2_score, check_scoring)
 from sklearn.utils import indexable, check_random_state
 from sklearn.utils.metaestimators import _safe_split
