@@ -186,11 +186,6 @@ def permutation_testing(estimator,
     """
     v = 1 if verbose else 0
 
-    if binary:
-        kf_10 = StratifiedKFold(n_splits=splits, shuffle=True, random_state=1)
-    else:
-        kf_10 = KFold(n_splits=splits, shuffle=True, random_state=1)
-
     # Lauching permutation testing.
     mod, score, coef, perm_score, score_pvalue, perm_coef, coef_pvalue = \
         permutation_test(
@@ -198,7 +193,7 @@ def permutation_testing(estimator,
             X,
             Y,
             scoring=scoring,
-            cv=kf_10,
+            cv=splits,
             n_permutations=nb_permutations,
             n_jobs=processes,
             verbose=v)
