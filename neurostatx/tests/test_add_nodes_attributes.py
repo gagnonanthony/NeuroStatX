@@ -32,7 +32,7 @@ def test_set_nodes_attributes(script_runner):
         "--labels", "iq",
         "--id-column", "subjectkey",
         "--out-file", out_file,
-        "-f"]
+        "-f", "-v", "-s"]
     )
 
     assert ret.success
