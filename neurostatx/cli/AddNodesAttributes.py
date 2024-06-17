@@ -63,14 +63,6 @@ def AddNodesAttributes(
             group="Optional parameters",
         ),
     ] = False,
-    save_parameters: Annotated[
-        bool,
-        Parameter(
-            "-s",
-            "--save_parameters",
-            group="Optional parameters",
-        ),
-    ] = False,
     overwrite: Annotated[
         bool,
         Parameter(
@@ -112,11 +104,9 @@ def AddNodesAttributes(
         supplied multiple times or as a .txt file containing all names in a
         line separated format.
     out_file : str, optional
-        Output graph file name (*.gml).
+        Output graph file name (.gml).
     verbose : bool, optional
         If true, produce verbose output.
-    save_parameters : bool, optional
-        If true, will save input parameters to .txt file.
     overwrite : bool, optional
         If true, force overwriting of existing output files.
     """
@@ -128,13 +118,6 @@ def AddNodesAttributes(
     assert_input(in_graph)
     assert_input(in_dataset)
     assert_output(overwrite, out_file)
-
-    # Saving parameters
-    if save_parameters:
-        parameters = list(locals().items())
-        with open(f"{out_file}/nodes_attributes_parameters.txt", "w+") as f:
-            for param in parameters:
-                f.writelines(str(param))
 
     logging.info("Loading graph and dataset.")
     G = nx.read_gml(in_graph)
