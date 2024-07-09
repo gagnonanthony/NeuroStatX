@@ -1,4 +1,4 @@
 [run]
 concurrency = multiprocessing
-parallel = true
-sigterm = true
+parallel = True
+sigterm = True
