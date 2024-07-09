@@ -118,7 +118,7 @@ def FuzzyClustering(
             show_default=True,
             group="Computational Options",
         ),
-    ] = 4,
+    ] = 1,
     parallelplot: Annotated[
         bool,
         Parameter(
