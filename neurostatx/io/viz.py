@@ -65,7 +65,8 @@ def flexible_barplot(
         for i, ax in enumerate(axes.flat):
             if i < nb_axes:
                 sns.barplot(
-                    data=df, x=df.index, y=df.columns[i],
+                    data=df, x=df.index, hue=df.index, y=df.columns[i],
+                    legend=True,
                     ax=ax, **plotting_parameters
                 )
                 ax.set_title(df.columns[i])

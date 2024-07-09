@@ -133,7 +133,7 @@ def fetch_attributes_df(G, attributes=None):
     """
 
     # Filter out nodes that are not subjects.
-    sub_node = nx.subgraph_view(G, filter_node_subjects)
+    sub_node = nx.subgraph_view(G, filter_node=filter_node_subjects)
     d = {n: G.nodes[n] for n in sub_node}
 
     # Filter for selected attributes.
@@ -161,8 +161,8 @@ def fetch_edge_data(G, weight='membership'):
     """
 
     # Fetch the number of cluster.
-    cntr_node = nx.subgraph_view(G, filter_node_centroids)
-    sub_node = nx.subgraph_view(G, filter_node_subjects)
+    cntr_node = nx.subgraph_view(G, filter_node=filter_node_centroids)
+    sub_node = nx.subgraph_view(G, filter_node=filter_node_subjects)
 
     # Get adjacency matrix.
     adj = np.delete(

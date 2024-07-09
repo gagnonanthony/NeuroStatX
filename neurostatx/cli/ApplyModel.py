@@ -153,9 +153,11 @@ def ApplyModel(
         df = load_df_in_any_format(in_dataset[0])
 
     # Assessing if NaNs are present in the dataset.
-    if df.isnull().values.any():
-        raise ValueError("NaNs are present in the dataset. Please impute "
-                         "missing values prior to applying the model.")
+    # Disabled for now, wait until we have a solution to check only columns
+    # that will be used in the model.
+    # if df.isnull().values.any():
+    #    raise ValueError("NaNs are present in the dataset. Please impute "
+    #                     "missing values prior to applying the model.")
 
     descriptive_columns = [n for n in range(0, desc_columns)]
     desc_data = df.iloc[:, descriptive_columns]
