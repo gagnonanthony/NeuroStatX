@@ -6,7 +6,11 @@ from neurostatx.utils.preprocessing import (merge_dataframes,
                                             compute_pca,
                                             remove_nans,
                                             compute_shapiro_wilk_test,
-                                            compute_correlation_coefficient)
+                                            compute_correlation_coefficient,
+                                            rename_columns,
+                                            binary_to_yes_no,
+                                            get_column_indices,
+                                            plot_distributions)
 
 
 class TestFunctions(unittest.TestCase):
@@ -122,6 +126,33 @@ class TestFunctions(unittest.TestCase):
         # Check if p-value and KMO model have valid values (not NaN)
         self.assertFalse(np.isnan(p_value))
         self.assertFalse(np.isnan(kmo_model))
+
+    def test_rename_columns(self):
+        new_df = rename_columns(self.df, ['A', 'B', 'C'], ['X', 'Y', 'Z'])
+
+        # Assert that the columns have been renamed
+        self.assertListEqual(new_df.columns.tolist(), ['X', 'Y', 'Z'])
+
+    def test_binary_to_yes_no(self):
+        df = pd.DataFrame({
+            'A': [1, 0, 1, 0],
+            'B': [0, 1, 0, 1]
+        })
+
+        binary_to_yes_no(df, ['A', 'B'])
+
+        # Assert that the binary values have been converted to 'Yes' and 'No'
+        self.assertListEqual(df['A'].tolist(), ['Yes', 'No', 'Yes', 'No'])
+        self.assertListEqual(df['B'].tolist(), ['No', 'Yes', 'No', 'Yes'])
+
+    def test_get_column_indices(self):
+        indices = get_column_indices(self.df, ['A', 'B'])
+
+        # Assert that the indices of columns 'A' and 'B' are correct
+        self.assertListEqual(indices, [0, 1])
+
+    def test_plot_distributions(self):
+        plot_distributions(self.df, out_folder='./')
 
 
 if __name__ == '__main__':

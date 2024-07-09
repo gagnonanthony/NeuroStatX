@@ -254,20 +254,22 @@ def ExploratoryFA(
     descriptive_columns = [n for n in range(0, desc_columns)]
 
     # Imputing missing values (or not).
-    if mean:
-        logging.info("Imputing missing values using the mean method.")
-        for column in df.columns:
-            df[f"{column}"].fillna(df[f"{column}"].mean(), inplace=True)
-    elif median:
-        logging.info("Imputing missing values using the median method.")
-        for column in df.columns:
-            df[f"{column}"].fillna(df[f"{column}"].median(), inplace=True)
-    else:
-        logging.info(
-            "No methods selected for imputing missing values. "
-            "Removing them."
-        )
-        df.dropna(inplace=True)
+    # Disabled for now, wait until we have a solution to check only columns
+    # that will be used in the model.
+    # if mean:
+    #    logging.info("Imputing missing values using the mean method.")
+    #    for column in df.columns:
+    #        df[f"{column}"].fillna(df[f"{column}"].mean(), inplace=True)
+    # elif median:
+    #    logging.info("Imputing missing values using the median method.")
+    #    for column in df.columns:
+    #        df[f"{column}"].fillna(df[f"{column}"].median(), inplace=True)
+    # else:
+    #    logging.info(
+    #        "No methods selected for imputing missing values. "
+    #        "Removing them."
+    #    )
+    #    df.dropna(inplace=True)
 
     if train_dataset_size != 1:
         logging.info("Splitting into train and test datasets. Using training "
