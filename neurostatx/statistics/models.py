@@ -80,8 +80,9 @@ class Solver(StrEnum, Enum):
 def plsr_cv(X,
             Y,
             nb_comp,
+            max_iter=1000,
             splits=10,
-            processes=4,
+            processes=1,
             verbose=False):
     """Function to perform a PLSR model with cross-validation between a set of
     predictor and dependent variables.
@@ -92,10 +93,12 @@ def plsr_cv(X,
         Y (pd.DataFrame):               Dataframe containing the dependent
                                         variables.
         nb_comp (int):                  Number of components to use.
+        max_iter (int, optional):       Maximum number of iterations. Defaults
+                                        to 1000.
         splits (int, optional):         Number of fold to use in
                                         cross-validation. Defaults to 10.
         processes (int, optional):      Number of cpus to use during
-                                        processing. Defaults to 4.
+                                        processing. Defaults to 1.
         verbose (bool, optional):       Verbose mode. Defaults to False.
 
     Returns:
@@ -115,7 +118,7 @@ def plsr_cv(X,
     kf_10 = KFold(n_splits=splits, shuffle=True, random_state=1)
 
     # Initialize a PLSR object.
-    plsr = PLSRegression()
+    plsr = PLSRegression(max_iter=max_iter, scale=True, tol=1e-06, copy=True)
 
     for i in tqdm(component, disable=v):
         plsr.n_components = i
@@ -151,7 +154,7 @@ def permutation_testing(estimator,
                         nb_permutations=1000,
                         scoring='r2',
                         splits=10,
-                        processes=4,
+                        processes=1,
                         verbose=False):
     """Function to perform permutation testing on a model.
 
@@ -169,7 +172,7 @@ def permutation_testing(estimator,
         splits (int, optional):             Number of fold to use in
                                             cross-validation. Defaults to 10.
         processes (int, optional):          Number of cpus to use during
-                                            processing. Defaults to 4.
+                                            processing. Defaults to 1.
         verbose (bool, optional):           Verbose mode. Defaults to False.
 
     Returns:

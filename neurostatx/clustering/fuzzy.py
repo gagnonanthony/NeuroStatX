@@ -134,7 +134,7 @@ def fuzzyCmeans(
     init=None,
     metric="euclidean",
     output="./",
-    processes=4,
+    processes=1,
     verbose=False,
 ):
     """
@@ -160,7 +160,7 @@ def fuzzyCmeans(
                                         Defaults to euclidean.
         output (String, optional):      Output folder. Defaults to './'.
         processes (int, optional):      Number of processes to use for
-                                        multiprocessing. Defaults to 4.
+                                        multiprocessing. Defaults to 1.
         verbose (bool, optional):       Set verbose output. Defaults to False.
 
     Returns:

@@ -130,7 +130,7 @@ def LogisticRegression(
             group="Model Parameters",
             show_default=True,
         ),
-    ] = 4,
+    ] = 1,
     plot_distributions: Annotated[
         bool,
         Parameter(

@@ -174,7 +174,7 @@ def weightedpath(
     weight=None,
     method="dijkstra",
     distribution=None,
-    processes=4,
+    processes=1,
     verbose=False,
 ):
     """
@@ -196,6 +196,8 @@ def weightedpath(
                                                 "dijkstra".
         distribution (pd.DataFrame, optional):  Pre-computed distribution.
                                                 Defaults to None.
+        processes (int, optional):              Number of processes to use.
+                                                Defaults to 1.
         verbose (bool, optional):               Verbose flag. Defaults to
                                                 False.
 

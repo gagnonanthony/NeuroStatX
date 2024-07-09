@@ -84,7 +84,7 @@ def AverageWeightedPath(
             show_default=True,
             group="Computational Options",
         ),
-    ] = 4,
+    ] = 1,
     verbose: Annotated[
         bool,
         Parameter(

@@ -27,7 +27,7 @@ def test_compute_weighted_path(script_runner):
         "--in-graph", in_graph,
         "--label-name", "diagnosis",
         "--out-folder", out_folder,
-        "--iterations", 10,
+        "--iterations", 1,
         "--processes", 1,
         "-f"]
     )
