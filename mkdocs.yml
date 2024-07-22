@@ -4,7 +4,7 @@ repo_name: gagnonanthony/NeuroStatX
 
 
 theme:
-  logo: img/CCPM.png
+  logo: assets/logo_with_text.png
   name: material
   features:
     - navigation.sections
@@ -42,13 +42,13 @@ plugins:
 nav:
   - Home: 'index.md'
   - 'CLI Tools': 
-    - $api/CCPM.cli.**
+    - $api/neurostatx.cli.**
   - 'API Reference':
-    - 'CCPM.clustering': $api/CCPM.clustering.**
-    - 'CCPM.io': $api/CCPM.io.**
-    - 'CCPM.network': $api/CCPM.network.**
-    - 'CCPM.statistics': $api/CCPM.statistics.**
-    - 'CCPM.utils': $api/CCPM.utils.**
+    - 'neurostatx.clustering': $api/neurostatx.clustering.**
+    - 'neurostatx.io': $api/neurostatx.io.**
+    - 'neurostatx.network': $api/neurostatx.network.**
+    - 'neurostatx.statistics': $api/neurostatx.statistics.**
+    - 'neurostatx.utils': $api/neurostatx.utils.**
   - 'About': 
     - 'License': 'license.md'
 
