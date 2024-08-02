@@ -46,7 +46,7 @@ jobs:
       - name: Install Astro
         uses: withastro/action@v2
         with:
-          path: /docs/starlight/
+          path: docs/starlight/
   
   deploy:
     needs: build
