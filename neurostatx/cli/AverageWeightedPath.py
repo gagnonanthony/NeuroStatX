@@ -159,8 +159,9 @@ def AverageWeightedPath(
     REFERENCE
     ---------
     [1]
-    [NetworkX
-    Algorithm](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.shortest_paths.generic.average_shortest_path_length.html#networkx.algorithms.shortest_paths.generic.average_shortest_path_length)
+    NetworkX
+    Algorithm
+    (https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.shortest_paths.generic.average_shortest_path_length.html#networkx.algorithms.shortest_paths.generic.average_shortest_path_length)
 
     EXAMPLE USAGE
     -------------

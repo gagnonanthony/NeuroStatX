@@ -3,13 +3,13 @@ requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.4.0"]
 build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry-dynamic-versioning]
-enable = true
+enable = false
 vcs = "git"
 style = "semver"
 
 [tool.poetry]
 name = "NeuroStatX"
-version = "0.0.0"
+version = "0.0.0-post.365+2d4bba9"
 description = "Command-line toolbox to perform various statistical analysis on neuroscience data."
 authors = ["Anthony Gagnon <anthony.gagnon7@usherbrooke.ca>"]
 documentation = "https://gagnonanthony.github.io/NeuroStatX/"
@@ -77,11 +77,9 @@ ipdb = ">=0.13.9"
 line_profiler = ">=3.5.1"
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "^1.5.3"
-mkdocs-material = {extras = ["imaging"], version = "^9.5.9"}
-mkdocs-git-revision-date-localized-plugin = "^1.2.4"
-mkapi = "^2.1.0"
-config = "^0.5.1"
+sphinx = "^8.0.2"
+sphinx-markdown-builder = "^0.6.6"
+sphinx-autodoc-typehints = "^2.2.3"
 
 [tool.pytest.ini_options]
 pythonpath = [

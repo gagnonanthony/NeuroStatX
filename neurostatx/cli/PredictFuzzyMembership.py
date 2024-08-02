@@ -214,8 +214,8 @@ def PredictFuzzyMembership(
         If true, will output radar plot for each cluster solution. Default is
         True.
     cmap : str, optional
-        Colormap to use for plotting. Default is "magma". See
-        [Matplotlib](https://matplotlib.org/stable/tutorials/colors/colormaps.html).
+        Colormap to use for plotting. Default is "magma". See Matplotlib
+        (https://matplotlib.org/stable/tutorials/colors/colormaps.html).
     verbose : bool, optional
         If true, produce verbose output.
     save_parameters : bool, optional

@@ -76,8 +76,8 @@ def GraphMetrics(
 
     REFERENCE
     ---------
-    [1] [Networkx
-    Algorithms](https://networkx.org/documentation/stable/reference/algorithms/index.html#)
+    [1] Networkx Algorithms
+    (https://networkx.org/documentation/stable/reference/algorithms/index.html#)
 
     EXAMPLE USAGE
     -------------

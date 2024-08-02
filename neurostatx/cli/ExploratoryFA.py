@@ -163,14 +163,15 @@ def ExploratoryFA(
 
     REFERENCES
     ----------
-    [1] [Costa, V., & Sarmento, R. Confirmatory Factor
-    Analysis.](https://arxiv.org/ftp/arxiv/papers/1905/1905.05598.pdf)
+    [1] Costa, V., & Sarmento, R. Confirmatory Factor
+    Analysis. (https://arxiv.org/ftp/arxiv/papers/1905/1905.05598.pdf)
 
-    [2] [Whether to use EFA or CFA to predict latent variables
-    scores.](https://stats.stackexchange.com/questions/346499/whether-to-use-efa-or-cfa-to-predict-latent-variables-scores)
+    [2] Whether to use EFA or CFA to predict latent variables
+    scores.
+    (https://stats.stackexchange.com/questions/346499/whether-to-use-efa-or-cfa-to-predict-latent-variables-scores)
 
-    [3] [Comparison of factor score estimation
-    methods](https://github.com/gagnonanthony/NeuroStatX/pull/11)
+    [3] Comparison of factor score estimation
+    methods (https://github.com/gagnonanthony/NeuroStatX/pull/11)
 
     EXAMPLE USAGE
     -------------

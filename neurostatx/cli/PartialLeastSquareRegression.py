@@ -165,8 +165,8 @@ def PartialLeastSquareRegression(
 
     REFERENCES
     ----------
-    [1] [Scikit-learn scoring
-    methods](https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter)
+    [1] Scikit-learn scoring methods
+    (https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter)
 
     EXAMPLE USAGE
     -------------

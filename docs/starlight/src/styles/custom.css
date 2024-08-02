@@ -11,7 +11,6 @@
     --sl-color-gray-5: #383838;
     --sl-color-gray-6: #272727;
     --sl-color-black: #181818;
-    --sl-font: 'Custom Font', sans-serif;
     }
     
     /* Light mode colors. */
@@ -28,6 +27,5 @@
     --sl-color-gray-6: #eeeeee;
     --sl-color-gray-7: #f6f6f6;
     --sl-color-black: #ffffff;
-    --sl-font: 'Custom Font', sans-serif;
     }
     

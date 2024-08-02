@@ -210,7 +210,8 @@ def CompareGraphs(
     colormap : str, optional
         Colormap to use when coloring the edges of the network based on the
         membership values to each clusters. Available colormap are those from
-        [Matplotlib](https://matplotlib.org/stable/tutorials/colors/colormaps.html).
+        Matplotlib
+        (https://matplotlib.org/stable/tutorials/colors/colormaps.html).
     legend_title : str, optional
         Legend title (colormap).
     """

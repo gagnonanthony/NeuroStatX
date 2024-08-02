@@ -219,7 +219,7 @@ def VisualizeGraphNetwork(
 
     REFERENCES
     ----------
-    [1] [GEPHI](https://gephi.org/)
+    [1] GEPHI (https://gephi.org/)
 
     EXAMPLE USAGE
     -------------
