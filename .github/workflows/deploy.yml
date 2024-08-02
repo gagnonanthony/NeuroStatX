@@ -42,11 +42,11 @@ jobs:
           cd _build/markdown/
           python ../../../add_frontmatter.py *
           bash ../../../organize_files.sh ../../../starlight/src/content/docs/API/
-          cd ${GITHUB_WORKSPACE}
+          cd ../../../../
       - name: Install Astro
         uses: withastro/action@v2
         with:
-          path: ${GITHUB_WORKSPACE}/docs/starlight/
+          path: /docs/starlight/
   
   deploy:
     needs: build
