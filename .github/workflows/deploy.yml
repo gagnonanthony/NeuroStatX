@@ -39,6 +39,7 @@ jobs:
           poetry install --with=docs --no-interaction
       - name: Build markdown files
         run: |
+          source $(poetry env info --path)/bin/activate
           cd docs/api/
           make markdown
           cd _build/markdown/
