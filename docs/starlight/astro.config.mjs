@@ -8,6 +8,17 @@ export default defineConfig({
   base: '/NeuroStatX/',
   integrations: [starlight(
     {
+        favicon: "/public/favicon-32x32.png",
+        head: [
+            {
+                tag: 'link',
+                attrs: {
+                    rel: 'icon',
+                    href: '/public/favicon-32x32.png',
+                    sizes: '32x32',
+                }
+            }
+        ],
         sidebar: [
             {
                 label: "Getting Started",
