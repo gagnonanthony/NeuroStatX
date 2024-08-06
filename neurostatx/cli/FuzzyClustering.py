@@ -210,8 +210,8 @@ def FuzzyClustering(
     identified by a maximized GAP statistic (local maxima can also suggest
     possible solutions.).
 
-    Parameters
-    ----------
+    Configurations
+    --------------
     Details regarding the parameters can be seen below. Regarding the
     --m parameter, it defines the degree of fuzziness of the resulting
     membership matrix. Using --m 1 will returns crisp clusters, whereas

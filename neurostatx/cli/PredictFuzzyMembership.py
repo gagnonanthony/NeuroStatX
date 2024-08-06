@@ -159,8 +159,8 @@ def PredictFuzzyMembership(
     This script will predict the membership matrix of a dataset using a
     trained Cmeans model (only the centroids are necessary for the prediction).
 
-    Parameters
-    ----------
+    Configurations
+    --------------
     Details regarding the parameters can be seen below. Regarding the
     --m parameter, it defines the degree of fuzziness of the resulting
     membership matrix. Using --m 1 will returns crisp clusters, whereas
