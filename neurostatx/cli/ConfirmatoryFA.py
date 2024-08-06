@@ -122,7 +122,7 @@ def ConfirmatoryFA(
         ),
     ] = False,
 ):
-    """CONFIRMATORY FACTORIAL ANALYSIS
+    """Confirmatory Factorial Analysis
     -------------------------------
     ConfirmatoryFA is a script that can be used to perform a confirmatory
     factorial analysis (CFA) to test a hypothesized model of the relationships
@@ -132,14 +132,14 @@ def ConfirmatoryFA(
     results of the analysis. A good reference to understand those metrics can
     be accessed in [1].
 
-    USING EFA SCORES OR CFA SCORES
+    Using EFA Scores Or CFA Scores
     ------------------------------
     Both method can be used to derive factor scores. Since there is no clear
     consensus surrounding which is preferred (see [2]) the script will output
     both factor scores. As shown in [3], both methods highly correlate with one
     another. It then comes down to the user's preference.
 
-    INPUT SPECIFICATIONS
+    Input Specifications
     --------------------
     Dataset can contain multiple descriptive rows before the variables of
     interest. Simply specify the number of descriptive rows using
@@ -147,7 +147,7 @@ def ConfirmatoryFA(
     default, please select the mean or median option to impute missing data
     (be cautious when doing this).
 
-    REFERENCES
+    References
     ----------
     [1] Costa, V., & Sarmento, R. Confirmatory Factor Analysis.
     https://arxiv.org/ftp/arxiv/papers/1905/1905.05598.pdf
@@ -157,7 +157,7 @@ def ConfirmatoryFA(
 
     [3] https://github.com/gagnonanthony/NeuroStatX/pull/11
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ::
 

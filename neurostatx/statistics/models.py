@@ -84,33 +84,45 @@ def plsr_cv(X,
             splits=10,
             processes=1,
             verbose=False):
-    """Function to perform a PLSR model with cross-validation between a set of
+    """
+    Function to perform a PLSR model with cross-validation between a set of
     predictor and dependent variables.
 
-    Args:
-        X (pd.DataFrame):               Dataframe containing the predictor
-                                        variables.
-        Y (pd.DataFrame):               Dataframe containing the dependent
-                                        variables.
-        nb_comp (int):                  Number of components to use.
-        max_iter (int, optional):       Maximum number of iterations. Defaults
-                                        to 1000.
-        splits (int, optional):         Number of fold to use in
-                                        cross-validation. Defaults to 10.
-        processes (int, optional):      Number of cpus to use during
-                                        processing. Defaults to 1.
-        verbose (bool, optional):       Verbose mode. Defaults to False.
+    Parameters
+    ----------
+    X : pd.DataFrame
+        Dataframe containing the predictor variables.
+    Y : pd.DataFrame
+        Dataframe containing the dependent variables.
+    nb_comp : int
+        Number of components to use.
+    max_iter : int, optional
+        Maximum number of iterations. Defaults to 1000.
+    splits : int, optional
+        Number of fold to use in cross-validation. Defaults to 10.
+    processes : int, optional
+        Number of cpus to use during processing. Defaults to 1.
+    verbose : bool, optional
+        Verbose mode. Defaults to False.
 
-    Returns:
-        plsr:                           PLSR model.
-        mse:                            List of mean squared errors.
-        score_c:                        R2 score for the model.
-        score_cv:                       R2 score for the cross-validation.
-        rscore:                         Square root of the R2 score.
-        mse_c:                          Mean squared error for the model.
-        mse_cv:                         Mean squared error for the
-                                        cross-validation.
+    Returns
+    -------
+    plsr : PLSR model
+        PLSR model.
+    mse : list
+        List of mean squared errors.
+    score_c : float
+        R2 score for the model.
+    score_cv : float
+        R2 score for the cross-validation.
+    rscore : float
+        Square root of the R2 score.
+    mse_c : float
+        Mean squared error for the model.
+    mse_cv : float
+        Mean squared error for the cross-validation.
     """
+
     v = True if verbose else False
 
     mse = []
@@ -156,36 +168,48 @@ def permutation_testing(estimator,
                         splits=10,
                         processes=1,
                         verbose=False):
-    """Function to perform permutation testing on a model.
-
-    Args:
-        X (pd.DataFrame):                   Dataframe containing the predictor
-                                            variables.
-        Y (pd.DataFrame):                   Dataframe containing the dependent
-                                            variables.
-        binary (bool, optional):            If the dependent variable is
-                                            binary. Defaults to False.
-        nb_permutations (int, optional):    Number of iterations to perform.
-                                            Defaults to 1000.
-        scoring (str, optional):            Scoring method to use. Defaults
-                                            to 'r2'.
-        splits (int, optional):             Number of fold to use in
-                                            cross-validation. Defaults to 10.
-        processes (int, optional):          Number of cpus to use during
-                                            processing. Defaults to 1.
-        verbose (bool, optional):           Verbose mode. Defaults to False.
-
-    Returns:
-        mod:                                Model.
-        score:                              Score for the model.
-        coef:                               Coefficients for the model.
-        perm_score:                         Scores for the permutation
-                                            testing.
-        score_pvalue:                       P-value for the model.
-        perm_coef:                          Coefficients for the permutation
-                                            testing.
-        coef_pvalue:                        P-value for the coefficients.
     """
+    Function to perform permutation testing on a model.
+
+    Parameters
+    ----------
+    estimator : Model
+        Model to use.
+    X : pd.DataFrame
+        Dataframe containing the predictor variables.
+    Y : pd.DataFrame
+        Dataframe containing the dependent variables.
+    binary : bool, optional
+        If the dependent variable is binary. Defaults to False.
+    nb_permutations : int, optional
+        Number of iterations to perform. Defaults to 1000.
+    scoring : str, optional
+        Scoring method to use. Defaults to 'r2'.
+    splits : int, optional
+        Number of fold to use in cross-validation. Defaults to 10.
+    processes : int, optional
+        Number of cpus to use during processing. Defaults to 1.
+    verbose : bool, optional
+        Verbose mode. Defaults to False.
+
+    Returns
+    -------
+    mod : Model
+        Model.
+    score : float
+        Score for the model.
+    coef : list
+        Coefficients for the model.
+    perm_score : list
+        Scores for the permutation testing.
+    score_pvalue : float
+        P-value for the model.
+    perm_coef : list
+        Coefficients for the permutation testing.
+    coef_pvalue : list
+        P-value for the coefficients.
+    """
+
     v = 1 if verbose else 0
 
     # Lauching permutation testing.

@@ -142,44 +142,51 @@ def fuzzyCmeans(
     on multiple number of clusters. Based on documentation found here :
     https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_cmeans.html
 
-    Args:
-        X (Numpy array):                Numpy array with data to cluster
-                                        (Subject x Features).
-        max_cluster (int, optional):    Maximum number of clusters to fit a
-                                        model for. Defaults to 10.
-        m (float, optional):            Exponentiation value to apply on the
-                                        membership function. Defaults to 2.
-        error (float, optional):        Stopping criterion. Defaults to 1E-6.
-        maxiter (int, optional):        Maximum iteration value. Defaults to
-                                        1000.
-        init (folder, optional):        Folder containing the c-partitioned
-                                        matrices for each cluster number.
-                                        Defaults to None.
-        metric (str, optional):         Distance metric to use to compute
-                                        intra/inter subjects/clusters distance.
-                                        Defaults to euclidean.
-        output (String, optional):      Output folder. Defaults to './'.
-        processes (int, optional):      Number of processes to use for
-                                        multiprocessing. Defaults to 1.
-        verbose (bool, optional):       Set verbose output. Defaults to False.
+    Parameters
+    ----------
+        X : np.array
+            Numpy array with data to cluster (Subject x Features).
+        max_cluster : int, optional
+            Maximum number of clusters to fit a model for. Defaults to 10.
+        m : float, optional
+            Exponentiation value to apply on the membership function.
+            Defaults to 2.
+        error : float, optional
+            Stopping criterion. Defaults to 1E-6.
+        maxiter : int, optional
+            Maximum iteration value. Defaults to 1000.
+        init : 2d array, optional
+            Initial fuzzy c-partitioned matrix. Defaults to None.
+        metric : str, optional
+            Distance metric to use to compute intra/inter subjects/clusters
+            distance. Defaults to euclidean.
+        output : str, optional
+            Output folder to save the visualization. Defaults to "./".
+        processes : int, optional
+            Number of processes to use. Defaults to 1.
+        verbose : bool, optional
+            If true, produce verbose output. Defaults to False.
 
-    Returns:
-        cntr:                           List of cluster centroids arrays for
-                                        each model.
-        u:                              List of membership arrays for each
-                                        model.
-        d:                              List of distance arrays for each model.
-        wss:                            List of Within-cluster Sum of Square
-                                        Error value for each model.
-        fpc:                            List of fuzzy partition coefficient
-                                        value for each model.
-        ss:                             List of Silhouette Coefficient Score
-                                        for each model.
-        chi:                            List of Calinski-Harabasz Index for
-                                        each model.
-        dbi:                            List of Davies-Bouldin Index for each
-                                        model.
-        gap:                            List of GAP statistic for each model.
+    Returns
+    -------
+        cntr : list
+            Cluster centroids array.
+        u : list
+            Membership array.
+        wss : list
+            Within-cluster Sum of Square Error.
+        fpc : list
+            Fuzzy partition coefficient.
+        ss : list
+            Silhouette Coefficient Score.
+        chi : list
+            Calinski-Harabasz Index.
+        dbi : list
+            Davies-Bouldin Index.
+        gap : list
+            GAP statistic.
+        sk : list
+            GAP standard error.
     """
 
     num_clusters = max_cluster

@@ -154,20 +154,20 @@ def PredictFuzzyMembership(
         ),
     ] = False,
 ):
-    """FUZZY MEMBERSHIP PREDICTION
+    """Fuzzy Membership Prediction
     ---------------------------
     This script will predict the membership matrix of a dataset using a
     trained Cmeans model (only the centroids are necessary for the prediction).
 
-    PARAMETERS
-    ----------
+    Configurations
+    --------------
     Details regarding the parameters can be seen below. Regarding the
     --m parameter, it defines the degree of fuzziness of the resulting
     membership matrix. Using --m 1 will returns crisp clusters, whereas
     --m >1 will returned more and more fuzzy clusters. It is recommended
     to use the same m value as used during training.
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ::
 
@@ -214,8 +214,8 @@ def PredictFuzzyMembership(
         If true, will output radar plot for each cluster solution. Default is
         True.
     cmap : str, optional
-        Colormap to use for plotting. Default is "magma". See
-        [Matplotlib](https://matplotlib.org/stable/tutorials/colors/colormaps.html).
+        Colormap to use for plotting. Default is "magma". See Matplotlib
+        (https://matplotlib.org/stable/tutorials/colors/colormaps.html).
     verbose : bool, optional
         If true, produce verbose output.
     save_parameters : bool, optional

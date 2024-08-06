@@ -23,35 +23,46 @@ def compute_layout(G,
                    seed=1234):
     """Function to compute the optimal layout for a graph network.
 
-    Args:
-        G (nx.Graph):               Graph Network to draw.
-        layout (nx.layout, optional):  Layout algorithm to use.
-                                    Defaults to nx.spring_layout.
-        weight (str, optional):     Edges weight to use while computing the
-                                    layout. Defaults to "weight".
-        seed (int, optional):       Random seed. Defaults to 1234.
+    Parameters
+    ----------
+    G : nx.Graph
+        Graph Network to draw.
+    layout : nx.layout, optional
+        Layout algorithm to use. Defaults to nx.spring_layout.
+    weight : str, optional
+        Edges weight to use while computing the layout. Defaults to "weight".
+    seed : int, optional
+        Random seed. Defaults to 1234.
 
-    Returns:
-        pos:                        Layout positions that can be reused for
-                                    replotting of the same network.
+    Returns
+    -------
+    pos
+        Layout positions that can be reused for replotting of the same network.
     """
 
     return layout(G, weight=weight, seed=seed)
 
 
 def set_nodes_position(G, pos):
-    """Function to set the nodes' position for a graph network.
+    """
+    Function to set the nodes' position for a graph network.
 
     Position array has to be converted into python float in order for
     Gephi file format export.
 
-    Args:
-        G (nx.Graph):       Graph Network to draw.
-        pos (dict):         Dictionary with nodes' positions.
+    Parameters
+    ----------
+    G : nx.Graph
+        Graph Network to draw.
+    pos : dict
+        Dictionary with nodes' positions.
 
-    Returns:
-        G:                  Network with nodes' positions set.
+    Returns
+    -------
+    G : nx.Graph
+        Network with nodes' positions set.
     """
+
     positions = {k: list(map(float, pos[k])) for k in pos}
 
     return nx.set_node_attributes(G, positions, "pos")
@@ -84,40 +95,40 @@ def visualize_network(
         Springer International Publishing.
         https://doi.org/10.1007/978-3-030-31019-6_23
 
-    Args:
-        G (NetworkX.Graph()):                       Graph Network to draw.
-        output (str):                               Filename and path for
-                                                    the output png image.
-        weight (str, optional):                     Edge attribute to use as
-                                                    weight. Defaults to
-                                                    'weight'.
-        centroids_labelling (bool, optional):       Label centroid nodes.
-                                                    Defaults to True.
-        subjects_labelling (bool, optional):        Label subject nodes.
-                                                    Defaults to False.
-        centroid_node_shape (int, optional):        Centroid's nodes shape.
-                                                    Defaults to 500.
-        centroid_alpha (int, optional):             Centroid's nodes alpha.
-                                                    Defaults to 1.
-        centroid_node_color (str, optional):        Centroid's nodes color.
-                                                    Defaults to 'white'.
-        centroid_edge_color (str, optional):        Centroid's nodes edge
-                                                    color. Defaults to 'black'.
-        subject_node_shape (int, optional):         Subject's nodes shape.
-                                                    Defaults to 5.
-        subject_alpha (float, optional):            Subject's nodes alpha
-                                                    value.Defaults to 0.3.
-        subject_node_color (str, optional):         Subject's nodes color.
-                                                    Defaults to 'black'.
-        subject_edge_color (_type_, optional):      Subject's nodes edge color.
-                                                    Defaults to None.
-        colormap (str, optional):                   Colormap to use to draw
-                                                    edges' weights. Defaults
-                                                    to 'plasma'.
-        title (str, optional):                      Graph title. Defaults to
-                                                    'Graph Network'.
-        legend_title (str, optional):               Legend title. Defaults to
-                                                    'Membership values'.
+    Parameters
+    ----------
+    G : nx.Graph
+        Graph Network to draw.
+    output : str
+        Filename and path for the output png image.
+    weight : str, optional
+        Edge attribute to use as weight. Defaults to "weight".
+    centroids_labelling : bool, optional
+        Label centroid nodes. Defaults to True.
+    subjects_labelling : bool, optional
+        Label subject nodes. Defaults to False.
+    centroid_node_shape : int, optional
+        Centroid's nodes shape. Defaults to 500.
+    centroid_alpha : int, optional
+        Centroid's nodes alpha. Defaults to 1.
+    centroid_node_color : str, optional
+        Centroid's nodes color. Defaults to "white".
+    centroid_edge_color : str, optional
+        Centroid's nodes edge color. Defaults to "black".
+    subject_node_shape : int, optional
+        Subject's nodes shape. Defaults to 5.
+    subject_alpha : float, optional
+        Subject's nodes alpha value. Defaults to 0.3.
+    subject_node_color : str, optional
+        Subject's nodes color. Defaults to "black".
+    subject_edge_color : str, optional
+        Subject's nodes edge color. Defaults to None.
+    colormap : str, optional
+        Colormap to use to draw edges' weights. Defaults to "plasma".
+    title : str, optional
+        Graph title. Defaults to "Graph Network".
+    legend_title : str, optional
+        Legend title. Defaults to "Membership values".
     """
 
     # Fetching nodes position.
@@ -216,10 +227,12 @@ def membership_distribution(mat, output="./membership_distribution.png"):
     values for each subject and the delta plot of the difference with the
     second highest membership from the fuzzy c-partitioned matrix.
 
-    Args:
-        mat (Array):                    Membership fuzzy c-partitioned matrix.
-        output (str, optional):         Output filename and path. Defaults to
-                                        './membership_distribution.png'.
+    Parameters
+    ----------
+    mat : Array
+        Membership fuzzy c-partitioned matrix.
+    output : str, optional
+        Output filename and path. Defaults to "./membership_distribution.png".
     """
 
     # Fetching 1st highest membership value.
@@ -278,12 +291,15 @@ def creating_node_colormap(percentile_dict):
     Function to create a colormap for a set of nodes based on a percentile
     dictionary.
 
-    Args:
-        percentile_dict (dict):     Percentile dictionary with keys identifying
-                                    clusters.
+    Parameters
+    ----------
+    percentile_dict : dict
+        Percentile dictionary with keys identifying clusters.
 
-    Return:
-        cmap:                       List containing all colors.
+    Returns
+    -------
+    cmap
+        List containing all colors.
     """
 
     cmap = plt.cm.tab10(np.linspace(0, 1, 10))
@@ -307,12 +323,15 @@ def create_cmap_from_list(array):
     condition for each subject.) For example, subject with value = 0 will be
     mapped black, whereas subject = >1 will be mapped to different colors.
 
-    Args:
-        array (Array):      Array of integers corresponding to condiditions
-                            (can be binary also.).
+    Parameters
+    ----------
+    array : np.array
+        Array of integers corresponding to condiditions (can be binary also.).
 
-    Return:
-        cmap:               List containing all colors.
+    Returns
+    -------
+    cmap
+        List containing all colors.
     """
 
     if array.dtype == "float64":

@@ -1,0 +1,40 @@
+---
+title: "Welcome to NeuroStatX Documentation!"
+description: "NeuroStatX is a command-line toolbox to perform statistical analysis on neuroscience data."
+template: splash
+hero:
+    tagline: NeuroStatX is a command-line toolbox to perform statistical analysis on
+              neuroscience data. It had been developped mostly as part of my PhD project,
+              which aims to understand the relationship between the brain, cognition and
+              behavior, hence the focus on neuroscience data. As my project goes forward,
+              new functionalities and scripts will be added. Contributions are welcome!
+    image:
+        light: ../../assets/logo_without_text.svg
+        dark: ../../assets/white_logo_without_text.svg
+    actions:
+        - text: "Get Started"
+          link: "./getting-started/installation"
+          icon: "right-arrow"
+          variant: primary
+        - text: "Tutorials"
+          link: "./tutorials/fuzzyclustering"
+          variant: secondary
+        - text: "API Documentation"
+          link: "./api/cli/addnodesattributes"
+          variant: secondary
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Features
+
+<CardGrid stagger>
+    <Card title="Command Line Tools" icon="seti:powershell">
+        NeuroStatX offers command line tools (CLI) to perform various statistical
+        analysis on your data. **No need to code your own functions!** 
+    </Card>
+    <Card title="Testing Infrastructure" icon="seti:python">
+        NeuroStatX provides a strong testing infrastructure ensuring robust and
+        reproducible results for most functions and CLI tools.
+    </Card>
+</CardGrid>

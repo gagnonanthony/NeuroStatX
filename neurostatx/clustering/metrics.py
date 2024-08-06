@@ -16,18 +16,24 @@ def compute_evaluation_metrics(X, labels, metric="euclidean"):
     Function to compute a variety of metrics to evaluate the goodness of fit
     of a clustering model.
 
-    Args:
-        X (Array-like):             Data from clustering algorithm to
-                                    derive metrics from.
-        labels (List):              List of labels.
-        metric (str, optional):     Distance metric to use. Defaults
-                                    to 'euclidean'. Accept options from
-                                    sklearn.metrics.pairwise.pairwise_distances.
+    Parameters
+    ----------
+        X : array-like
+            Data from clustering algorithm to derive metrics from.
+        labels : list
+            List of labels.
+        metric : str, optional
+            Distance metric to use. Defaults to 'euclidean'. Accept options
+            from sklearn.metrics.pairwise.pairwise_distances.
 
-    Returns:
-        ss:                         Silhouette Score (SS).
-        chi:                        Calinski Harabasz Score (CHI).
-        dbi:                        Davies Bouldin Score (DBI).
+    Returns
+    -------
+        ss : float
+            Silhouette Score (SS).
+        chi : float
+            Calinski Harabasz Score (CHI).
+        dbi : float
+            Davies Bouldin Score (DBI).
     """
 
     # Storing Silhouette score.
@@ -46,12 +52,18 @@ def compute_knee_location(lst, direction="decreasing"):
     """
     Funtion to compute the Elbow location using the Kneed package.
 
-    Args:
-        lst (List):     List of values representing the indicators to identify
-                        the elbow location.
+    Parameters
+    ----------
+        lst: list
+            List of values representing the indicators to identify the elbow
+            location.
+        direction: str, optional
+            Direction of the curve. Defaults to 'decreasing'.
 
-    Returns:
-        elbow:          Elbow location.
+    Returns
+    -------
+        elbow: int
+            Elbow location.
     """
 
     knee = KneeLocator(
@@ -68,13 +80,19 @@ def compute_sse(X, cntr, labels):
     Adapted from :
     https://towardsdatascience.com/how-to-determine-the-right-number-of-clusters-with-code-d58de36368b1
 
-    Args:
-        X (Array):          Original data (S, N)
-        cntr (Array):       Centroid points (N, F)
-        labels (Array):     Discrete labels (S,)
+    Parameters
+    ----------
+        X : array
+            Original data (S, N).
+        cntr : array
+            Centroid points (N, F).
+        labels : array
+            Discrete labels (S,).
 
-    Returns:
-        WSS:                Within Sum-of-Squares Error (WSS)
+    Returns
+    -------
+        WSS : float
+            Within Sum-of-Squares Error (WSS).
     """
 
     WSS = 0
@@ -103,29 +121,34 @@ def compute_gap_stats(
     https://towardsdatascience.com/cheat-sheet-to-implementing-7-methods-for-selecting-optimal-number-of-clusters-in-python-898241e1d6ad
     and https://github.com/milesgranger/gap_statistic
 
-    Args:
-        X (array):                      Data array on which clustering will be
-                                        computed.
-        wss (float):                    Within Cluster Sum of Squared Error
-                                        (WSS) for this clustering model.
-        nrefs (int):                    Number of random reference data to
-                                        generate and average.
-        n_cluster (int):                Number of cluster in for this model.
-        m (int, optional):              Exponentiation value as used in the
-                                        main script. Defaults to 2.
-        error (float, optional):        Convergence error threshold. Defaults
-                                        to 1E-6.
-        maxiter (int, optional):        Maximum iterations to perform.
-                                        Defaults to 1000.
-        metric (str, optional):         Distance metric to use. Defaults to
-                                        'euclidean'.
-        init (array, optional):         Initial fuzzy c-partitioned matrix.
-                                        Defaults to None.
+    Parameters
+    ----------
+        X : np.array
+            Data array on which clustering will be computed.
+        wss : float
+            Within Cluster Sum of Squared Error (WSS) for this clustering
+            model.
+        nrefs : int
+            Number of random reference data to generate and average.
+        n_cluster : int
+            Number of cluster in for this model.
+        m : int, optional
+            Exponentiation value as used in the main script. Defaults to 2.
+        error : float, optional
+            Convergence error threshold. Defaults to 1E-6.
+        maxiter : int, optional
+            Maximum iterations to perform. Defaults to 1000.
+        metric : str, optional
+            Distance metric to use. Defaults to 'euclidean'.
+        init : array, optional
+            Initial fuzzy c-partitioned matrix. Defaults to None.
 
-    Returns:
-        gap:                            GAP Statistics.
-        sk:                             Standard deviation of the GAP
-                                        statistic.
+    Returns
+    -------
+        gap : float
+            GAP Statistics.
+        sk : float
+            Standard deviation of the GAP statistic.
     """
 
     refDisps = np.zeros(nrefs)
@@ -164,14 +187,17 @@ def find_optimal_gap(gap, sk):
     (https://hastie.su.domains/Papers/gap.pdf). Highlights the first
     k value where GAP[k] >= GAP[k+1] - SD[k+1].
 
-    Args:
-        gap (ndarray):              Ndarray of GAP statistics values for a
-                                    range of k clusters.
-        sk (ndarray):               Ndarray of standard deviation for each GAP
-                                    values.
+    Parameters
+    ----------
+        gap : np.array
+            Ndarray of GAP statistics values for a range of k clusters.
+        sk : np.array
+            Ndarray of standard deviation for each GAP values.
 
-    Returns:
-        optimal:                    Optimal k value.
+    Returns
+    -------
+        optimal : int
+            Optimal number of clusters.
     """
 
     for i in range(len(gap)):
@@ -192,11 +218,15 @@ def compute_rand_index(dict):
     using sklearn.metrics.adjusted_rand_score. A defuzzification step is
     required since this method applies only to crisp clusters.
 
-    Args:
-        dict (dictionnary):             Dictonnary containing all dataframes.
+    Parameters
+    ----------
+        dict : dict
+            Dictonnary containing all dataframes.
 
-    Return:
-        Ndarray                         Symmetric ndarray.
+    Returns
+    -------
+        np.array
+            Symmetric ndarray.
     """
 
     ari = []

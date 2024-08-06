@@ -95,13 +95,13 @@ def CompareClustering(
         ),
     ] = False,
 ):
-    """COMPARE CLUSTERING RESULTS
+    """Compare Clustering Results
     --------------------------
     CompareClustering is a script that compares clustering results
     from multiple solutions using the Adjusted Rand Index (ARI) and produces a
     heatmap of the results.
 
-    ADJUSTED RAND INDEX
+    Adjusted Rand Index
     -------------------
     The Adjusted Rand Index (ARI) is a measure of similarity between two
     clustering results. It relies on comparing the predicted labels to the
@@ -113,23 +113,24 @@ def CompareClustering(
     Index (RI) that takes into account the fact that the RI is expected to
     be higher for large number of clusters.
 
-    REFERENCES
+    References
     ----------
-    [1] [Hubert, L., & Arabie, P. (1985). Comparing partitions. Journal of
-    classification, 2(1), 193-218.](https://doi.org/10.1007/BF01908075)
+    [1] Hubert, L., & Arabie, P. (1985). Comparing partitions. Journal of
+    classification, 2(1), 193-218. (https://doi.org/10.1007/BF01908075)
 
-    [2] [Rand, W. M. (1971). Objective criteria for the evaluation of
+    [2] Rand, W. M. (1971). Objective criteria for the evaluation of
     clustering methods. Journal of the American Statistical Association,
-    66(336), 846-850.](https://doi.org/10.2307/2284239)
+    66(336), 846-850. (https://doi.org/10.2307/2284239)
 
-    [3] [D. Steinley, Properties of the Hubert-Arabie adjusted Rand index,
+    [3] D. Steinley, Properties of the Hubert-Arabie adjusted Rand index,
     Psychological Methods
-    2004](https://psycnet.apa.org/doi/10.1037/1082-989X.9.3.386)
+    2004 (https://psycnet.apa.org/doi/10.1037/1082-989X.9.3.386)
 
-    [4] [Scikit-Learn Documentation - Adjusted Rand Index
-    (ARI)](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_rand_score.html)
+    [4] Scikit-Learn Documentation - Adjusted Rand Index
+    (ARI)
+    (https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_rand_score.html)
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ::
 

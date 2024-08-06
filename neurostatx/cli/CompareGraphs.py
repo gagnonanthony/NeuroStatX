@@ -150,21 +150,21 @@ def CompareGraphs(
         ),
     ] = "Membership values",
 ):
-    """GRAPH NETWORK COMPARISON
-    --------------------------------------
+    """Graph Network Comparison
+    ------------------------
     CompareGraphs is a script that compares 2 undirected weighted
     graph network. As of now, the only comparison implemented is the
     extraction of the Xth percentile nodes from --in-graph1 and label those
     nodes on --in-graph2. The percentile value is set by --percentile.
 
-    GRAPH NETWORK CUSTOMIZATION
+    Graph Network Customization
     ---------------------------
     To customize the graph appearance, please see the Network Visualization
     Options below. It should be noted that using subjects_labelling will crowd
     the network if it contains a high number of nodes. Also, centroids are
     labelled by default 'c1, c2, ...' and subjects 's1, s2, ...'.
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ::
 
@@ -210,7 +210,8 @@ def CompareGraphs(
     colormap : str, optional
         Colormap to use when coloring the edges of the network based on the
         membership values to each clusters. Available colormap are those from
-        [Matplotlib](https://matplotlib.org/stable/tutorials/colors/colormaps.html).
+        Matplotlib
+        (https://matplotlib.org/stable/tutorials/colors/colormaps.html).
     legend_title : str, optional
         Legend title (colormap).
     """

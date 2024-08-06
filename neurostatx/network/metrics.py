@@ -16,8 +16,10 @@ def get_metrics_ops():
     """
     Get a dictionary of all functions related to graph network metrics.
 
-    Returns:
-        OrderedDict:    Functions dictonary.
+    Returns
+    -------
+    dict : dict
+        Dictionary of functions.
     """
     return OrderedDict(
         [
@@ -38,57 +40,108 @@ def get_metrics_ops():
     )
 
 
-def get_metrics_docs(ops: dict):
-    """
-    Function to fetch from a dictionary all functions and join all
-    documentations.
-
-    Args:
-        ops (dict):         Dictionary of functions.
-    """
-    full_doc = []
-    for func in ops.values():
-        full_doc.append(func.__doc__)
-    return "\n".join(full_doc)
-
-
 def eigencentrality(graph, weight=None):
     """
-    eigencentrality: GRAPH WEIGHT\n
-        Will return a dictionary of the eigenvector centrality for all nodes.
+    eigencentrality: GRAPH WEIGHT
+
+    Will return a dictionary of the eigenvector centrality for all nodes.
+
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+
+    Returns
+    -------
+    dict
+        Dictionary of the eigenvector centrality for all nodes.
     """
     return nx.eigenvector_centrality(graph, max_iter=1000, weight=weight)
 
 
 def closenesscentrality(graph, weight=None):
     """
-    closenesscentrality: GRAPH WEIGHT\n
-        Will return a dictionary of the closeness centrality for all nodes.
+    closenesscentrality: GRAPH WEIGHT
+
+    Will return a dictionary of the closeness centrality for all nodes.
+
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+
+    Returns
+    -------
+    dict
+        Dictionary of the closeness centrality for all nodes.
     """
     return nx.closeness_centrality(graph, distance=weight, wf_improved=True)
 
 
 def betweennesscentrality(graph, weight=None):
     """
-    betweennesscentrality: GRAPH WEIGHT\n
-        Will return a dictionary of the betweenness centrality for all nodes.
+    betweennesscentrality: GRAPH WEIGHT
+
+    Will return a dictionary of the betweenness centrality for all nodes.
+
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+
+    Returns
+    -------
+    dict
+        Dictionary of the betweenness centrality for all nodes.
     """
     return nx.betweenness_centrality(graph, weight=weight)
 
 
 def informationcentrality(graph, weight=None):
     """
-    informationcentrality: GRAPH WEIGHT\n
-        Will return a dictionary of the information centrality for all nodes.
+    informationcentrality: GRAPH WEIGHT
+
+    Will return a dictionary of the information centrality for all nodes.
+
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+
+    Returns
+    -------
+    dict
+        Dictionary of the information centrality for all nodes.
     """
     return nx.information_centrality(graph, weight=weight, solver="full")
 
 
 def currentflowbc(graph, weight=None):
     """
-    currentflowbc: GRAPH WEIGHT\n
-        Will return a dictionary of the current flow betweenness centrality
-        for all nodes.
+    currentflowbc: GRAPH WEIGHT
+
+    Will return a dictionary of the current flow betweenness centrality
+    for all nodes.
+
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+
+    Returns
+    -------
+    dict
+        Dictionary of the current flow betweenness centrality for all nodes.
     """
     return nx.current_flow_betweenness_centrality(graph, weight=weight,
                                                   solver="full")
@@ -96,64 +149,174 @@ def currentflowbc(graph, weight=None):
 
 def loadcentrality(graph, weight=None):
     """
-    loadcentrality: GRAPH WEIGHT\n
-        Will return a dictionary of the load centrality for all nodes.
+    loadcentrality: GRAPH WEIGHT
+
+    Will return a dictionary of the load centrality for all nodes.
+
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+
+    Returns
+    -------
+    dict
+        Dictionary of the load centrality for all nodes.
     """
     return nx.load_centrality(graph, weight=weight)
 
 
 def harmoniccentrality(graph, weight=None):
     """
-    harmoniccentrality: GRAPH WEIGHT\n
-        Will return a dictionary of the harmonic centrality for all nodes.
+    harmoniccentrality: GRAPH WEIGHT
+
+    Will return a dictionary of the harmonic centrality for all nodes.
+
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+
+    Returns
+    -------
+    dict
+        Dictionary of the harmonic centrality for all nodes.
     """
     return nx.harmonic_centrality(graph, distance=weight)
 
 
 def eccentricity(graph, weight=None):
     """
-    eccentricity: GRAPH WEIGHT\n
-        Will return a dictionary of the eccentricity for all nodes.
+    eccentricity: GRAPH WEIGHT
+
+    Will return a dictionary of the eccentricity for all nodes.
+
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+
+    Returns
+    -------
+    dict
+        Dictionary of the eccentricity for all nodes.
     """
     return nx.eccentricity(graph, weight=weight)
 
 
 def clustering(graph, weight=None):
     """
-    clustering: GRAPH WEIGHT\n
-        Will return a dictionary of the clustering coefficient for all nodes.
+    clustering: GRAPH WEIGHT
+
+    Will return a dictionary of the clustering coefficient for all nodes.
+
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+
+    Returns
+    -------
+    dict
+        Dictionary of the clustering coefficient for all nodes.
     """
     return nx.clustering(graph, weight=weight)
 
 
 def constraint(graph, nodes, weight=None):
     """
-    constraint: GRAPH NODES WEIGHT\n
-        Will return a dictionary of the constraint for all specified nodes.
+    constraint: GRAPH NODES WEIGHT
+
+    Will return a dictionary of the constraint for all specified nodes.
+
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    nodes : str
+        Nodes to compute the constraint for.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+
+    Returns
+    -------
+    dict
+        Dictionary of the constraint for all specified nodes.
     """
     return nx.constraint(graph, nodes=nodes.split(), weight=weight)
 
 
 def effectivesize(graph, nodes, weight=None):
     """
-    effectivesize: GRAPH NODES WEIGHT\n
-        Will return a dictionary of the effective size for all specified nodes.
+    effectivesize: GRAPH NODES WEIGHT
+
+    Will return a dictionary of the effective size for all specified nodes.
+
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    nodes : str
+        Nodes to compute the effective size for.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+
+    Returns
+    -------
+    dict
+        Dictionary of the effective size for all specified nodes.
     """
     return nx.effective_size(graph, nodes=nodes.split(), weight=weight)
 
 
 def closenessvitality(graph, nodes, weight=None):
     """
-    closenessvitality: GRAPH NODE WEIGHT\n
-        Will return a dictionary of the closeness vitality for a single node.
+    closenessvitality: GRAPH NODE WEIGHT
+
+    Will return a dictionary of the closeness vitality for a single node.
+
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    nodes : str
+        Node to compute the closeness vitality for.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+
+    Returns
+    -------
+    dict
+        Dictionary of the closeness vitality for a single node.
     """
     return nx.closeness_vitality(graph, node=nodes, weight=weight)
 
 
 def degree(graph, weight=None):
     """
-    degree: GRAPH WEIGHT\n
-        Will return the degree of the specified node.
+    degree: GRAPH WEIGHT
+
+    Will return the degree of the specified node.
+
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+
+    Returns
+    -------
+    dict
+        Dictionary of the degree for all nodes.
     """
     return graph.degree(weight=weight)
 
@@ -182,30 +345,39 @@ def weightedpath(
     of nodes. The function will also compute the p-value between the group of
     nodes and the randomly generated null distribution.
 
-    Args:
-        graph (Networkx.graph):                 Networkx graph object.
-        df (pandas.DataFrame):                  Dataframe containing the nodes
-        label_name (str):                       Name of the column containing
-                                                the group label.
-        iterations (int, optional):             Number of iterations to run.
-                                                Defaults to 1000.
-        weight (str, optional):                 Edge attributes to use as
-                                                weight. Defaults to None.
-        method (str, optional):                 Method to use for path
-                                                computation. Defaults to
-                                                "dijkstra".
-        distribution (pd.DataFrame, optional):  Pre-computed distribution.
-                                                Defaults to None.
-        processes (int, optional):              Number of processes to use.
-                                                Defaults to 1.
-        verbose (bool, optional):               Verbose flag. Defaults to
-                                                False.
+    Parameters
+    ----------
+    graph : Networkx.graph
+        Networkx graph object.
+    df : pandas.DataFrame
+        Dataframe containing the nodes.
+    label_name : str
+        Name of the column containing the group label.
+    cohort : str, optional
+        Name of the cohort. Defaults to None.
+    iterations : int, optional
+        Number of iterations to run. Defaults to 1000.
+    weight : str, optional
+        Edge attributes to use as weight. Defaults to None.
+    method : str, optional
+        Method to use for path computation. Defaults to "dijkstra".
+    distribution : pd.DataFrame, optional
+        Pre-computed distribution. Defaults to None.
+    processes : int, optional
+        Number of processes to use. Defaults to 1.
+    verbose : bool, optional
+        Verbose flag. Defaults to False.
 
-    Returns:
-        avg_path_length (float):                Average path length.
-        dist (list):                            Null distribution.
-        pvalue (float):                         P-value.
+    Returns
+    -------
+    avg_path_length : float
+        Average path length.
+    dist : list
+        Null distribution.
+    pvalue : float
+        P-value.
     """
+
     # Cohort selection.
     if cohort is not None:
         subset = df.loc[df['cohort'] == cohort]

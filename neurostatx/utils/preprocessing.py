@@ -10,9 +10,18 @@ from tqdm import tqdm
 def remove_nans(df):
     """
     Clean up dataset by removing all rows containing NaNs.
-    :param df:      Pandas dataframe.
-    :return:        One df containing the removed rows and one df with the
-                    complete rows.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Pandas dataframe.
+
+    Returns
+    -------
+    rows_with_nans : pd.DataFrame
+        Dataframe containing rows with NaNs.
+    complete_rows : pd.DataFrame
+        Cleaned dataframe.
     """
     rows_with_nans = df[df.isna().any(axis=1)]
     complete_rows = df.drop(index=rows_with_nans.index)
@@ -25,11 +34,19 @@ def rename_columns(df, old_names, new_names):
     Function renaming specific columns according to a list of new and old
     column names.
 
-    :param df:              Pandas dataframe object.
-    :param old_names:       List of old column name as strings.
-    :param new_names:       List of new column name as strings.
-    :return:
-    Pandas dataframe object containing the renamed columns.
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Pandas dataframe object.
+    old_names : List[str]
+        List of old column name as strings.
+    new_names : List[str]
+        List of new column name as strings.
+
+    Returns
+    -------
+    df : pd.DataFrame
+        Pandas dataframe object containing the renamed columns.
     """
     if len(old_names) != len(new_names):
         raise ValueError("Number of old names and new names must be the same.")
@@ -53,12 +70,20 @@ def binary_to_yes_no(df, cols):
     """
     Function to change binary answers (1/0) to Yes or No in specific columns
     from a Pandas Dataframe.
-    *** Please validate that yes and no are assigned to the correct values,
-    default behavior is yes = 1 and no = 0 ***
-    :param df:              Pandas' dataframe object.
-    :param cols:            List of column names.
-    :return:
-    Pandas' dataframe object with changed binary answers.
+    **Please validate that yes and no are assigned to the correct values,
+    default behavior is yes = 1 and no = 0.**
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Pandas dataframe object.
+    cols : List[str]
+        List of column names.
+
+    Returns
+    -------
+    df : pd.DataFrame
+        Pandas dataframe object with changed binary answers.
     """
     for col in cols:
         if df[col].isin([0.0, 1.0, 2.0, "nan"]).any():
@@ -75,10 +100,18 @@ def binary_to_yes_no(df, cols):
 def get_column_indices(df, column_names):
     """
     Function to extract column index based on a list of column names.
-    :param df:              Pandas dataframe object.
-    :param column_names:    List of column names as strings.
-    :return:
-    List of column index.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Pandas dataframe object.
+    column_names : List[str]
+        List of column names as strings.
+
+    Returns
+    -------
+    indices : List[int]
+        List of column index.
     """
     indices = []
     for name in column_names:
@@ -93,11 +126,17 @@ def get_column_indices(df, column_names):
 def plot_distributions(df, out_folder, context="poster", font_scale=1):
     """
     Script to visualize distribution plots for a complete dataframe.
-    :param df:              Pandas dataframe.
-    :param out_folder:      Path to the output folder.
-    :param context:         Style to apply to the plots.
-    :param font_scale:      Font Scale
-    :return:
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Pandas dataframe.
+    out_folder : str
+        Path to the output folder.
+    context : str, optional
+        Style to apply to the plots. Defaults to 'poster'.
+    font_scale : float, optional
+        Font scale. Defaults to 1.
     """
 
     # Setting plotting parameters.
@@ -119,8 +158,18 @@ def compute_shapiro_wilk_test(df):
     """
     Function computing the normality statistic using the Shapiro Wilk's test
     for normality and outputting W and p values.
-    :param df:      Pandas dataframe.
-    :return:        Shapiro-Wilk values (W) and associated p-values.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Pandas dataframe.
+
+    Returns
+    -------
+    wilk : List[float]
+        Shapiro-Wilk values (W).
+    pvalues : List[float]
+        Associated p-values.
     """
 
     wilk = []
@@ -140,15 +189,27 @@ def compute_correlation_coefficient(
 ):
     """
     Function to compute a correlation matrix for all variables in a dataframe.
-    :param df:              Pandas dataframe.
-    :param out_folder:      Path to the output folder.
-    :param context:         Style to apply to the plots.
-    :param font_scale:      Font scale.
-    :param cmap:            Cmap to use in the heatmap.
-    :param annot:           Flag to write correlation values inside the
-                            heatmap squares.
-    :return:
-    Correlation matrix with pearson correlation coefficients.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Pandas dataframe.
+    out_folder : str
+        Path to the output folder.
+    context : str, optional
+        Style to apply to the plots. Defaults to 'poster'.
+    font_scale : float, optional
+        Font scale. Defaults to 0.2.
+    cmap : str, optional
+        Cmap to use in the heatmap. Defaults to None.
+    annot : bool, optional
+        Flag to write correlation values inside the heatmap squares.
+        Defaults to False.
+
+    Returns
+    -------
+    corr_mat : pd.DataFrame
+        Correlation matrix with Pearson correlation coefficients.
     """
 
     # Setting plotting parameters.
@@ -177,13 +238,22 @@ def merge_dataframes(dict_df, index, repeated_columns=False):
     Function to merge a variable number of dataframe by matching the values of
     a specific column (hereby labeled as index.) Index values must appear only
     once in the dataframe for the function to work.
-    :param dict_df:             Dictionary of pandas dataframe.
-    :param index:               String of the name of the column to use as
-                                index (needs to be the same across all
-                                dataframes).
-    :param repeated_columns     Flag to use if column name are repeated across
-                                dataframe to merge.
-    :return:                    Joint large pandas dataframe.
+
+    Parameters
+    ----------
+    dict_df : Dict[str, pd.DataFrame]
+        Dictionary of pandas dataframe.
+    index : str
+        String of the name of the column to use as index (needs to be the same
+        across all dataframes).
+    repeated_columns : bool, optional
+        Flag to use if column name are repeated across dataframe to merge.
+        Defaults to False.
+
+    Returns
+    -------
+    out : pd.DataFrame
+        Joint large pandas dataframe.
     """
 
     keys = list(dict_df.keys())
@@ -204,18 +274,29 @@ def compute_pca(X, n_components):
     """
     Function compute PCA decomposition on a dataset.
 
-    Args:
-        X (Array):                  Data array.
-        n_components (int):         Number of components.
+    Parameters
+    ----------
+    X : Array
+        Data array.
+    n_components : int
+        Number of components.
 
-    Return:
-        X (Array):                  Transformed data array.
-        exp_var (Array):            Explained variance.
-        components (Array):         Components.
-        p_value (float):            Bartlett's p-value.
-        kmo_model (float):          KMO model.
-
+    Returns
+    -------
+    X : Array
+        Transformed data array.
+    pca : PCA
+        PCA model.
+    exp_var : Array
+        Explained variance.
+    components : Array
+        Components.
+    p_value : float
+        Bartlett's p-value.
+    kmo_model : float
+        KMO model.
     """
+
     chi_square_value, p_value = calculate_bartlett_sphericity(X)
     kmo_all, kmo_model = calculate_kmo(X)
     pca = PCA(n_components=n_components).fit(X)

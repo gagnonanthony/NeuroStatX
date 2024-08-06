@@ -165,14 +165,14 @@ def FuzzyClustering(
         ),
     ] = False,
 ):
-    """FUZZY CLUSTERING
+    """Fuzzy Clustering
     ----------------
     FuzzyClustering is a wrapper script for a Fuzzy C-Means
     clustering analysis. By design, the script will compute the analysis for
     k specified cluster (chosen by --k) and returns various
     evaluation metrics and summary barplot/parallel plot.
 
-    EVALUATION METRICS
+    Evaluation Metrics
     ------------------
     The fuzzy partition coefficient (FPC) is a metric defined between 0 and 1
     with 1 representing the better score. It represents how well the data is
@@ -210,8 +210,8 @@ def FuzzyClustering(
     identified by a maximized GAP statistic (local maxima can also suggest
     possible solutions.).
 
-    PARAMETERS
-    ----------
+    Configurations
+    --------------
     Details regarding the parameters can be seen below. Regarding the
     --m parameter, it defines the degree of fuzziness of the resulting
     membership matrix. Using --m 1 will returns crisp clusters, whereas
@@ -229,7 +229,7 @@ def FuzzyClustering(
                         |-- [...]
                         └-- cluster_membership_{k}.npy
 
-    OUTPUT FOLDER STRUCTURE
+    Output Folder Structure
     -----------------------
     The script creates a default output structure in a destination specified
     by using --out-folder. Output structure is as follows:
@@ -264,24 +264,24 @@ def FuzzyClustering(
                         |-- validation_indices.xlsx
                         └-- viz_multiple_cluster_nb.png
 
-    REFERENCES
+    References
     ----------
-    [1] [Scikit-Fuzzy
-    Documentation](https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_cmeans.html)
+    [1] Scikit-Fuzzy Documentation
+    (https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_cmeans.html)
 
-    [2] [Scikit-Learn Documentation - Clustering Performance
-    Evaluation](https://scikit-learn.org/stable/modules/clustering.html#clustering-performance-evaluation)
+    [2] Scikit-Learn Documentation - Clustering Performance Evaluation
+    (https://scikit-learn.org/stable/modules/clustering.html#clustering-performance-evaluation)
 
-    [3] [Selecting the optimal number of clusters -
-    1](https://towardsdatascience.com/cheat-sheet-to-implementing-7-methods-for-selecting-optimal-number-of-clusters-in-python-898241e1d6ad)
+    [3] Selecting the optimal number of clusters - 1
+    (https://towardsdatascience.com/cheat-sheet-to-implementing-7-methods-for-selecting-optimal-number-of-clusters-in-python-898241e1d6ad)
 
-    [4] [Selecting the optimal number of clusters -
-    2](https://towardsdatascience.com/how-to-determine-the-right-number-of-clusters-with-code-d58de36368b1)
+    [4] Selecting the optimal number of clusters - 2
+    (https://towardsdatascience.com/how-to-determine-the-right-number-of-clusters-with-code-d58de36368b1)
 
-    [5] [Scikit-Fuzzy GitHub
-    Repository](https://github.com/scikit-fuzzy/scikit-fuzzy)
+    [5] Scikit-Fuzzy GitHub Repository
+    (https://github.com/scikit-fuzzy/scikit-fuzzy)
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ::
 

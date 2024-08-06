@@ -4,10 +4,15 @@ on:
     branches:
       - master 
       - main
+  workflow_dispatch:
+
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,10 +33,27 @@ jobs:
         run: |
           poetry install --with=docs --no-root --no-interaction
           poetry install --with=docs --no-interaction
-      - uses: actions/cache@v4
+      - name: Build markdown files
+        run: |
+          source $(poetry env info --path)/bin/activate
+          cd docs/api/
+          make markdown
+          cd _build/markdown/
+          python ../../../add_frontmatter.py *
+          bash ../../../organize_files.sh ../../../starlight/src/content/docs/API/
+          cd ../../../../
+      - name: Install Astro
+        uses: withastro/action@v2
         with:
-          key: mkdocs-material-${{ env.cache_id }}
-          path: .cache
-          restore-keys: |
-            mkdocs-material-
-      - run: poetry run mkdocs gh-deploy --force
+          path: docs/starlight/
+  
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -72,7 +72,7 @@ def AddNodesAttributes(
         ),
     ] = False
 ):
-    """SETTING NODES ATTRIBUTES
+    """Setting Nodes Attributes
     ------------------------
     AddNodesAttributes is a script that sets the attributes of the
     nodes of a graph. The attributes are provided via a tabulated data format
@@ -81,7 +81,7 @@ def AddNodesAttributes(
     to add as attributes can be supplied either via a .txt file or with
     multiple --labels arguments.
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ::
 

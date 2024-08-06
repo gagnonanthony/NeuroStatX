@@ -86,18 +86,18 @@ def ApplyModel(
         ),
     ] = False,
 ):
-    """APPLY MODEL
+    """Apply Model
     -----------
     Apply a model to a dataset. Features in the dataset will be scaled prior
     to applying the model.
 
-    CURRENTLY SUPPORTED MODELS
+    Currently Supported Models
     --------------------------
     * SEMopy
     * FactorAnalyzer
     * sklearn
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ApplyModel --in-dataset dataset.xlsx --model model.pkl --id-column ID
     --desc-columns 1 --out-folder ./output -v -f -s

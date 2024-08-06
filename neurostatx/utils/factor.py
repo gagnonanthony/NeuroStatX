@@ -60,33 +60,40 @@ def horn_parallel_analysis(
     and no difference have been observed between the two (see pull request #11,
     https://github.com/gagnonanthony/NeuroStatX/pull/11)
 
-    Args:
-        x (np.array):               Input dataset with only variables to
-                                    include in the EFA.
-        method (str):               Method used to fit the model.
-                                    List of possible methods:
-                                        minres: Minimal Residual
-                                        ml: Maximum Likelihood Factor
-                                        principal: Principal Component
-        rotation (str):             Rotation method to apply to the factor
-                                    loadings:
-                                    List of possible rotations:
-                                        varimax: Orthogonal Rotation
-                                        promax: Oblique Rotation
-                                        oblimin: Oblique Rotation
-                                        oblimax: Orthogonal Rotation
-                                        quartimin: Oblique Rotation
-                                        quartimax: Orthogonal Rotation
-                                        equamax: Orthogonal Rotation
-        nfactors (int):             Number of factors (latent variables) to
-                                    extract from the data. Default is 1.
-        niter (int):                Number of iterations to perform the
-                                    parallel analysis. Default is 20.
-    Returns:
-        suggfactors (int):          Suggested number of factors to use in the
-                                    factorial analysis.
-        suggcomponents (int):       Suggested number of components to use in
-                                    the factorial analysis.
+    Parameters
+    ----------
+    x : np.array
+        Input dataset with only variables to include in the EFA.
+    method : str, optional
+        Method used to fit the model.
+        List of possible methods:
+            - minres: Minimal Residual
+            - ml: Maximum Likelihood Factor
+            - principal: Principal Component
+        Defaults to "minres".
+    rotation : str, optional
+        Rotation method to apply to the factor loadings:
+        List of possible rotations:
+            - varimax: Orthogonal Rotation
+            - promax: Oblique Rotation
+            - oblimin: Oblique Rotation
+            - oblimax: Orthogonal Rotation
+            - quartimin: Oblique Rotation
+            - quartimax: Orthogonal Rotation
+            - equamax: Orthogonal Rotation
+        Defaults to None.
+    nfactors : int, optional
+        Number of factors (latent variables) to extract from the data.
+        Defaults to 1.
+    niter : int, optional
+        Number of iterations to perform the parallel analysis. Defaults to 20.
+
+    Returns
+    -------
+    suggfactors : int
+        Suggested number of factors to use in the factorial analysis.
+    suggcomponents : int
+        Suggested number of components to use in the factorial analysis.
     """
 
     # Getting input data dimension.
@@ -162,34 +169,44 @@ def efa(df, method, rotation, nfactors=1):
     Function to compute a simple exploratory factor analysis (EFA)
     using the factor_analyzer package.
 
-    Args:
-        df (pd.DataFrame):          Input dataset with only variables to
-                                    include in the EFA.
-        method (str):               Method used to fit the model.
-                                    List of possible methods:
-                                        minres: Minimal Residual
-                                        ml: Maximum Likelihood Factor
-                                        principal: Principal Component
-        rotation (str):             Rotation method to apply to the factor
-                                    loadings:
-                                    List of possible rotations:
-                                        varimax: Orthogonal Rotation
-                                        promax: Oblique Rotation
-                                        oblimin: Oblique Rotation
-                                        oblimax: Orthogonal Rotation
-                                        quartimin: Oblique Rotation
-                                        quartimax: Orthogonal Rotation
-                                        equamax: Orthogonal Rotation
-        nfactors (int):             Number of factors (latent variables) to
-                                    extract from the data. Default is 1.
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input dataset with only variables to include in the EFA.
+    method : str
+        Method used to fit the model.
+        List of possible methods:
+            - minres: Minimal Residual
+            - ml: Maximum Likelihood Factor
+            - principal: Principal Component
+    rotation : str
+        Rotation method to apply to the factor loadings:
+        List of possible rotations:
+            - varimax: Orthogonal Rotation
+            - promax: Oblique Rotation
+            - oblimin: Oblique Rotation
+            - oblimax: Orthogonal Rotation
+            - quartimin: Oblique Rotation
+            - quartimax: Orthogonal Rotation
+            - equamax: Orthogonal Rotation
+    nfactors : int, optional
+        Number of factors (latent variables) to extract from the data.
+        Defaults to 1.
 
-    Returns:
-        FactorAnalyzer:             FactorAnalyzer object containing the model.
-        ev (np.array):              Eigenvalues of the model.
-        v (np.array):               Eigenvalues of the model.
-        scores (np.array):          Factor scores of the model.
-        loadings (np.array):        Loadings of the model.
-        communalities (np.array):   Communalities of the model.
+    Returns
+    -------
+    FactorAnalyzer
+        FactorAnalyzer object containing the model.
+    ev : np.array
+        Original eigenvalues of the model.
+    v : np.array
+        Common factor eigenvalues of the model.
+    scores : np.array
+        Factor scores of the model.
+    loadings : np.array
+        Loadings of the model.
+    communalities : np.array
+        Communalities of the model.
     """
 
     # Instantiating and fitting the exploratory factorial analysis.
@@ -216,14 +233,21 @@ def cfa(
     This function uses the semopy package to evaluate the goodness of fit of
     the proposed model (https://semopy.com/).
 
-    Args:
-        df (pd.DataFrame):          Input dataset with only variables to
-                                    include in the CFA.
-        model (str):                Model description for the CFA.
-    Returns:
-        semopy.Model:               Model object containing the CFA.
-        scores (pd.DataFrame):      Factor scores of the model.
-        stats (pd.DataFrame):       Statistics of the model.
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input dataset with only variables to include in the CFA.
+    model : str
+        Model description for the CFA.
+
+    Returns
+    -------
+    semopy.Model
+        Model object containing the CFA.
+    scores : pd.DataFrame
+        Factor scores of the model.
+    stats : pd.DataFrame
+        Statistics of the model.
     """
 
     cfa = semopy.Model(model)
