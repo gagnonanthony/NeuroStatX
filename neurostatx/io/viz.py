@@ -5,13 +5,19 @@ import seaborn as sns
 
 def determine_layout(nb_axes):
     """
-    Returns the optimal number of rows and columns for the bar plot.
+    Returns the optimal number of rows and columns for a bar plot.
 
-    Args:
-        nb_axes (int):      Number of axes to plot.
+    Parameters
+    ----------
+    nb_axes : int
+        Number of axes to plot.
 
-    Returns:
-        int, int:           Number of rows and columns.
+    Returns
+    -------
+    num_rows : int
+        Number of rows.
+    num_cols : int
+        Number of columns.
     """
 
     num_rows = int(np.sqrt(nb_axes))
@@ -28,18 +34,24 @@ def flexible_barplot(
     Function to generate a bar plot with multiple axes in a publication-ready
     style.
 
-    Args:
-        values (pd.DataFrame):          Dataframe with the values to plot. The
-                                        index represents the x-axis and the
-                                        columns the y-axis.
-        num_axes (int):                 Number of axes to plot.
-        output (str):                   Output filename.
-        cmap (str, optional):           Name of the colormap to use. Defaults
-                                        to "magma". See
-                                        https://matplotlib.org/stable/tutorials/colors/colormaps.html
-        title (str, optional):          Title of the plot.
-        xlabel (str, optional):         Label for the x-axis.
-        ylabel (str, optional):         Label for the y-axis.
+    Parameters
+    ----------
+    values : pd.DataFrame
+        Dataframe with the values to plot. The index represents the x-axis and
+        the columns the y-axis.
+    num_axes : int
+        Number of axes to plot.
+    output : str
+        Output filename.
+    cmap : str, optional
+        Name of the colormap to use. Defaults to "magma". See
+        https://matplotlib.org/stable/tutorials/colors/colormaps.html
+    title : str, optional
+        Title of the plot.
+    xlabel : str, optional
+        Label for the x-axis.
+    ylabel : str, optional
+        Label for the y-axis.
     """
 
     # Fetch optimal number of rows and columns.
@@ -95,17 +107,22 @@ def generate_coef_plot(df, pval, coefname, varname, output, cmap="magma"):
     Function to generate a bar plot with the coefficients and their
     significance.
 
-    Args:
-        df (pd.DataFrame):      Dataframe containing the coefficients and their
-                                associated variable names.
-        coefname (str):         Name of the column containing the coefficients.
-        varname (str):          Name of the column containing the variable
-                                names.
-        output (str):           Output filename.
-        cmap (str, optional):   Name of the colormap to use. Defaults to
-                                "magma". See
-                                https://matplotlib.org/stable/tutorials/colors/colormaps.html
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe containing the coefficients and their associated variable
+        names.
+    coefname : str
+        Name of the column containing the coefficients.
+    varname : str
+        Name of the column containing the variable names.
+    output : str
+        Output filename.
+    cmap : str, optional
+        Name of the colormap to use. Defaults to "magma". See
+        https://matplotlib.org/stable/tutorials/colors/colormaps.html
     """
+
     coef = df[coefname]
     label = ['*' if p < 0.05 else '' for p in pval]
     y = np.arange(0, len(coef))
@@ -149,15 +166,21 @@ def generate_coef_plot(df, pval, coefname, varname, output, cmap="magma"):
 
 def flexible_hist(df, output, cmap="magma", title="Histogram",
                   xlabel=None, ylabel=None):
-    """Function to generate a single histogram representing the distributions
+    """
+    Function to generate a single histogram representing the distributions
     of all the columns within the dataset in a publication-ready style.
 
-    Args:
-        df (pd.DataFrame):          Dataframe containing the values to plot.
-        output (str):               Output filename.
-        cmap (str, optional):       Colormap. Defaults to "magma". See
-                                    https://matplotlib.org/stable/tutorials/colors/colormaps.html
-        title (str, optional):      Title of the plot. Defaults to "Histogram".
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe containing the values to plot.
+    output : str
+        Output filename.
+    cmap : str, optional
+        Colormap. Defaults to "magma". See
+        https://matplotlib.org/stable/tutorials/colors/colormaps.html
+    title : str, optional
+        Title of the plot. Defaults to "Histogram".
     """
 
     with plt.rc_context(

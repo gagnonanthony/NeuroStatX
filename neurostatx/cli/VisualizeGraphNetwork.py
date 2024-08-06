@@ -179,7 +179,7 @@ def VisualizeGraphNetwork(
         ),
     ] = "Membership values",
 ):
-    """VISUALIZING GRAPH NETWORK
+    """Visualizing Graph Network
     -------------------------
     VisualizeGraphNetwork is a command line tool to visualize the graph network
     generated from the clustering results. The script uses the NetworkX library
@@ -190,7 +190,7 @@ def VisualizeGraphNetwork(
     ComputeGraphNetwork since it requires the precomputation of the nodes'
     position within the graph file.
 
-    LABELLING GRAPH NETWORK NODES
+    Labelling Graph Network Nodes
     -----------------------------
     It is possible to label specific nodes based on a condition (e.g. a
     diagnosis, etc.). To do so, use the --label-name to indicate with binary
@@ -198,7 +198,7 @@ def VisualizeGraphNetwork(
     multiple label name by using --label-name x --label-name y. The script will
     output multiple graphs for each label name.
 
-    COHORT SELECTION
+    Cohort Selection
     ----------------
     In some case, the graph network file can contain data from multiple cohort
     at the same time. It might be useful to single out a specific cohort to
@@ -208,7 +208,7 @@ def VisualizeGraphNetwork(
     attributes. If it does not, please add it using the AddNodesAttributes
     script.
 
-    GRAPH NETWORK CUSTOMIZATION
+    Graph Network Customization
     ---------------------------
     To customize the graph appearance, please see the Network Visualization
     Options below. It should be noted that using subjects_labelling will crowd
@@ -217,11 +217,11 @@ def VisualizeGraphNetwork(
     also exports a graph_network_file.gexf. This file can be used to further
     customize the network using other APIs such as GEPHI (see [1]).
 
-    REFERENCES
+    References
     ----------
     [1] GEPHI (https://gephi.org/)
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ::
 

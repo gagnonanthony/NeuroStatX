@@ -163,8 +163,8 @@ def LogisticRegression(
         ),
     ] = False
 ):
-    """LOGISTIC REGRESSION ANALYSIS
-    --------------------------------------
+    """Logistic Regression Analysis
+    ----------------------------
     This script performs a Logistic Regression on a graph
     using the edges' weights as predictors and the nodes' attributes as
     response variable. The script will perform a cross-validation within a
@@ -174,14 +174,14 @@ def LogisticRegression(
     as well as plots of the distributions of the attributes and edges' weights
     and the coefficients.
 
-    PREPROCESSING
+    Preprocessing
     -------------
     The script will scale the data to unit variance and zero mean and will
     perform a log transformation on the edges' weights (for now, it assumes
     that the weights represent a membership value resulting from a fuzzy
     clustering analysis).
 
-    NODES' ATTRIBUTES
+    Nodes' Attributes
     -----------------
     The script takes only one graph file as input. The graph file must be in
     .gml format. The script will then fetch the attributes from the graph
@@ -190,7 +190,7 @@ def LogisticRegression(
     model. To set attributes to the nodes in the graph file,
     please see AddNodesAttributes.
 
-    SCORING OPTIONS
+    Scoring Options
     ---------------
     The script will perform a permutation testing to determine if the model is
     statistically significant. The script will compute the p-value for the
@@ -201,7 +201,7 @@ def LogisticRegression(
 
         p-value = ∑(score_perm >= score) / (nb_permutations)
 
-    COEFFICIENT SIGNIFICANCE
+    Coefficient Significance
     ------------------------
     The script will also compute the p-value for the coefficients using the
     permutation testing. The p-value for the coefficients is computed by
@@ -211,12 +211,12 @@ def LogisticRegression(
 
         p-value = ∑(abs(coef_perm) >= abs(coef)) / (nb_permutations)
 
-    REFERENCES
+    References
     ----------
     [1]
     https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ::
 

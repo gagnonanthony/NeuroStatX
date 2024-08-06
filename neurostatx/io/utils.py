@@ -15,10 +15,16 @@ https://github.com/scilus/scilpy
 
 def load_df_in_any_format(file):
     """
-    Load dataset in any .csv or .xlsx format.
-    :param file:    Input file to load.
-    :return:
-    Pandas dataframe.
+    Load tabular data in any format (.txt, .csv, .xlsx).
+
+    Parameters
+    ----------
+    file: str
+        Input file to load.
+
+    Returns
+    -------
+    df: pandas.DataFrame
     """
     _, ext = os.path.splitext(file)
     if ext == ".csv":

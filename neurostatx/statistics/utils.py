@@ -4,7 +4,8 @@ from sklearn.impute import KNNImputer
 
 def KNNimputation(ref_df, df, n_neighbors=5, weights='distance',
                   metric='nan_euclidean', keep_all_features=True):
-    """Function to impute data in a dataset based on learned relationship
+    """
+    Function to impute data in a dataset based on learned relationship
     from a reference dataset.
 
     This function uses the KNNImputer from the sklearn library to impute
@@ -14,32 +15,33 @@ def KNNimputation(ref_df, df, n_neighbors=5, weights='distance',
     imputed based on the n_neighbors closest samples. Useful to complete
     data from a different population and compare both of them later on.
 
-    ** Note: The reference dataset should not contain any missing values. **
-    ** Note: The reference dataset and the dataset to impute values in should
-    contain the same columns. **
+    ** Note: The reference dataset should not contain any missing values. The
+    reference dataset and the dataset to impute values in should contain the
+    same columns. **
 
-    Args:
-        ref_df (pd.DataFrame):              Reference dataset to learn the
-                                            features' relationship from.
-        df (pd.DataFrame):                  Dataset to impute.
-        n_neighbors (int, optional):        Number of neighbors to use.
-                                            Defaults to 5.
-        weights (str, optional):            Weight function to use, possible
-                                            value:
-                                            * 'uniform': uniform weights. All
-                                            points will have equal importance.
-                                            * 'distance': Weight by the inverse
-                                            of their distance.
-                                            Defaults to 'distance'.
-        metric (str, optional):             Distance metric for searching
-                                            neighbors. Defaults to
-                                            'nan_euclidean'.
-        keep_all_features (bool, optional): If True, even columns containing
-                                            only NaNs will be imputed.
-                                            Defaults to True.
+    Parameters
+    ----------
+    ref_df : pd.DataFrame
+        Reference dataset to learn the features' relationship from.
+    df : pd.DataFrame
+        Dataset to impute.
+    n_neighbors : int, optional
+        Number of neighbors to use. Defaults to 5.
+    weights : str, optional
+        Weight function to use, possible value:
+        - `uniform`: uniform weights. All points will have equal importance.
+        - `distance`: Weight by the inverse of their distance.
+        Defaults to `distance`.
+    metric : str, optional
+        Distance metric for searching neighbors. Defaults to `nan_euclidean`.
+    keep_all_features : bool, optional
+        If True, even columns containing only NaNs will be imputed.
+        Defaults to True.
 
-    Returns:
-        pd.DataFrame:                       Imputed dataset.
+    Returns
+    -------
+    pd.DataFrame
+        Imputed dataset.
     """
 
     # Assert columns from both datasets are named the same.
@@ -60,14 +62,20 @@ def KNNimputation(ref_df, df, n_neighbors=5, weights='distance',
 
 
 def apply_various_models(df, mod):
-    """Function to apply various models to a dataset.
+    """
+    Function to apply various models to a dataset.
 
-    Args:
-        df (pd.DataFrame):              Dataframe to use.
-        mod (Model):                    Model to use.
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe to use.
+    mod : Model
+        Model to use.
 
-    Returns:
-        y:                              Predicted values.
+    Returns
+    -------
+    y
+        Predicted values.
     """
 
     if "semopy" in str(type(mod)):

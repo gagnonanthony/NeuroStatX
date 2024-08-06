@@ -9,12 +9,15 @@ def get_nodes_and_edges(df):
     """
     Function to generate a dataframe containing edges' data.
 
-    Args:
-        df (DataFrame):          Pandas DataFrame containing edges data and
-                                 ids (membership
-                            matrix from clustering results).
+    Parameters
+    ----------
+    df : DataFrame
+        Pandas DataFrame containing edges data and
+        ids (membership matrix from clustering results).
 
-    Returns:
+    Returns
+    -------
+    DataFrame
         Pandas DataFrame of starting node, target node and edge weights.
     """
 
@@ -43,10 +46,14 @@ def filter_node_centroids(n):
     """
     Function to filter cluster nodes from subject's nodes.
 
-    Args:
-        n (str):        Node label.
+    Parameters
+    ----------
+    n : str
+        Node label.
 
-    Returns:
+    Returns
+    -------
+    bool
         True or False
     """
 
@@ -57,10 +64,14 @@ def filter_node_subjects(n):
     """
     Function to filter subject nodes from cluster's nodes.
 
-    Args:
-        n (str):        Node label.
+    Parameters
+    ----------
+    n : str
+        Node label.
 
-    Returns:
+    Returns
+    -------
+    bool
         True or False
     """
 
@@ -69,13 +80,19 @@ def filter_node_subjects(n):
 
 def extract_subject_percentile(mat, percentile):
     """
-    Function to extract subject
+    Function to extract subjects that are above the Xth percentile.
 
-    Args:
-        mat (Array):            Fuzzy C-partitioned membership matrix.
-        percentile (float):     Percentile value.
-    Return:
-        label_dict:             Dictionary of binary arrays for each clusters.
+    Parameters
+    ----------
+    mat : Array
+        Fuzzy C-partitioned membership matrix.
+    percentile : float
+        Percentile value.
+
+    Returns
+    -------
+    label_dict
+        Dictionary of binary arrays for each clusters.
     """
 
     # Fetching 1st and 2nd highest membership value.
@@ -98,14 +115,19 @@ def construct_attributes_dict(df, labels, id_column):
     """
     Function to construct a dictionary of nodes' attributes from a DataFrame.
 
-    Args:
-        df (pd.DataFrame):      Pandas DataFrame containing nodes' attributes.
-        labels (List):          List of labels to add as nodes' attributes.
-        id_column (str):        Name of the column containing the subject's ID
-                                tag.
+    Parameters
+    ----------
+    df : DataFrame
+        Pandas DataFrame containing nodes' attributes.
+    labels : List
+        List of labels to add as nodes' attributes.
+    id_column : str
+        Name of the column containing the subject's ID tag.
 
-    Returns:
-        attributes_dict:        Dictionary of nodes' attributes.
+    Returns
+    -------
+    attributes_dict
+        Dictionary of nodes' attributes.
     """
 
     # Set index to id_column.
@@ -124,12 +146,17 @@ def fetch_attributes_df(G, attributes=None):
     """
     Function to fetch nodes' attributes from a graph as a DataFrame.
 
-    Args:
-        G (NetworkX Graph):     NetworkX Graph object.
-        attributes (List):      List of attributes to fetch.
+    Parameters
+    ----------
+    G : NetworkX Graph
+        NetworkX Graph object.
+    attributes : List, optional
+        List of attributes to fetch.
 
-    Returns:
-        df: pd.DataFrame        Pandas DataFrame containing nodes' attributes.
+    Returns
+    -------
+    DataFrame
+        Pandas DataFrame containing nodes' attributes.
     """
 
     # Filter out nodes that are not subjects.
@@ -155,9 +182,17 @@ def fetch_edge_data(G, weight='membership'):
     Function to fetch edge's data from a graph as a DataFrame. This method
     works only if the graph as been created via this package.
 
-    Args:
-        G (_type_): _description_
-        weight (str, optional): _description_. Defaults to 'membership'.
+    Parameters
+    ----------
+    G : NetworkX Graph
+        NetworkX Graph object.
+    weight : str, optional
+        Name of the column containing the edge weight. Default is 'membership'.
+
+    Returns
+    -------
+    DataFrame
+        Pandas DataFrame containing edges' data.
     """
 
     # Fetch the number of cluster.

@@ -138,8 +138,8 @@ def ExploratoryFA(
         ),
     ] = False,
 ):
-    """EXPLORATORY FACTORIAL ANALYSIS
-    ------------------
+    """Exploratory Factorial Analysis
+    ------------------------------
     ExploratoryFA is a script that can be used to perform an
     exploratory factorial analysis (EFA).
 
@@ -153,7 +153,7 @@ def ExploratoryFA(
     script will output the EFA model, the loadings, communalities, and the
     transformed dataset.
 
-    INPUT SPECIFICATIONS
+    Input Specifications
     --------------------
     Dataset can contain multiple descriptive rows before the variables of
     interest. Simply specify the number of descriptive rows using
@@ -161,7 +161,7 @@ def ExploratoryFA(
     default, please select the mean or median option to impute missing data
     (be cautious when doing this).
 
-    REFERENCES
+    References
     ----------
     [1] Costa, V., & Sarmento, R. Confirmatory Factor
     Analysis. (https://arxiv.org/ftp/arxiv/papers/1905/1905.05598.pdf)
@@ -173,7 +173,7 @@ def ExploratoryFA(
     [3] Comparison of factor score estimation
     methods (https://github.com/gagnonanthony/NeuroStatX/pull/11)
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ::
 

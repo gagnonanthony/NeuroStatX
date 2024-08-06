@@ -165,14 +165,14 @@ def FuzzyClustering(
         ),
     ] = False,
 ):
-    """FUZZY CLUSTERING
+    """Fuzzy Clustering
     ----------------
     FuzzyClustering is a wrapper script for a Fuzzy C-Means
     clustering analysis. By design, the script will compute the analysis for
     k specified cluster (chosen by --k) and returns various
     evaluation metrics and summary barplot/parallel plot.
 
-    EVALUATION METRICS
+    Evaluation Metrics
     ------------------
     The fuzzy partition coefficient (FPC) is a metric defined between 0 and 1
     with 1 representing the better score. It represents how well the data is
@@ -210,7 +210,7 @@ def FuzzyClustering(
     identified by a maximized GAP statistic (local maxima can also suggest
     possible solutions.).
 
-    PARAMETERS
+    Parameters
     ----------
     Details regarding the parameters can be seen below. Regarding the
     --m parameter, it defines the degree of fuzziness of the resulting
@@ -229,7 +229,7 @@ def FuzzyClustering(
                         |-- [...]
                         └-- cluster_membership_{k}.npy
 
-    OUTPUT FOLDER STRUCTURE
+    Output Folder Structure
     -----------------------
     The script creates a default output structure in a destination specified
     by using --out-folder. Output structure is as follows:
@@ -264,7 +264,7 @@ def FuzzyClustering(
                         |-- validation_indices.xlsx
                         └-- viz_multiple_cluster_nb.png
 
-    REFERENCES
+    References
     ----------
     [1] Scikit-Fuzzy Documentation
     (https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_cmeans.html)
@@ -281,7 +281,7 @@ def FuzzyClustering(
     [5] Scikit-Fuzzy GitHub Repository
     (https://github.com/scikit-fuzzy/scikit-fuzzy)
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ::
 

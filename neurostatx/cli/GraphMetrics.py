@@ -11,12 +11,10 @@ import networkx as nx
 from typing_extensions import Annotated
 from typing import List
 
-from neurostatx.network.metrics import get_metrics_ops, get_metrics_docs
+from neurostatx.network.metrics import get_metrics_ops
 from neurostatx.io.utils import assert_input, assert_output
 
 OPERATIONS = get_metrics_ops()
-
-__doc__ = get_metrics_docs(OPERATIONS)
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
@@ -27,7 +25,6 @@ def GraphMetrics(
     operation: Annotated[
         List[str],
         Parameter(
-            help=__doc__,
             show_choices=True,
             show_default=False,
             group=Group("Arguments"),
@@ -57,14 +54,14 @@ def GraphMetrics(
         ),
     ] = False,
 ):
-    """GRAPH NETWORK METRICS
+    """Graph Network Metrics
     ---------------------
     GraphMetrics is a wrapper script that allows the user to compute
     various network metrics on an existing graph network. Depending on your
     hardware and the metric you want to compute, the script could be running
     for ~10 mins for a large graph (~10 000 nodes).
 
-    AVAILABLE METRICS
+    Available Metrics
     -----------------
     Available metrics come from the Networkx implemented algorithms. As of now,
     only the algorithms that can handle undirected weighted graph are
@@ -74,12 +71,40 @@ def GraphMetrics(
     NODES is required, you can provide multiple nodes within quotation marks
     (such as "c1 c2 c3").
 
-    REFERENCE
+    - eigencentrality: GRAPH WEIGHT -
+        Will return a dictionary of the eigenvector centrality for all nodes.
+    - closenesscentrality: GRAPH WEIGHT -
+        Will return a dictionary of the closeness centrality for all nodes.
+    - betweennesscentrality: GRAPH WEIGHT -
+        Will return a dictionary of the betweenness centrality for all nodes.
+    - informationcentrality: GRAPH WEIGHT -
+        Will return a dictionary of the information centrality for all nodes.
+    - currentflowbc: GRAPH WEIGHT -
+        Will return a dictionary of the current flow betweenness centrality
+        for all nodes.
+    - loadcentrality: GRAPH WEIGHT -
+        Will return a dictionary of the load centrality for all nodes.
+    - harmoniccentrality: GRAPH WEIGHT -
+        Will return a dictionary of the harmonic centrality for all nodes.
+    - eccentricity: GRAPH WEIGHT -
+        Will return a dictionary of the eccentricity for all nodes.
+    - clustering: GRAPH WEIGHT -
+        Will return a dictionary of the clustering coefficient for all nodes.
+    - constraint: GRAPH NODES WEIGHT -
+        Will return a dictionary of the constraint for all specified nodes.
+    - effectivesize: GRAPH NODES WEIGHT -
+        Will return a dictionary of the effective size for all specified nodes.
+    - closenessvitality: GRAPH NODE WEIGHT -
+        Will return a dictionary of the closeness vitality for a single node.
+    - degree: GRAPH WEIGHT -
+        Will return the degree of the specified node.
+
+    Reference
     ---------
     [1] Networkx Algorithms
     (https://networkx.org/documentation/stable/reference/algorithms/index.html#)
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ::
 
@@ -88,7 +113,10 @@ def GraphMetrics(
     Parameters
     ----------
     operation : List[str]
-        Operation to perform on the graph network.
+        List of arguments to provide to the script. The first argument is the
+        operation to perform. The second argument is the input graph file. The
+        rest of the arguments are the arguments required by the operation (see
+        above).
     out_file : str, optional
         Path and name of the file containing the metrics for each nodes.
         Default is : ./operation_name.xlsx

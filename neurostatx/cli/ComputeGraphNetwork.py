@@ -108,7 +108,7 @@ def ComputeGraphNetwork(
         ),
     ] = "membership",
 ):
-    """GRAPH NETWORK CLUSTERING VISUALIZATION
+    """Graph Network Clustering Visualization
     --------------------------------------
     ComputeGraphNetwork is a script computing an undirected weighted
     graph network from fuzzy clustering c-partitioned membership matrix. It is
@@ -117,7 +117,7 @@ def ComputeGraphNetwork(
     theory statistics such as shortest path, betweenness centrality, etc.
     The concept of this script was initially proposed in [1].
 
-    LAYOUT ALGORITHMS
+    Layout Algorithms
     -----------------
     In order to generate a graph network, the nodes positions need to be
     determined in relation with their connections to other nodes (and the
@@ -136,7 +136,7 @@ def ComputeGraphNetwork(
                     Suitable for large network with high number of nodes.
                     For details, see [2]. This is the default method.
 
-    IMPORTING DATA WITHIN THE .GML FILE
+    Importing Data Within The .gml File
     -----------------------------------
     If the --import-data flag is set to True, the descriptive data will be
     imported within the .gml file. The imported data will be stored as node's
@@ -145,7 +145,7 @@ def ComputeGraphNetwork(
     or Plsr). This ensure a robust handling of data and reduce the probability
     of data mismatch between subjects.
 
-    REFERENCES
+    References
     ----------
     [1] Ariza-Jiménez, L., Villa, L. F., & Quintero, O. L. (2019). Memberships
         Networks for High-Dimensional Fuzzy Clustering Visualization., Applied
@@ -155,7 +155,7 @@ def ComputeGraphNetwork(
     [2] NetworkX Documentation
     (https://networkx.org/documentation/stable/reference/drawing.html)
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ::
 

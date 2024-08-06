@@ -9,7 +9,7 @@ def add_frontmatter_to_markdown(file_path):
     frontmatter = f"""---
 title: "{title}"
 description: "NeuroStatX is a command-line toolbox to perform statistical
-analysis on neuroscience data."
+ analysis on neuroscience data."
 ---"""
 
     with open(file_path, 'r') as file:

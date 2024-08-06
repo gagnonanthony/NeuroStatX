@@ -25,15 +25,20 @@ def plot_clustering_results(lst, title, metric, output, errorbar=None,
     model. Resulting plot will be saved in the output folder specified in
     function's arguments.
 
-    Args:
-        lst (List):                 List of values to plot.
-        title (str):                Title of the plot.
-        metric (str):               Metric name.
-        output (str):               Output filename.
-        errorbar (List):            List of values to plot as errorbar
-                                    (CI, SD, etc.).
-        annotation (str, optional): Annotation to add directly on the plot.
-                                    Defaults to None.
+    Parameters
+    ----------
+    lst : List
+        List of values to plot.
+    title : str
+        Title of the plot.
+    metric : str
+        Metric name.
+    output : str
+        Output filename.
+    errorbar : List, optional
+        List of values to plot as errorbar (CI, SD, etc.). Defaults to None.
+    annotation : str, optional
+        Annotation to add directly on the plot. Defaults to None.
     """
 
     # Plotting data.
@@ -92,14 +97,16 @@ def plot_dendrogram(X, output, title="Dendrograms", annotation=None):
     Adapted from:
     https://towardsdatascience.com/cheat-sheet-to-implementing-7-methods-for-selecting-optimal-number-of-clusters-in-python-898241e1d6ad
 
-    Args:
-        X (DataFrame):                  Data on which clustering will be
-                                        performed.
-        output (str):                   Output filename and path.
-        title (str, optional):          Title for the plot. Defaults to
-                                        'Dendrograms'.
-        annotation (str, optional):     Annotation to add directly on the plot.
-                                        Defaults to None.
+    Parameters
+    ----------
+    X : DataFrame
+        Data on which clustering will be performed.
+    output : str
+        Output filename and path.
+    title : str, optional
+        Title for the plot. Defaults to 'Dendrograms'.
+    annotation : str, optional
+        Annotation to add directly on the plot. Defaults to None.
     """
 
     fig = plt.figure(figsize=(10, 7))
@@ -133,12 +140,16 @@ def sort_int_labels_legend(ax, title=None):
     Function automatically reorder numerically labels with matching handles in
     matplotlib legend.
 
-    Args:
-        ax:                     Matplotlib Axes.
-        title (str, optional):  Title of the legend.
+    Parameters
+    ----------
+    ax : Matplotlib Axes
+        Axes object.
+    title : str, optional
+        Title of the legend. Defaults to None.
 
-    Returns:
-        ax.legend:              Axes legend object.
+    Returns
+    -------
+    ax.legend : Axes legend object
     """
 
     # Fetching handles and tags from matplotlib axes.
@@ -169,17 +180,22 @@ def plot_parallel_plot(
     Adapted from:
     https://towardsdatascience.com/the-art-of-effective-visualization-of-multi-dimensional-data-6c7202990c57
 
-    Args:
-        X (pd.DataFrame):                   Input dataset of shape (S, F).
-        labels (Array):                     Array of hard membership value.
-                                            (S, ).
-        output (str):                       Filename of the png file.
-        cmap (str, optional):               Colormap to use for the plot.
-                                            Defaults to 'magma'. See
-                                            https://matplotlib.org/stable/tutorials/colors/colormaps.html
-        title (str, optional):              Title of the plot.
-                                            Defaults to 'Parallel Coordinates
-                                            plot.'.
+    Parameters
+    ----------
+    X : DataFrame
+        Input dataset of shape (S, F).
+    labels : np.array
+        Array of hard membership value (S, ).
+    output : str
+        Filename of the png file.
+    mean_values : bool, optional
+        If true, will plot the mean values of each features for each clusters.
+        Defaults to False.
+    cmap : str, optional
+        Colormap to use for the plot. Defaults to 'magma'. See
+        https://matplotlib.org/stable/tutorials/colors/colormaps.html
+    title : str, optional
+        Title of the plot. Defaults to 'Parallel Coordinates plot.'
     """
 
     labels = labels + 1
@@ -235,20 +251,24 @@ def radar_plot(X, labels, output, frame='circle', title="Radar plot",
     number of clusters, plotting of significant annotation is polluting the
     plot, will be fixed in the future.
 
-    Args:
-        X (DataFrame):                      Input dataset of shape (S, F).
-        labels (Array):                     Array of hard membership value
-                                            (S, ).
-        output (str):                       Filename of the png file.
-        frame (str, optional):              Shape of the radar plot. Defaults
-                                            to 'circle'. Choices are 'circle'
-                                            or 'polygon'.
-        title (str, optional):              Title of the plot.
-                                            Defaults to 'Radar plot'.
-        cmap (str, optional):               Colormap to use for the plot.
-                                            Defaults to 'magma'. See
-                                            https://matplotlib.org/stable/tutorials/colors/colormaps.html
+    Parameters
+    ----------
+    X : DataFrame
+        Input dataset of shape (S, F).
+    labels : np.array
+        Array of hard membership value (S, ).
+    output : str
+        Filename of the png file.
+    frame : str, optional
+        Shape of the radar plot. Defaults to 'circle'. Choices are 'circle'
+        or 'polygon'.
+    title : str, optional
+        Title of the plot. Defaults to 'Radar plot'.
+    cmap : str, optional
+        Colormap to use for the plot. Defaults to 'magma'. See
+        https://matplotlib.org/stable/tutorials/colors/colormaps.html
     """
+
     # Setting color palette.
     cmap = get_cmap(cmap, len(np.unique(labels)))
     colors = [rgb2hex(cmap(i)) for i in range(cmap.N)]

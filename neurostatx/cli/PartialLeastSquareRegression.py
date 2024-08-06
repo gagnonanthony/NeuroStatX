@@ -115,7 +115,7 @@ def PartialLeastSquareRegression(
         ),
     ] = False
 ):
-    """PARTIAL LEAST SQUARE REGRESSION (PLSR)
+    """Partial Least Square Regression (PLSR)
     --------------------------------------
     Plsr performs a Partial Least Square Regression (PLSR) on a graph
     using the nodes' attributes as predictors and the edges' weights as
@@ -126,14 +126,14 @@ def PartialLeastSquareRegression(
     as well as plots of the distributions of the attributes and edges' weights
     and the PLSR coefficients.
 
-    PREPROCESSING
+    Preprocessing
     -------------
     The script will scale the data to unit variance and zero mean and will
     perform a log transformation on the edges' weights (for now, it assumes
     that the weights represent a membership value resulting from a fuzzy
     clustering analysis).
 
-    NODES' ATTRIBUTES
+    Nodes' Attributes
     -----------------
     The script takes only one graph file as input. The graph file must be in
     .gexf format. The script will then fetch the attributes from the graph
@@ -142,7 +142,7 @@ def PartialLeastSquareRegression(
     found in the graph file. To set attributes to the nodes in the graph file,
     please see AddNodesAttributes.
 
-    SCORING OPTIONS
+    Scoring Options
     ---------------
     The script will perform a permutation testing to determine if the model is
     statistically significant. The script will compute the p-value for the
@@ -153,7 +153,7 @@ def PartialLeastSquareRegression(
 
         p-value = ∑(score_perm >= score) / (nb_permutations)
 
-    COEFFICIENT SIGNIFICANCE
+    Coefficient Significance
     ------------------------
     The script will also compute the p-value for the coefficients using the
     permutation testing. The p-value for the coefficients is computed by
@@ -163,12 +163,12 @@ def PartialLeastSquareRegression(
 
         p-value = ∑(abs(coef_perm) >= abs(coef)) / (nb_permutations)
 
-    REFERENCES
+    References
     ----------
     [1] Scikit-learn scoring methods
     (https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter)
 
-    EXAMPLE USAGE
+    Example Usage
     -------------
     ::
 
