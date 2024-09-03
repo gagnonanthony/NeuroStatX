@@ -43,7 +43,7 @@ jobs:
           bash ../../../organize_files.sh ../../../starlight/src/content/docs/API/
           cd ../../../../
       - name: Install Astro
-        uses: withastro/action@v2
+        uses: withastro/action@v3
         with:
           path: docs/starlight/
   
