@@ -29,7 +29,7 @@ export default defineConfig({
                 autogenerate: {directory: "Tutorials"},
             },
             {
-                label: "API Reference",
+                label: "Documentation",
                 autogenerate: {directory: "API"},
             }
         ],
