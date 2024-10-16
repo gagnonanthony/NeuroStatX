@@ -17,7 +17,7 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /
-ADD ${REPO}#${VERSION} /NeuroStatX
+RUN git clone --branch ${VERSION} ${REPO}
 
 WORKDIR /NeuroStatX
 RUN pip install .
