@@ -13,7 +13,7 @@ https://github.com/scilus/scilpy
 """
 
 
-def load_df_in_any_format(file):
+def load_df_in_any_format(file, **kwargs):
     """
     Load tabular data in any format (.txt, .csv, .xlsx).
 
@@ -28,14 +28,19 @@ def load_df_in_any_format(file):
     """
     _, ext = os.path.splitext(file)
     if ext == ".csv":
-        df = pd.read_csv(file)
-    if ext == ".xlsx":
-        df = pd.read_excel(file)
-    if ext == ".txt":
+        df = pd.read_csv(file, **kwargs)
+    elif ext == ".xlsx":
+        df = pd.read_excel(file, **kwargs)
+    elif ext == ".tsv":
+        df = pd.read_csv(file, sep="\t", **kwargs)
+    elif ext == ".txt":
         with open(file, "r") as f:
             f = f.read()
             delimiter = detect(f, whitelist=["\t", ":", ";", " ", ","])
-        df = pd.read_csv(file, sep=delimiter)
+        df = pd.read_csv(file, sep=delimiter, **kwargs)
+    else:
+        raise ValueError("File format not supported. Currently supported "
+                         "formats are .csv, .xlsx, .tsv, .txt.")
 
     return df
 

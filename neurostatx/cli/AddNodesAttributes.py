@@ -10,8 +10,8 @@ import networkx as nx
 from typing import List
 from typing_extensions import Annotated
 
-from neurostatx.io.utils import (assert_input, assert_output,
-                                 load_df_in_any_format)
+from neurostatx.io.utils import (assert_input, assert_output)
+from neurostatx.io.loader import DatasetLoader, GraphLoader
 from neurostatx.network.utils import construct_attributes_dict
 
 # Initializing the app.
@@ -54,7 +54,7 @@ def AddNodesAttributes(
             show_default=False,
             group="Essential Files Options",
         ),
-    ] = "graph_with_attributes.gexf",
+    ] = "graph_with_attributes.gml",
     verbose: Annotated[
         bool,
         Parameter(
@@ -120,8 +120,9 @@ def AddNodesAttributes(
     assert_output(overwrite, out_file)
 
     logging.info("Loading graph and dataset.")
-    G = nx.read_gml(in_graph)
-    df = load_df_in_any_format(in_dataset)
+    network = GraphLoader()
+    network.load_graph(in_graph)
+    df = DatasetLoader().load_data(in_dataset)
 
     # Sorting if labels is a .txt file or not.
     if len(labels) == 1:
@@ -137,10 +138,12 @@ def AddNodesAttributes(
 
     # Add attributes to graph.
     logging.info("Adding attributes to graph.")
-    nx.set_node_attributes(G, attributes)
+    network.add_node_attribute(attributes)
+    #nx.set_node_attributes(G, attributes)
+    print(network.graph.nodes(data=True))
 
     logging.info("Saving graph.")
-    nx.write_gml(G, out_file)
+    network.save_graph(out_file)
 
 
 if __name__ == "__main__":
