@@ -4,6 +4,6 @@ updates:
     directory: "/"
     target-branch: "main"
     labels:
-      - "Github Actions Update"
+      - "dependencies"
     schedule:
       interval: "daily"
