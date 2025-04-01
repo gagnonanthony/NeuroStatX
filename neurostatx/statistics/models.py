@@ -123,7 +123,7 @@ def plsr_cv(X,
         Mean squared error for the cross-validation.
     """
 
-    v = True if verbose else False
+    v = False if verbose else True
 
     mse = []
     component = np.arange(1, nb_comp + 1)
