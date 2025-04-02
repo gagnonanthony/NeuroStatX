@@ -5,19 +5,16 @@
 import coloredlogs
 import dill as pickle
 import logging
-import sys
 
 from cyclopts import App, Parameter
 import pandas as pd
-from typing import List
 from typing_extensions import Annotated
 
 from neurostatx.io.utils import (
     assert_input,
-    assert_output_dir_exist,
-    load_df_in_any_format
+    assert_output_dir_exist
 )
-from neurostatx.utils.preprocessing import merge_dataframes
+from neurostatx.io.loader import DatasetLoader
 from neurostatx.statistics.utils import apply_various_models
 
 
@@ -28,7 +25,7 @@ app = App(default_parameter=Parameter(negative=()))
 @app.default()
 def ApplyModel(
     in_dataset: Annotated[
-        List[str],
+        str,
         Parameter(
             show_default=False,
             group="Essential Files Options",
@@ -104,8 +101,8 @@ def ApplyModel(
 
     Parameters
     ----------
-    in_dataset : List[str]
-        List of input datasets.
+    in_dataset : str
+        Input dataset.
     model : str
         Path to the model to apply.
     id_column : str
@@ -141,16 +138,7 @@ def ApplyModel(
 
     # Loading dataset.
     logging.info("Loading {}".format(in_dataset))
-    if len(in_dataset) > 1:
-        if id_column is None:
-            sys.exit(
-                "Column name for index matching is required when inputting"
-                " multiple dataframes."
-            )
-        dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
-        df = merge_dataframes(dict_df, id_column)
-    else:
-        df = load_df_in_any_format(in_dataset[0])
+    df = DatasetLoader().load_data(in_dataset)
 
     # Assessing if NaNs are present in the dataset.
     # Disabled for now, wait until we have a solution to check only columns
@@ -160,8 +148,9 @@ def ApplyModel(
     #                     "missing values prior to applying the model.")
 
     descriptive_columns = [n for n in range(0, desc_columns)]
-    desc_data = df.iloc[:, descriptive_columns]
-    df.drop(df.columns[descriptive_columns], axis=1, inplace=True)
+    desc_data = df.get_data().iloc[:, descriptive_columns]
+    df.get_data().drop(df.get_data().columns[descriptive_columns], axis=1,
+                       inplace=True)
 
     # Loading model.
     logging.info("Loading model")
@@ -170,7 +159,7 @@ def ApplyModel(
 
     # Applying model.
     logging.info("Applying model")
-    out = apply_various_models(df, mod)
+    out = apply_various_models(df.get_data(), mod)
 
     # Saving transformed dataset.
     logging.info("Saving transformed dataset")

@@ -1,7 +1,48 @@
-import networkx as nx
+import os
 
-from neurostatx.io.utils import load_df_in_any_format
-from neurostatx.network.viz import visualize_network
+from detect_delimiter import detect
+import networkx as nx
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.cm import ScalarMappable
+from matplotlib.colors import Normalize
+import pandas as pd
+
+from neurostatx.network.viz import NetworkLayout
+
+
+def filter_node_centroids(n):
+    """
+    Function to filter cluster nodes from subject's nodes.
+
+    Parameters
+    ----------
+    n : str
+        Node label.
+
+    Returns
+    -------
+    bool
+        True or False
+    """
+    return "c" in n
+
+
+def filter_node_subjects(n):
+    """
+    Function to filter subject nodes from cluster's nodes.
+
+    Parameters
+    ----------
+    n : str
+        Node label.
+
+    Returns
+    -------
+    bool
+        True or False
+    """
+    return "c" not in n
 
 
 class DatasetLoader:
@@ -25,9 +66,40 @@ class DatasetLoader:
         -------
         df: pandas.DataFrame
         """
-        self.data = load_df_in_any_format(file, **kwargs)
+        _, ext = os.path.splitext(file)
+        if ext == ".csv":
+            self.data = pd.read_csv(file, **kwargs)
+        elif ext == ".xlsx":
+            self.data = pd.read_excel(file, **kwargs)
+        elif ext == ".tsv":
+            self.data = pd.read_csv(file, sep="\t", **kwargs)
+        elif ext == ".txt":
+            with open(file, "r") as f:
+                f = f.read()
+                delimiter = detect(f, whitelist=["\t", ":", ";", " ", ","])
+            self.data = pd.read_csv(file, sep=delimiter, **kwargs)
+        else:
+            raise ValueError("File format not supported. Currently supported "
+                             "formats are .csv, .xlsx, .tsv, .txt.")
+
         self.nb_subjects, self.nb_variables = self.data.shape
-        return self.data
+        return self
+
+    def import_data(self, data):
+        """
+        Import data directly from a DataFrame.
+
+        Parameters
+        ----------
+        data: pandas.DataFrame
+            DataFrame containing the data to import.
+        """
+        if not isinstance(data, pd.DataFrame):
+            raise ValueError("Provided data is not a pandas DataFrame.")
+
+        self.data = data
+        self.nb_subjects, self.nb_variables = self.data.shape
+        return self
 
     def get_metadata(self):
         """
@@ -38,6 +110,9 @@ class DatasetLoader:
         metadata: dict
             Dictionary containing the number of subjects and variables.
         """
+        if not hasattr(self, 'data'):
+            raise ValueError("Data not loaded. Please load data first.")
+
         return {
             "nb_subjects": self.nb_subjects,
             "nb_variables": self.nb_variables
@@ -52,7 +127,33 @@ class DatasetLoader:
         data: pandas.DataFrame
             The loaded data.
         """
+        if not hasattr(self, 'data'):
+            raise ValueError("Data not loaded. Please load data first.")
+
         return self.data
+
+    def custom_function(self, func, **kwargs):
+        """
+        Apply a custom function to the data.
+
+        Parameters
+        ----------
+        func: callable
+            Custom function to apply.
+        **kwargs
+            Additional keyword arguments for the custom function.
+
+        Returns
+        -------
+        data: pandas.DataFrame
+            The modified data.
+        """
+        if not callable(func):
+            raise ValueError("Provided function is not callable.")
+        if not hasattr(self, 'data'):
+            raise ValueError("Data not loaded. Please load data first.")
+
+        return func(self.data, **kwargs)
 
 
 class GraphLoader:
@@ -88,7 +189,63 @@ class GraphLoader:
 
         self.nb_nodes = self.graph.number_of_nodes()
         self.nb_edges = self.graph.number_of_edges()
-        return self.graph
+        return self
+
+    def build_graph(self, data, source='source', target='target', **kwargs):
+        """
+        Build a graph from the provided data.
+
+        Parameters
+        ----------
+        data: pandas.DataFrame
+            DataFrame containing the data to build the graph.
+        **kwargs
+            Additional keyword arguments.
+
+        Returns
+        -------
+        graph: networkx.Graph
+        """
+        if not isinstance(data, pd.DataFrame):
+            raise ValueError("Provided data is not a pandas DataFrame.")
+
+        self.graph = nx.from_pandas_edgelist(data,
+                                             source=source,
+                                             target=target,
+                                             **kwargs)
+        self.nb_nodes = self.graph.number_of_nodes()
+        self.nb_edges = self.graph.number_of_edges()
+        return self
+
+    def layout(self, layout=NetworkLayout.Spring, weight="membership",
+               **kwargs):
+        """
+        Compute the layout of the graph.
+        Parameters
+        ----------
+        layout: NetworkLayout
+            Layout algorithm to use.
+        weight: str, optional
+            Edge attribute to use as weights for the layout.
+        **kwargs
+            Additional keyword arguments for the layout algorithm.
+        Returns
+        -------
+        pos: dict
+            Dictionary containing the positions of the nodes.
+        """
+        if not hasattr(self, 'graph'):
+            raise ValueError("Graph not loaded. Please load a graph first.")
+        if not isinstance(layout, NetworkLayout):
+            raise ValueError("Provided layout is not a valid NetworkLayout.")
+        if not any(weight in data for _, _,
+                   data in self.graph.edges(data=True)):
+            raise ValueError(
+                f"Weight '{weight}' not found in the graph edges.")
+
+        pos = getattr(nx, layout)(self.graph, weight=weight, **kwargs)
+        pos = {k: list(map(float, pos[k])) for k in pos}
+        nx.set_node_attributes(self.graph, pos, "pos")
 
     def add_node_attribute(self, attributes):
         """
@@ -99,6 +256,9 @@ class GraphLoader:
         attributes: dict
             Dictionary containing the values of the attribute for each node.
         """
+        if not hasattr(self, 'graph'):
+            raise ValueError("Graph not loaded. Please load a graph first.")
+
         nx.set_node_attributes(self.graph, attributes)
 
     def add_edge_attribute(self, attributes):
@@ -110,7 +270,86 @@ class GraphLoader:
         attribute: dict
             Dictionary containing the values of the attribute for each edge.
         """
+        if not hasattr(self, 'graph'):
+            raise ValueError("Graph not loaded. Please load a graph first.")
+
         nx.set_edge_attributes(self.graph, attributes)
+
+    def fetch_attributes_df(self, attributes=None):
+        """
+        Fetch nodes' attributes from the graph as a DataFrame.
+
+        Parameters
+        ----------
+        attributes: List, optional
+            List of attributes to fetch.
+
+        Returns
+        -------
+        DatasetLoader
+            DatasetLoader object containing the nodes' attributes.
+        """
+        if not hasattr(self, 'graph'):
+            raise ValueError("Graph not loaded. Please load a graph first.")
+
+        # Filter out nodes that are not subjects.
+        sub_node = nx.subgraph_view(self.graph,
+                                    filter_node=filter_node_subjects)
+        d = {n: self.graph.nodes[n] for n in sub_node}
+
+        # Filter for selected attributes.
+        if attributes is not None:
+            d = {k: {k2: v2 for k2, v2 in v.items() if k2 in attributes}
+                 for k, v in d.items()}
+        else:
+            d = {k: {k2: v2 for k2, v2 in v.items() if k2 != 'label'}
+                 for k, v in d.items()}
+
+        # Create df.
+        df = pd.DataFrame.from_dict(d, orient="index")
+
+        return DatasetLoader().import_data(df)
+
+    def fetch_edge_data(self, weight="membership"):
+        """
+        Fetch edge data from the graph.
+
+        Parameters
+        ----------
+        weight: str, optional
+            Edge attribute to use as weights for the edges.
+
+        Returns
+        -------
+        DatasetLoader
+            DatasetLoader object containing the edge data.
+        """
+        if not hasattr(self, 'graph'):
+            raise ValueError("Graph not loaded. Please load a graph first.")
+
+        if not any(weight in data for _, _,
+                   data in self.graph.edges(data=True)):
+            raise ValueError(
+                f"Weight '{weight}' not found in the graph edges.")
+
+        # Fetching edges data.
+        cntr_node = nx.subgraph_view(self.graph,
+                                     filter_node=filter_node_centroids)
+        sub_node = nx.subgraph_view(self.graph,
+                                    filter_node=filter_node_subjects)
+
+        # Get adjacency matrix.
+        adj = np.delete(
+                nx.to_numpy_array(self.graph, weight=weight),
+                [i for i in range(1, len(cntr_node) + 1)],
+                axis=0
+                )
+        df = pd.DataFrame(
+                adj[:, 1:(len(cntr_node) + 1)], index=sub_node,
+                columns=[f'Cluster {i+1}' for i in range(len(cntr_node))]
+                )
+
+        return DatasetLoader().import_data(df)
 
     def visualize(self, output,
                   weight="weight",
@@ -163,22 +402,103 @@ class GraphLoader:
         legend_title: str, optional
             Title of the legend.
         """
-        visualize_network(self.graph,
-                          output,
-                          weight=weight,
-                          centroids_labelling=centroids_labelling,
-                          subjects_labelling=subjects_labelling,
-                          centroid_node_shape=centroid_node_shape,
-                          centroid_alpha=centroid_alpha,
-                          centroid_node_color=centroid_node_color,
-                          centroid_edge_color=centroid_edge_color,
-                          subject_node_shape=subject_node_shape,
-                          subject_alpha=subject_alpha,
-                          subject_node_color=subject_node_color,
-                          subject_edge_color=subject_edge_color,
-                          colormap=colormap,
-                          title=title,
-                          legend_title=legend_title)
+        if not hasattr(self, 'graph'):
+            raise ValueError("Graph not loaded. Please load a graph first.")
+
+        # Fetching nodes position.
+        pos = nx.get_node_attributes(self.graph, "pos")
+
+        # Fetching edges widths.
+        widths = nx.get_edge_attributes(self.graph, weight)
+
+        # Sorting which nodes to label.
+        labels = {}
+        if centroids_labelling:
+            for node in self.graph.nodes():
+                if "c" in node:
+                    labels[node] = node
+        elif centroids_labelling and subjects_labelling:
+            for node in self.graph.nodes():
+                labels[node] = node
+        else:
+            for node in self.graph.nodes():
+                labels[node] = ""
+
+        # Setting z-order of nodes.
+        cntr_node = nx.subgraph_view(self.graph,
+                                     filter_node=filter_node_centroids)
+        sub_node = nx.subgraph_view(self.graph,
+                                    filter_node=filter_node_subjects)
+
+        # Centroids customization lists.
+        cntr_shape = np.array([centroid_node_shape] * len(cntr_node.nodes()))
+        cntr_alpha = np.array([centroid_alpha] * len(cntr_node.nodes()))
+
+        # Subjects customization lists.
+        sub_shape = np.array([subject_node_shape] * len(sub_node.nodes()))
+        # sub_alpha = np.array([subject_alpha] * len(sub_node.nodes()))
+
+        # Plotting the graph.
+        fig = plt.figure(figsize=(12, 8))
+        ax = fig.add_subplot()
+
+        nodes1 = nx.draw_networkx_nodes(
+            self.graph,
+            pos,
+            nodelist=sub_node.nodes(),
+            node_size=sub_shape,
+            node_color=subject_node_color,
+            alpha=subject_alpha,
+            ax=ax,
+        )
+        nodes2 = nx.draw_networkx_nodes(
+            self.graph,
+            pos,
+            nodelist=cntr_node.nodes(),
+            node_size=cntr_shape,
+            node_color=centroid_node_color,
+            alpha=cntr_alpha,
+            ax=ax,
+        )
+
+        # Drawing edges.
+        nx.draw_networkx_edges(
+            self.graph,
+            pos,
+            edgelist=widths.keys(),
+            width=(list(widths.values()) * 10),
+            edge_color=list(widths.values()),
+            edge_cmap=getattr(plt.cm, colormap),
+            alpha=list(widths.values()),
+            ax=ax,
+        )
+
+        # Setting z-order.
+        nodes1.set_zorder(2)
+        if subject_edge_color is not None:
+            nodes1.set_edgecolor(subject_edge_color)
+        nodes2.set_zorder(3)
+        nodes2.set_edgecolor(centroid_edge_color)
+
+        # Plotting labels if set.
+        nx.draw_networkx_labels(self.graph,
+                                pos,
+                                labels=labels,
+                                font_color="black",
+                                ax=ax)
+
+        # Adding colorbar, titles, etc.
+        cmappable = ScalarMappable(Normalize(0, 1),
+                                   getattr(plt.cm, colormap))
+        cbar = plt.colorbar(cmappable, ax=ax, location="right", shrink=0.5)
+
+        plt.box(False)
+        ax.set_title(title)
+        cbar.ax.set_title(legend_title)
+
+        plt.tight_layout()
+        plt.savefig(output)
+        plt.close()
 
     def get_metadata(self):
         """
@@ -189,6 +509,9 @@ class GraphLoader:
         metadata: dict
             Dictionary containing the number of nodes and edges.
         """
+        if not hasattr(self, 'graph'):
+            raise ValueError("Graph not loaded. Please load a graph first.")
+
         return {
             "nb_nodes": self.nb_nodes,
             "nb_edges": self.nb_edges
@@ -203,6 +526,9 @@ class GraphLoader:
         graph: networkx.Graph
             The loaded graph.
         """
+        if not hasattr(self, 'graph'):
+            raise ValueError("Graph not loaded. Please load a graph first.")
+
         return self.graph
 
     def save_graph(self, file, **kwargs):
@@ -216,6 +542,9 @@ class GraphLoader:
         **kwargs
             Additional keyword arguments.
         """
+        if not hasattr(self, 'graph'):
+            raise ValueError("Graph not loaded. Please load a graph first.")
+
         if file.endswith(".gml"):
             nx.write_gml(self.graph, file, **kwargs)
         elif file.endswith(".graphml"):
@@ -225,3 +554,26 @@ class GraphLoader:
         else:
             raise ValueError("File format not supported. Currently supported "
                              "formats are .gml, .graphml, .gexf.")
+
+    def custom_function(self, func, **kwargs):
+        """
+        Apply a custom function to the graph.
+
+        Parameters
+        ----------
+        func: callable
+            Custom function to apply.
+        **kwargs
+            Additional keyword arguments for the custom function.
+
+        Returns
+        -------
+        graph: networkx.Graph
+            The modified graph.
+        """
+        if not callable(func):
+            raise ValueError("Provided function is not callable.")
+        if not hasattr(self, 'graph'):
+            raise ValueError("Graph not loaded. Please load a graph first.")
+
+        return func(self.graph, **kwargs)

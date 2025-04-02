@@ -5,17 +5,14 @@ import coloredlogs
 import logging
 
 from cyclopts import App, Parameter
-import networkx as nx
 import pandas as pd
 from typing_extensions import Annotated
 
-from neurostatx.io.utils import (assert_input, assert_output_dir_exist,
-                                 load_df_in_any_format)
+from neurostatx.io.utils import assert_input, assert_output_dir_exist
+from neurostatx.io.loader import DatasetLoader, GraphLoader
 from neurostatx.network.utils import (get_nodes_and_edges,
                                       construct_attributes_dict)
 from neurostatx.network.viz import (
-    compute_layout,
-    set_nodes_position,
     membership_distribution,
     NetworkLayout)
 
@@ -210,7 +207,7 @@ def ComputeGraphNetwork(
 
     # Loading membership matrix.
     logging.info("Loading membership data.")
-    raw_df = load_df_in_any_format(in_dataset)
+    raw_df = DatasetLoader().load_data(in_dataset).get_data()
     descriptive_columns = [n for n in range(0, desc_columns)]
 
     # Creating the array.
@@ -218,8 +215,9 @@ def ComputeGraphNetwork(
     clean_df = raw_df.drop(
         raw_df.columns[descriptive_columns], axis=1, inplace=False
     ).astype("float")
-    df_with_ids = pd.concat([desc_data[desc_data.columns[0]], clean_df],
-                            axis=1)
+    df_with_ids = DatasetLoader().import_data(
+        pd.concat([desc_data[desc_data.columns[0]], clean_df], axis=1)
+        )
 
     # Plotting membership distributions and delta.
     if plot_distribution:
@@ -228,27 +226,31 @@ def ComputeGraphNetwork(
         )
 
     # Fetching dataframe of nodes and edges.
-    df, _, _ = get_nodes_and_edges(df_with_ids)
+    df, _, _ = df_with_ids.custom_function(
+        get_nodes_and_edges
+    )
 
     # Creating network graph.
-    G = nx.from_pandas_edgelist(df, "node1", "node2", edge_attr="membership")
+    G = GraphLoader().build_graph(
+        df,
+        "node1",
+        "node2",
+        edge_attr="membership"
+    )
 
     # Computing graph network layout.
-    logging.info("Computing graph network layout.")
-    pos = compute_layout(G, layout=getattr(nx, layout), weight=weight)
-
-    logging.info("Setting nodes position.")
-    set_nodes_position(G, pos)
+    logging.info("Computing graph network layout and setting nodes position.")
+    G.layout(layout=layout, weight=weight)
 
     if import_data:
         logging.info("Importing data within the .gml file.")
         attributes = construct_attributes_dict(desc_data,
                                                desc_data.columns[1:],
                                                id_column)
-        nx.set_node_attributes(G, attributes)
+        G.add_node_attribute(attributes)
 
     # Saving graph as a .gexf object for easy reloading.
-    nx.write_gml(G, f"{out_folder}/network_graph_file.gml")
+    G.save_graph(f"{out_folder}/network_graph_file.gml")
 
 
 if __name__ == "__main__":

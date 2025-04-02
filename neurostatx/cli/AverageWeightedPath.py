@@ -6,13 +6,12 @@ import coloredlogs
 
 from cyclopts import App, Parameter
 import pandas as pd
-import networkx as nx
 from typing_extensions import Annotated
 from typing import List
 
 from neurostatx.io.utils import assert_input, assert_output_dir_exist
+from neurostatx.io.loader import GraphLoader
 from neurostatx.network.metrics import weightedpath, PathLengthsMethods
-from neurostatx.network.utils import fetch_attributes_df
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
@@ -216,7 +215,7 @@ def AverageWeightedPath(
                 f.writelines(str(param))
 
     logging.info("Loading graph.")
-    G = nx.read_gml(in_graph)
+    network = GraphLoader().load_graph(in_graph)
 
     # If a cohort is specified.
     attr = label_name.copy()
@@ -224,8 +223,7 @@ def AverageWeightedPath(
         attr.append('cohort')
 
     # Fetching labels from nodes' attributes.
-    df = fetch_attributes_df(G,
-                             attributes=attr)
+    node_attributes = network.fetch_attributes_df(attributes=attr)
 
     # Loading dataset and generating list of nodes to include.
     if distribution is not None:
@@ -237,9 +235,9 @@ def AverageWeightedPath(
     for var in label_name:
         logging.info("Computing average weighted path for variable : {}"
                      .format(var))
-        avg_weighted_path, null_dist, pvalue = weightedpath(
-            G,
-            df,
+        avg_weighted_path, null_dist, pvalue = network.custom_function(
+            weightedpath,
+            df=node_attributes.get_data(),
             label_name=var,
             cohort=cohort,
             iterations=iterations,

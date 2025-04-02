@@ -6,7 +6,6 @@ import logging
 import os
 
 from cyclopts import App, Parameter
-import networkx as nx
 from typing import List
 from typing_extensions import Annotated
 
@@ -120,27 +119,26 @@ def AddNodesAttributes(
     assert_output(overwrite, out_file)
 
     logging.info("Loading graph and dataset.")
-    network = GraphLoader()
-    network.load_graph(in_graph)
+    network = GraphLoader().load_graph(in_graph)
     df = DatasetLoader().load_data(in_dataset)
 
     # Sorting if labels is a .txt file or not.
     if len(labels) == 1:
-        filename, ext = os.path.splitext(labels[0])
+        _filename, ext = os.path.splitext(labels[0])
         if ext == '.txt':
-            print('yeah')
             with open(labels[0], 'r') as f:
                 labels = f.read().splitlines()
 
-    # Getting dictonary of labels and values to add.
+    # Getting dictionary of labels and values to add.
     logging.info("Constructing dictionary of attributes to add.")
-    attributes = construct_attributes_dict(df, labels, id_column)
+    attr = df.custom_function(construct_attributes_dict,
+                              labels=labels,
+                              id_column=id_column)
+    # attributes = construct_attributes_dict(df, labels, id_column)
 
     # Add attributes to graph.
     logging.info("Adding attributes to graph.")
-    network.add_node_attribute(attributes)
-    #nx.set_node_attributes(G, attributes)
-    print(network.graph.nodes(data=True))
+    network.add_node_attribute(attr)
 
     logging.info("Saving graph.")
     network.save_graph(out_file)

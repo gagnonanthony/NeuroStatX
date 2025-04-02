@@ -11,8 +11,8 @@ from typing import List
 from typing_extensions import Annotated
 import seaborn as sns
 
-from neurostatx.io.utils import (assert_input, assert_output_dir_exist,
-                                 load_df_in_any_format)
+from neurostatx.io.utils import (assert_input, assert_output_dir_exist)
+from neurostatx.io.loader import DatasetLoader
 from neurostatx.clustering.metrics import compute_rand_index
 
 # Initializing the app.
@@ -184,7 +184,10 @@ def CompareClustering(
     # Loading all datasets into a dictionary.
     assert len(in_dataset) >= 2, "At least 2 datasets are required for "
     "                            comparison."
-    dict_df = {i: load_df_in_any_format(df) for i, df in enumerate(in_dataset)}
+    dict_df = {
+        i: DatasetLoader().load_data(df).get_data() for i,
+        df in enumerate(in_dataset)
+        }
 
     # Dropping desc column.
     descriptive_columns = [n for n in range(0, desc_columns)]
