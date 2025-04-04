@@ -29,7 +29,7 @@ def test_execution_compare_clustering(script_runner):
         "--desc-columns", 1,
         "--id-column", "subjectkey",
         "--out-folder", out_folder,
-        "-f"]
+        "-f", "-v", "-s"]
     )
 
     assert ret.success

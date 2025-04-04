@@ -4,23 +4,20 @@
 import coloredlogs
 import logging
 import os
-import sys
 from joblib import load
 
 from cyclopts import App, Parameter
 import numpy as np
-import pandas as pd
 from skfuzzy import cmeans_predict
-from typing import List
 from typing_extensions import Annotated
 
-from neurostatx.io.utils import (load_df_in_any_format, assert_input,
-                                 assert_output_dir_exist)
+from neurostatx.io.utils import assert_input, assert_output_dir_exist
+from neurostatx.io.loader import DatasetLoader
 from neurostatx.clustering.viz import (
     plot_parallel_plot,
     radar_plot)
 from neurostatx.io.viz import flexible_barplot
-from neurostatx.utils.preprocessing import merge_dataframes, compute_pca
+from neurostatx.utils.preprocessing import compute_pca
 from neurostatx.clustering.distance import DistanceMetrics
 
 
@@ -31,7 +28,7 @@ app = App(default_parameter=Parameter(negative=()))
 @app.default()
 def PredictFuzzyMembership(
     in_dataset: Annotated[
-        List[str],
+        str,
         Parameter(
             show_default=False,
             group="Essential Files Options",
@@ -178,9 +175,8 @@ def PredictFuzzyMembership(
 
     Parameters
     ----------
-    in_dataset : List[str]
-        Input dataset(s) to filter. If multiple files are provided as input,
-        will be merged according to the subject id columns.
+    in_dataset : str
+        Input dataset.
     in_cntr : str
         Centroid file to use for prediction. Should come from a trained Cmeans
         model (such as ``FuzzyClustering``).
@@ -239,27 +235,16 @@ def PredictFuzzyMembership(
 
     # Loading dataframe.
     logging.info("Loading dataset(s)...")
-    if len(in_dataset) > 1:
-        if id_column is None:
-            sys.exit(
-                "Column name for index matching is required when inputting "
-                "multiple dataframe."
-            )
-        dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
-        raw_df = merge_dataframes(dict_df, id_column)
-    else:
-        raw_df = load_df_in_any_format(in_dataset[0])
+    raw_df = DatasetLoader().load_data(in_dataset)
     descriptive_columns = [n for n in range(0, desc_columns)]
 
-    cntr = load_df_in_any_format(in_cntr)
-    cntr.drop(cntr.columns[0], axis=1, inplace=True)
+    cntr = DatasetLoader().load_data(in_cntr)
+    cntr.drop_columns([0])
 
     # Creating the array.
-    desc_data = raw_df[raw_df.columns[descriptive_columns]]
-    df_for_clust = raw_df.drop(
-        raw_df.columns[descriptive_columns], axis=1, inplace=False
-    ).astype("float")
-    X = df_for_clust.values
+    desc_data = raw_df.get_descriptive_columns(descriptive_columns)
+    raw_df.drop_columns(descriptive_columns).set_type("float")
+    X = raw_df.get_data().values
 
     # Decomposing into 2 components if asked.
     if pca:
@@ -277,33 +262,48 @@ def PredictFuzzyMembership(
             )
             # Exporting variance explained data.
             os.mkdir(f"{out_folder}/PCA/")
-            var_exp = pd.DataFrame(variance, columns=["Variance Explained"])
-            var_exp.to_excel(
-                f"{out_folder}/PCA/variance_explained.xlsx", index=True,
+            DatasetLoader().import_data(
+                variance, columns=["Variance Explained"]
+            ).save_data(
+                f"{out_folder}/PCA/variance_explained.csv",
+                index=True,
                 header=True
             )
-            components_df = pd.DataFrame(components,
-                                         columns=df_for_clust.columns)
-            components_df.to_excel(f"{out_folder}/PCA/components.xlsx",
-                                   index=True,
-                                   header=True)
-            out = pd.DataFrame(X, columns=["Component #1", "Component #2",
-                                           "Component #3"])
-            out.to_excel(f"{out_folder}/PCA/transformed_data.xlsx", index=True,
-                         header=True)
 
-            flexible_barplot(
+            # Exporting components data.
+            components = DatasetLoader().import_data(
                 components,
-                df_for_clust.columns,
-                3,
+                columns=raw_df.get_data().columns
+            )
+            components.save_data(
+                f"{out_folder}/PCA/components.csv",
+                index=True,
+                header=True
+            )
+
+            # Exporting transformed data.
+            DatasetLoader().import_data(
+                X,
+                columns=["Component #1", "Component #2", "Component #3"]
+            ).save_data(
+                f"{out_folder}/PCA/transformed_data.csv",
+                index=True,
+                header=True
+            )
+
+            # Exporting PCA plot.
+            components.custom_function(
+                flexible_barplot,
+                nb_axes=3,
                 title="Loadings values for the two components.",
-                filename=f"{out_folder}/PCA/barplot_loadings.png",
-                ylabel="Loading value")
+                output=f"{out_folder}/PCA/barplot_loadings.png",
+                ylabel="Loading value"
+            )
 
     logging.info("Predicting membership matrix...")
     u, u0, d, jm, p, fpc = cmeans_predict(
         X.T,
-        cntr.values,
+        cntr.get_data().values,
         m=m,
         error=error,
         maxiter=maxiter,
@@ -314,26 +314,22 @@ def PredictFuzzyMembership(
 
     # Saving results.
     logging.info("Saving results...")
-    member = pd.DataFrame(
+    DatasetLoader().import_data(
         u.T,
-        index=None,
         columns=[f"Cluster #{n+1}" for n in range(u.shape[0])],
-    )
-    out = pd.concat([raw_df, member], axis=1)
-    out.to_excel(
+    ).join(raw_df.get_data(), left=True).join(desc_data, left=True).save_data(
         f"{out_folder}/predicted_membership_matrix.xlsx",
         header=True,
         index=False,
     )
 
     os.mkdir(f"{out_folder}/PARALLEL_PLOTS/")
-    os.mkdir(f"{out_folder}/BARPLOTS/")
     os.mkdir(f"{out_folder}/RADAR_PLOTS/")
     membership = np.argmax(u, axis=0)
     if parallelplot:
-        plot_parallel_plot(
-            df_for_clust,
-            membership,
+        raw_df.custom_function(
+            plot_parallel_plot,
+            labels=membership,
             mean_values=True,
             output=f"{out_folder}/PARALLEL_PLOTS/parallel_plot_{u.shape[0]}"
                    "clusters.png",
@@ -341,16 +337,17 @@ def PredictFuzzyMembership(
             "solution.",
             cmap=cmap
         )
+
     if radarplot:
-        radar_plot(
-            df_for_clust,
-            membership,
+        raw_df.custom_function(
+            radar_plot,
+            labels=membership,
             title=f"Radar plot of {u.shape[0]} clusters solution.",
             frame='circle',
             cmap=cmap,
             output=(
                 f"{out_folder}/RADAR_PLOTS/radar_plot_{u.shape[0]}clusters.png"
-            ),
+            )
         )
 
 

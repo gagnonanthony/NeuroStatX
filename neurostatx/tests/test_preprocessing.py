@@ -1,6 +1,7 @@
 import unittest
 import pandas as pd
 import numpy as np
+import os
 
 from neurostatx.utils.preprocessing import (merge_dataframes,
                                             compute_pca,
@@ -77,6 +78,9 @@ class TestFunctions(unittest.TestCase):
         # sample data
         np.testing.assert_allclose(correlation_matrix.values,
                                    corr_mat, atol=0.05)
+        # Clean up the output file
+        if os.path.exists('./correlation_heatmap.png'):
+            os.remove('./correlation_heatmap.png')
 
     def test_merge_dataframes(self):
         df1 = pd.DataFrame({'index': [1, 2, 4], 'A': [1, 2, 3],
@@ -98,7 +102,7 @@ class TestFunctions(unittest.TestCase):
         # Hardly any testable assertions can be made for this function, so we
         # will only check if the output variables have the correct data types
         # and dimensions. To be updated in the future.
-        X = np.random.rand(100, 5)
+        X = pd.DataFrame(np.random.rand(100, 5))
         n_components = 3
 
         # Call the function with sample data
@@ -153,6 +157,14 @@ class TestFunctions(unittest.TestCase):
 
     def test_plot_distributions(self):
         plot_distributions(self.df, out_folder='./')
+        # Check if the output file is created
+        self.assertTrue(os.path.exists('./A.png'))
+        self.assertTrue(os.path.exists('./B.png'))
+        self.assertTrue(os.path.exists('./C.png'))
+        # Clean up the output files
+        os.remove('./A.png')
+        os.remove('./B.png')
+        os.remove('./C.png')
 
 
 if __name__ == '__main__':

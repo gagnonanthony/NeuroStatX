@@ -8,16 +8,15 @@ import sys
 import dill as pickle
 
 from cyclopts import App, Parameter
-import numpy as np
 import pandas as pd
-from typing import List
+import numpy as np
 from typing_extensions import Annotated
 
-from neurostatx.io.utils import (load_df_in_any_format, assert_input,
-                                 assert_output_dir_exist)
+from neurostatx.io.utils import assert_input, assert_output_dir_exist
+from neurostatx.io.loader import DatasetLoader
 from neurostatx.io.viz import flexible_barplot
 from neurostatx.clustering.fuzzy import fuzzyCmeans
-from neurostatx.utils.preprocessing import merge_dataframes, compute_pca
+from neurostatx.utils.preprocessing import compute_pca
 from neurostatx.clustering.viz import (
     plot_clustering_results,
     plot_dendrogram,
@@ -36,7 +35,7 @@ app = App(default_parameter=Parameter(negative=()))
 @app.default()
 def FuzzyClustering(
     in_dataset: Annotated[
-        List[str],
+        str,
         Parameter(
             show_default=False,
             group="Essential Files Options",
@@ -291,9 +290,8 @@ def FuzzyClustering(
 
     Parameters
     ----------
-    in_dataset : List[str]
-        Input dataset(s) to filter. If multiple files are provided as input,
-        will be merged according to the subject id columns.
+    in_dataset : str
+        Input dataset.
     id_column : str
         Name of the column containing the subject's ID tag. Required for
         proper handling of IDs and merging multiple datasets.
@@ -358,29 +356,19 @@ def FuzzyClustering(
 
     # Loading dataframe.
     logging.info("Loading dataset(s)...")
-    if len(in_dataset) > 1:
-        if id_column is None:
-            sys.exit(
-                "Column name for index matching is required when inputting "
-                "multiple dataframe."
-            )
-        dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
-        raw_df = merge_dataframes(dict_df, id_column)
-    else:
-        raw_df = load_df_in_any_format(in_dataset[0])
+    df = DatasetLoader().load_data(in_dataset)
     descriptive_columns = [n for n in range(0, desc_columns)]
 
     # Creating the array.
-    desc_data = raw_df[raw_df.columns[descriptive_columns]]
-    df_for_clust = raw_df.drop(
-        raw_df.columns[descriptive_columns], axis=1, inplace=False
-    ).astype("float")
-    X = df_for_clust.values
+    desc_data = df.get_descriptive_columns(descriptive_columns)
+    df.drop_columns(descriptive_columns).set_type("float")
 
     # Decomposing into 2 components if asked.
     if pca:
         logging.info("Applying PCA dimensionality reduction.")
-        X, model, variance, components, chi, kmo = compute_pca(X, 3)
+        X, model, variance, components, chi, kmo = df.custom_function(
+            compute_pca,
+            3)
         logging.info(
             "Bartlett's test of sphericity returned a p-value of {} and "
             "Keiser-Meyer-Olkin (KMO)"
@@ -389,27 +377,40 @@ def FuzzyClustering(
 
         # Exporting variance explained data.
         os.mkdir(f"{out_folder}/PCA/")
-        var_exp = pd.DataFrame(variance, columns=["Variance Explained"])
-        var_exp.to_excel(
-            f"{out_folder}/PCA/variance_explained.xlsx", index=True,
+        DatasetLoader().import_data(
+            variance, columns=["Variance Explained"]).save_data(
+            f"{out_folder}/PCA/variance_explained.csv",
+            index=True,
             header=True
         )
-        components_df = pd.DataFrame(components, columns=df_for_clust.columns)
-        components_df.to_excel(f"{out_folder}/PCA/components.xlsx", index=True,
-                               header=True)
-        out = pd.DataFrame(X, columns=["Component #1", "Component #2",
-                                       "Component #3"])
-        out = pd.concat([desc_data, out], axis=1)
-        out.to_excel(f"{out_folder}/PCA/transformed_data.xlsx", index=True,
-                     header=True)
 
-        flexible_barplot(
-            components_df.T,
-            3,
-            f"{out_folder}/PCA/barplot_loadings.png",
+        # Exporting PCA components and transformed data.
+        components = DatasetLoader().import_data(
+            components, columns=df.get_data().columns)
+        components.save_data(
+            f"{out_folder}/PCA/components.csv",
+            index=True,
+            header=True)
+        df = DatasetLoader().import_data(
+            X,
+            columns=["Component #1", "Component #2", "Component #3"]
+        ).join(
+            desc_data, left=True
+        )
+        df.save_data(
+            f"{out_folder}/PCA/transformed_data.csv",
+            index=True,
+            header=True
+        )
+
+        components.custom_function(
+            flexible_barplot,
+            nb_axes=3,
+            output=f"{out_folder}/PCA/barplot_loadings.png",
             cmap=cmap,
             title="Loadings values for the three components.",
-            ylabel="Loading values")
+            ylabel="Loading values"
+        )
 
         # Exporting model in .joblib format.
         with open(f"{out_folder}/PCA/pca_model.pkl", "wb") as f:
@@ -418,7 +419,10 @@ def FuzzyClustering(
     # Plotting the dendrogram.
     logging.info("Generating dendrogram.")
     sys.setrecursionlimit(50000)
-    plot_dendrogram(X, f"{out_folder}/METRICS/dendrogram.png")
+    df.custom_function(
+        plot_dendrogram,
+        output=f"{out_folder}/METRICS/dendrogram.png",
+    )
 
     # Load initialisation matrix if any.
     if init is not None:
@@ -432,7 +436,7 @@ def FuzzyClustering(
     # Computing a range of C-means clustering method.
     logging.info("Computing FCM from k=2 to k={}".format(k))
     cntr, u, wss, fpcs, ss, chi, dbi, gap, sk = fuzzyCmeans(
-        X,
+        df.get_data().values,  # This will change in the future.
         max_cluster=k,
         m=m,
         error=error,
@@ -450,19 +454,15 @@ def FuzzyClustering(
     elbow_wss = compute_knee_location(wss)
 
     # Creating a dataframe to export statistics.
-    stats = pd.DataFrame(
-        data={
-            "FPC": fpcs,
-            "Silhouette Score": ss,
-            "CHI": chi,
-            "DBI": dbi,
-            "WSS": wss,
-            "GAP": gap,
-        },
-        index=[f"{i}-Cluster Model" for i in range(2, len(ss) + 2)],
+    DatasetLoader().import_data(
+        {"FPC": fpcs, "WSS": wss, "Silhouette Score": ss,
+         "CHI": chi, "DBI": dbi, "GAP": gap},
+        index=[f"{i}-Cluster Model" for i in range(2, len(ss) + 2)]
+    ).save_data(
+        f"{out_folder}/validation_indices.csv",
+        header=True,
+        index=True
     )
-    stats.to_excel(f"{out_folder}/validation_indices.xlsx", header=True,
-                   index=True)
 
     # Plotting results for each indicators.
     plot_clustering_results(
@@ -525,9 +525,9 @@ def FuzzyClustering(
     for i in range(len(u)):
         membership = np.argmax(u[i], axis=0)
         if parallelplot:
-            plot_parallel_plot(
-                df_for_clust,
-                membership,
+            df.custom_function(
+                plot_parallel_plot,
+                labels=membership,
                 mean_values=True,
                 output=f"{out_folder}/PARALLEL_PLOTS/parallel_plot_{i+2}"
                        "clusters.png",
@@ -535,38 +535,46 @@ def FuzzyClustering(
                 title=f"Parallel Coordinates plot for {i+2} clusters solution."
             )
         if radarplot:
-            radar_plot(
-                df_for_clust,
-                membership,
-                title=f"Radar plot of {i+2} clusters solution.",
+            df.custom_function(
+                radar_plot,
+                labels=membership,
+                title=f"Radar plot for {i+2} clusters solution.",
                 frame='circle',
                 cmap=cmap,
                 output=f"{out_folder}/RADAR_PLOTS/radar_plot_{i+2}clusters.png"
             )
 
-        # Converting membership arrays to df.
-        member = pd.DataFrame(
-            u[i].T,
-            index=None,
-            columns=[f"Cluster #{n+1}" for n in range(u[i].shape[0])],
-        )
-        centroids = pd.DataFrame(
-            cntr[i],
-            index=[f"Cluster #{n+1}" for n in range(u[i].shape[0])],
-            columns=[f"v{i}" for i in range(X.shape[1])],
-        )
+        if i == 0:
+            shape = df.get_data().shape[1]
 
-        # Appending subject ids and descriptive columns.
-        member_out = pd.concat([raw_df, member], axis=1)
-        member_out.to_excel(
-            f"{out_folder}/MEMBERSHIP_DF/clusters_membership_{i+2}.xlsx",
-            header=True,
-            index=False,
-        )
-        centroids.to_excel(
+        DatasetLoader().import_data(
+            cntr[i],
+            columns=[f"v{i}" for i in range(shape)],
+            index=[f"Cluster #{n+1}" for n in range(u[i].shape[0])],
+        ).save_data(
             f"{out_folder}/CENTROIDS/clusters_centroids_{i+2}.xlsx",
             header=True,
             index=True,
+        )
+
+        # Converting membership arrays to df.
+        member = DatasetLoader().import_data(
+            u[i].T,
+            columns=[f"Cluster #{n+1}" for n in range(u[i].shape[0])],
+            index=None,
+        ).get_data()
+
+        # Appending subject ids and descriptive columns.
+        DatasetLoader().import_data(
+            pd.concat([
+                desc_data,
+                df.get_data(),
+                member
+            ], axis=1)
+        ).save_data(
+            f"{out_folder}/MEMBERSHIP_DF/clusters_membership_{i+2}.xlsx",
+            header=True,
+            index=False,
         )
 
         # Saving original matrix.

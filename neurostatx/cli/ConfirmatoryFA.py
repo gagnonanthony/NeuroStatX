@@ -8,17 +8,12 @@ import logging
 import sys
 
 from cyclopts import App, Parameter
-import pandas as pd
 import semopy
 from typing import List
 from typing_extensions import Annotated
 
-from neurostatx.io.utils import (
-    assert_input,
-    assert_output_dir_exist,
-    load_df_in_any_format
-)
-from neurostatx.utils.preprocessing import merge_dataframes
+from neurostatx.io.utils import assert_input, assert_output_dir_exist
+from neurostatx.io.loader import DatasetLoader
 from neurostatx.utils.factor import cfa
 
 
@@ -29,7 +24,7 @@ app = App(default_parameter=Parameter(negative=()))
 @app.default()
 def ConfirmatoryFA(
     in_dataset: Annotated[
-        List[str],
+        str,
         Parameter(
             show_default=False,
             group="Essential Files Options",
@@ -83,20 +78,20 @@ def ConfirmatoryFA(
             group="Factorial Analysis parameters",
         ),
     ] = None,
-    mean: Annotated[
-        bool,
-        Parameter(
-            "--mean",
-            group="Imputing parameters",
-        ),
-    ] = False,
-    median: Annotated[
-        bool,
-        Parameter(
-            "--median",
-            group="Imputing parameters",
-        ),
-    ] = False,
+    # mean: Annotated[
+    #    bool,
+    #    Parameter(
+    #        "--mean",
+    #        group="Imputing parameters",
+    #    ),
+    # ] = False,
+    # median: Annotated[
+    #    bool,
+    #    Parameter(
+    #        "--median",
+    #        group="Imputing parameters",
+    #    ),
+    # ] = False,
     verbose: Annotated[
         bool,
         Parameter(
@@ -167,14 +162,11 @@ def ConfirmatoryFA(
 
     Parameters
     ----------
-    in_dataset : List[str]
-        Input dataset(s) to use in the factorial analysis. If multiple files
-        are provided as input, will be merged according to the subject id
-        columns. For multiple inputs, use this: --in-dataset df1 --in-dataset
-        df2 [...]
+    in_dataset : str
+        Input dataset to use in the factorial analysis.
     id_column : str
         Name of the column containing the subject's ID tag. Required for proper
-        handling of IDs and merging multiple datasets.
+        handling of IDs.
     desc_columns : int
         Number of descriptive columns at the beginning of the dataset to
         exclude in statistics and descriptive tables.
@@ -195,11 +187,6 @@ def ConfirmatoryFA(
         higher than 0.40 will be assigned to a factor in the CFA model).
     iterations : int, optional
         Number of iterations to perform the bootstrapping of the model.
-    mean : bool, optional
-        Impute missing values in the original dataset based on the column mean.
-    median : bool, optional
-        Impute missing values in the original dataset based on the column
-        median.
     verbose : bool, optional
         If true, produce verbose output.
     save_parameters : bool, optional
@@ -238,16 +225,7 @@ def ConfirmatoryFA(
 
     # Loading dataset.
     logging.info("Loading {}".format(in_dataset))
-    if len(in_dataset) > 1:
-        if id_column is None:
-            sys.exit(
-                "Column name for index matching is required when inputting"
-                " multiple dataframes."
-            )
-        dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
-        df = merge_dataframes(dict_df, id_column)
-    else:
-        df = load_df_in_any_format(in_dataset[0])
+    df = DatasetLoader().load_data(in_dataset)
     descriptive_columns = [n for n in range(0, desc_columns)]
 
     # Imputing missing values (or not).
@@ -268,18 +246,18 @@ def ConfirmatoryFA(
     #    )
     #    df.dropna(inplace=True)
 
-    desc_col = df[df.columns[descriptive_columns]]
-    df.drop(df.columns[descriptive_columns], axis=1, inplace=True)
+    desc_col = df.get_descriptive_columns(descriptive_columns)
+    df.drop_columns(descriptive_columns)
 
     if loadings_df is not None:
         logging.info("Creating model's specification.")
-        loadings_df = load_df_in_any_format(loadings_df)
+        loadings_df = DatasetLoader().load_data(loadings_df).get_data()
 
         modeldict = {}
         for col in loadings_df.columns:
             idx = loadings_df.index[
-                (loadings_df[col] >= threshold) | (loadings_df[
-                    col] <= -threshold)
+                (loadings_df[col] >= threshold) | (loadings_df[col] <=
+                                                   -threshold)
             ].tolist()
             modeldict[col] = idx
 
@@ -294,15 +272,19 @@ def ConfirmatoryFA(
     logging.info("Performing Confirmatory Factorial Analysis (CFA) with"
                  " the following model specification:\n{}".format(mod))
 
-    cfa_mod, scores, stats = cfa(df, mod)
+    cfa_mod, scores, stats = df.custom_function(
+        cfa,
+        model=mod
+    )
 
     logging.info("Exporting results and statistics.")
-    scores = pd.concat([desc_col, scores], axis=1)
-    scores.to_excel(
+    scores = DatasetLoader().import_data(scores)
+    scores.join(desc_col, left=True)
+    scores.save_data(
         f"{out_folder}/cfa_scores.xlsx", header=True, index=False
     )
 
-    stats.to_excel(
+    DatasetLoader().import_data(stats).save_data(
         f"{out_folder}/cfa_stats.xlsx", header=True, index=False
     )
 

@@ -5,14 +5,12 @@ import logging
 import coloredlogs
 
 from cyclopts import App, Parameter
-import pandas as pd
-import networkx as nx
 from typing_extensions import Annotated
 from typing import List
 
 from neurostatx.io.utils import assert_input, assert_output_dir_exist
+from neurostatx.io.loader import DatasetLoader, GraphLoader
 from neurostatx.network.metrics import weightedpath, PathLengthsMethods
-from neurostatx.network.utils import fetch_attributes_df
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
@@ -216,7 +214,7 @@ def AverageWeightedPath(
                 f.writelines(str(param))
 
     logging.info("Loading graph.")
-    G = nx.read_gml(in_graph)
+    network = GraphLoader().load_graph(in_graph)
 
     # If a cohort is specified.
     attr = label_name.copy()
@@ -224,12 +222,11 @@ def AverageWeightedPath(
         attr.append('cohort')
 
     # Fetching labels from nodes' attributes.
-    df = fetch_attributes_df(G,
-                             attributes=attr)
+    node_attributes = network.fetch_attributes_df(attributes=attr)
 
     # Loading dataset and generating list of nodes to include.
     if distribution is not None:
-        dist = pd.read_excel(distribution)
+        dist = DatasetLoader().load_data(distribution).get_data()
     else:
         dist = None
 
@@ -237,9 +234,9 @@ def AverageWeightedPath(
     for var in label_name:
         logging.info("Computing average weighted path for variable : {}"
                      .format(var))
-        avg_weighted_path, null_dist, pvalue = weightedpath(
-            G,
-            df,
+        avg_weighted_path, null_dist, pvalue = network.custom_function(
+            weightedpath,
+            df=node_attributes.get_data(),
             label_name=var,
             cohort=cohort,
             iterations=iterations,
@@ -250,18 +247,21 @@ def AverageWeightedPath(
             verbose=True,
         )
 
-        out = pd.DataFrame(
-            null_dist,
-            columns=[var])
-        out.to_excel(f"{out_folder}/null_distributions_{var}.xlsx",
-                     header=True, index=False)
+        DatasetLoader().import_data(null_dist, columns=[var]).save_data(
+            f"{out_folder}/null_distribution_{var}.xlsx",
+            header=True,
+            index=False
+        )
 
         # Export metric with pvalue.
-        stats = pd.DataFrame([[avg_weighted_path], [pvalue]],
-                             columns=['Statistics'],
-                             index=['Average weighted path', 'p-value'])
-        stats.to_excel(f"{out_folder}/statistics_{var}.xlsx", header=True,
-                       index=True)
+        DatasetLoader().import_data(
+            [[avg_weighted_path, pvalue]],
+            columns=['Average weighted path', 'p-value']
+        ).save_data(
+            f"{out_folder}/average_weighted_path_{var}.xlsx",
+            header=True,
+            index=False
+        )
 
 
 if __name__ == "__main__":

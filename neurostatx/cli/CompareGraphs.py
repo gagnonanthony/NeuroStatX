@@ -5,15 +5,13 @@ import coloredlogs
 import logging
 
 from cyclopts import App, Parameter
-import networkx as nx
 import numpy as np
 from typing_extensions import Annotated
 
 from neurostatx.io.utils import assert_input, assert_output_dir_exist
-from neurostatx.network.utils import (extract_subject_percentile,
-                                      fetch_edge_data)
-from neurostatx.network.viz import (visualize_network,
-                                    creating_node_colormap)
+from neurostatx.io.loader import GraphLoader
+from neurostatx.network.utils import extract_subject_percentile
+from neurostatx.network.viz import creating_node_colormap
 
 
 # Initializing the app.
@@ -225,16 +223,17 @@ def CompareGraphs(
 
     # Loading membership matrix.
     logging.info("Loading graphs.")
-    graph1 = nx.read_gml(in_graph1)
-    graph2 = nx.read_gml(in_graph2)
+    graph1 = GraphLoader().load_graph(in_graph1)
+    graph2 = GraphLoader().load_graph(in_graph2)
 
     # Fetch data from graph #1.
-    mat = fetch_edge_data(graph1, weight=weight)
+    mat = graph1.fetch_edge_data(weight=weight)
 
     # Extracting percentiles.
     logging.info("Extracting percentiles.")
     # Extracting the Xth percentile subjects.
-    percentile_dict = extract_subject_percentile(mat.values.T, percentile)
+    percentile_dict = extract_subject_percentile(mat.get_data().values.T,
+                                                 percentile)
 
     # Mapping the nodes' cmap.
     nodes_cmap = creating_node_colormap(percentile_dict)
@@ -251,8 +250,7 @@ def CompareGraphs(
         sub_alpha = np.array([1] * mat.values.shape[0])
 
     logging.info("Visualizing percentiles on the 1st graph.")
-    visualize_network(
-        graph1,
+    graph1.visualize(
         output=f"{out_folder}/graph1.png",
         weight="membership",
         centroids_labelling=label_centroids,
@@ -271,8 +269,7 @@ def CompareGraphs(
     )
 
     logging.info("Visualizing percentiles on the 2nd graph.")
-    visualize_network(
-        graph2,
+    graph2.visualize(
         output=f"{out_folder}/graph2.png",
         weight="membership",
         centroids_labelling=label_centroids,

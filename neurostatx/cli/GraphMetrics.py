@@ -6,12 +6,11 @@ import sys
 import coloredlogs
 
 from cyclopts import App, Parameter, Group
-import pandas as pd
-import networkx as nx
 from typing_extensions import Annotated
 from typing import List
 
 from neurostatx.network.metrics import get_metrics_ops
+from neurostatx.io.loader import DatasetLoader, GraphLoader
 from neurostatx.io.utils import assert_input, assert_output
 
 OPERATIONS = get_metrics_ops()
@@ -147,13 +146,28 @@ def GraphMetrics(
 
     # Loading graph network file.
     logging.info("Loading graph network file...")
-    G = nx.read_gml(operation[1])
+    G = GraphLoader().load_graph(operation[1])
 
     # Performing operation.
     try:
         logging.info("Running {} on input network..."
                      .format(operation[0].capitalize()))
-        output = OPERATIONS[operation[0]](G, *operation[2:])
+        # Get the name of the argument in the function to call, since
+        # we need to pass named arguments to the function.
+        # Maximum 3 arguments are accepted, the first one is the graph.
+        args = OPERATIONS[operation[0]].__code__.co_varnames
+
+        # Building the arguments to pass to the function.
+        kwargs = {arg: operation[i + 2] for i, arg in enumerate(args[1:])}
+
+        output = G.custom_function(
+            OPERATIONS[operation[0]],
+            **kwargs,
+        )
+
+        if isinstance(output, float):
+            # If the output is a float, we need to convert it to a dict.
+            output = {operation[0]: output}
 
     except ValueError as msg:
         logging.error("{} operation failed.".format(operation[0].capitalize()))
@@ -162,10 +176,15 @@ def GraphMetrics(
 
     # Exporting results in an .xlsx file.
     logging.info("Exporting results here: {}".format(out_file))
-    output = pd.DataFrame.from_dict([output]).T
-    output.index.name = "nodes"
-    output.columns = [operation[0]]
-    output.to_excel(out_file, header=True, index=True)
+    DatasetLoader().import_data(
+        dict(output),
+        columns=[operation[0]],
+        orient="index",
+    ).save_data(
+        out_file,
+        header=True,
+        index=True,
+    )
 
 
 if __name__ == "__main__":

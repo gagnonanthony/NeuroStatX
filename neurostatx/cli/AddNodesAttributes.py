@@ -6,12 +6,11 @@ import logging
 import os
 
 from cyclopts import App, Parameter
-import networkx as nx
 from typing import List
 from typing_extensions import Annotated
 
-from neurostatx.io.utils import (assert_input, assert_output,
-                                 load_df_in_any_format)
+from neurostatx.io.utils import (assert_input, assert_output)
+from neurostatx.io.loader import DatasetLoader, GraphLoader
 from neurostatx.network.utils import construct_attributes_dict
 
 # Initializing the app.
@@ -54,7 +53,7 @@ def AddNodesAttributes(
             show_default=False,
             group="Essential Files Options",
         ),
-    ] = "graph_with_attributes.gexf",
+    ] = "graph_with_attributes.gml",
     verbose: Annotated[
         bool,
         Parameter(
@@ -120,27 +119,29 @@ def AddNodesAttributes(
     assert_output(overwrite, out_file)
 
     logging.info("Loading graph and dataset.")
-    G = nx.read_gml(in_graph)
-    df = load_df_in_any_format(in_dataset)
+    network = GraphLoader().load_graph(in_graph)
+    df = DatasetLoader().load_data(in_dataset)
 
     # Sorting if labels is a .txt file or not.
     if len(labels) == 1:
-        filename, ext = os.path.splitext(labels[0])
+        _filename, ext = os.path.splitext(labels[0])
         if ext == '.txt':
-            print('yeah')
             with open(labels[0], 'r') as f:
                 labels = f.read().splitlines()
 
-    # Getting dictonary of labels and values to add.
+    # Getting dictionary of labels and values to add.
     logging.info("Constructing dictionary of attributes to add.")
-    attributes = construct_attributes_dict(df, labels, id_column)
+    attr = df.custom_function(construct_attributes_dict,
+                              labels=labels,
+                              id_column=id_column)
+    # attributes = construct_attributes_dict(df, labels, id_column)
 
     # Add attributes to graph.
     logging.info("Adding attributes to graph.")
-    nx.set_node_attributes(G, attributes)
+    network.add_node_attribute(attr)
 
     logging.info("Saving graph.")
-    nx.write_gml(G, out_file)
+    network.save_graph(out_file)
 
 
 if __name__ == "__main__":

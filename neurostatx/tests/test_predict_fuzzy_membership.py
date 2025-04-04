@@ -34,7 +34,7 @@ def test_execution_predict_fuzzy(script_runner):
         "--id-column", "subjectkey",
         "--parallelplot",
         "--radarplot",
-        "-f"]
+        "-f", "-v", "-s"]
     )
 
     assert ret.success

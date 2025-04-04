@@ -8,15 +8,13 @@ import warnings
 
 from cyclopts import App, Parameter
 import matplotlib.pyplot as plt
-import networkx as nx
 import numpy as np
-import pandas as pd
 from sklearn.preprocessing import scale
 from typing import List
 from typing_extensions import Annotated
 
 from neurostatx.io.utils import (assert_input, assert_output_dir_exist)
-from neurostatx.network.utils import fetch_attributes_df, fetch_edge_data
+from neurostatx.io.loader import DatasetLoader, GraphLoader
 from neurostatx.statistics.models import (plsr_cv, permutation_testing,
                                           ScoringMethod)
 from neurostatx.io.viz import generate_coef_plot, flexible_hist
@@ -226,40 +224,43 @@ def PartialLeastSquareRegression(
 
     # Load graph file.
     logging.info("Loading graph and dataset.")
-    G = nx.read_gml(in_graph)
+    G = GraphLoader().load_graph(in_graph)
 
     # Fetching dataframe.
     logging.info("Fetching nodes' attributes dataframe.")
-    attr_df = fetch_attributes_df(G, attributes)
+    attr_df = G.fetch_attributes_df(attributes=attributes)
 
     # Fetching edge data.
     logging.info("Fetching edge data.")
-    edge_df = fetch_edge_data(G, weight=weight)
+    edge_df = G.fetch_edge_data(weight=weight)
 
     # Scaling data to unit variance and zero mean.
     logging.info("Scaling data.")
-    attr = scale(attr_df)
-    edge = edge_df.apply(lambda x: np.log(x))
-    edge = scale(edge)
+    attr_df.custom_function(scale)
+    edge = edge_df.get_data().apply(lambda x: np.log(x))
+    edge = DatasetLoader().import_data(scale(edge),
+                                       columns=edge_df.get_data().columns,
+                                       index=edge_df.get_data().index)
 
     # Performing Cross-Validation.
     logging.info("Performing Cross-Validation.")
     (plsr, mse, score_c, score_cv,
-     rscore, mse_c, mse_cv) = plsr_cv(
-        attr,
-        edge,
-        len(attr_df.columns),
+     rscore, mse_c, mse_cv) = attr_df.custom_function(
+        plsr_cv,
+        Y=edge.get_data(),
+        nb_comp=len(attr_df.get_data().columns),
         splits=splits,
         processes=processes,
-        verbose=verbose)
+        verbose=verbose,
+    )
 
     # Permutation testing.
     logging.info("Performing permutation testing.")
     mod, score, coef, perm_score, score_pval, perm_coef, coef_pval = \
         permutation_testing(
             plsr,
-            attr,
-            edge,
+            attr_df.get_data(),
+            edge.get_data(),
             nb_permutations=permutations,
             scoring=scoring,
             splits=splits,
@@ -270,21 +271,36 @@ def PartialLeastSquareRegression(
     logging.info("Exporting statistics.")
     coef = {
         f'coef{i+1}': coef[:, i] for i in range(0, coef.shape[0])}
-    coef['varname'] = attr_df.columns
-    coef_df = pd.DataFrame(coef)
-    coef_df.to_excel(f"{out_folder}/Coefficients/coef_df.xlsx")
+    coef['varname'] = attr_df.get_data().columns
+    coef_df = DatasetLoader().import_data(
+        coef
+    )
+    coef_df.save_data(
+        f"{out_folder}/Coefficients/coef_df.xlsx",
+        header=True,
+        index=False
+    )
 
-    coef_pval_df = pd.DataFrame(coef_pval,
-                                index=attr_df.columns,
-                                columns=edge_df.columns)
-    coef_pval_df.to_excel(f"{out_folder}/Coefficients/coef_pval_df.xlsx")
+    DatasetLoader().import_data(
+        coef_pval,
+        index=attr_df.get_data().columns,
+        columns=edge_df.get_data().columns
+    ).save_data(
+        f"{out_folder}/Coefficients/coef_pval_df.xlsx",
+        header=True,
+        index=True
+    )
 
-    stats = pd.DataFrame([mse_c, mse_cv, score_c, score_cv, rscore,
-                          score, perm_score, score_pval],
-                         columns=['Statistics'],
-                         index=['MSE_c', 'MSE_cv', 'R2_c', 'R2_cv', 'R_c',
-                                'R2_score', 'R2_perm', 'pval'])
-    stats.to_excel(f"{out_folder}/statistics.xlsx", header=True, index=True)
+    DatasetLoader().import_data(
+        [mse_c, mse_cv, score_c, score_cv, rscore, score, perm_score,
+         score_pval],
+        columns=['Statistics'],
+        index=['MSE_c', 'MSE_cv', 'R2_c', 'R2_cv', 'R_c', 'R2_score',
+               'R2_perm', 'pval']).save_data(
+        f"{out_folder}/statistics.xlsx",
+        header=True,
+        index=True
+    )
 
     # Plotting results.
     logging.info("Generating plots.")
@@ -295,22 +311,23 @@ def PartialLeastSquareRegression(
     ):
         if plot_distributions:
             # Edge's distributions.
-            edge_viz = pd.DataFrame(edge, columns=edge_df.columns)
-            flexible_hist(edge_viz,
-                          f"{out_folder}/Distributions/edges_distribution.png",
-                          cmap="magma", title="Edges' distributions",
-                          xlabel="Edges' weights", ylabel="Density")
+            edge.custom_function(
+                flexible_hist,
+                output=f"{out_folder}/Distributions/edges_distribution.png",
+                cmap="magma", title="Edges' distributions",
+                xlabel="Edges' weights", ylabel="Density"
+            )
 
         # MSE plot.
         fig, ax = plt.subplots(figsize=(10, 10))
         plt.plot(
-            np.arange(1, len(attr_df.columns) + 1),
+            np.arange(1, len(attr_df.get_data().columns) + 1),
             np.array(mse),
             '-v',
             color='blue',
             mfc='blue')
         plt.plot(
-            np.arange(1, len(attr_df.columns) + 1)[np.argmin(mse)],
+            np.arange(1, len(attr_df.get_data().columns) + 1)[np.argmin(mse)],
             np.array(mse)[np.argmin(mse)],
             'P',
             ms=10,
@@ -324,9 +341,9 @@ def PartialLeastSquareRegression(
         plt.close()
 
         # Coefficient plot.
-        for i in range(0, len(edge_df.columns)):
+        for i in range(0, len(edge_df.get_data().columns)):
             generate_coef_plot(
-                coef_df,
+                coef_df.get_data(),
                 coef_pval[:, i],
                 coefname=f'coef{i+1}',
                 varname='varname',

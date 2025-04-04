@@ -66,7 +66,7 @@ class TestImputation(unittest.TestCase):
 
     def test_apply_sklearn_model(self):
         # Define test data
-        X = np.random.rand(100, 5)
+        X = pd.DataFrame(np.random.rand(100, 5))
         n_components = 3
 
         # Call the function with sample data
