@@ -29,7 +29,7 @@ def test_compute_weighted_path(script_runner):
         "--out-folder", out_folder,
         "--iterations", 1,
         "--processes", 1,
-        "-f"]
+        "-f", "-v", "-s"]
     )
 
     assert ret.success

@@ -25,7 +25,7 @@ def test_eigencentrality(script_runner):
     ret = script_runner.run([
         "GraphMetrics",
         "eigencentrality", in_graph,
-        "membership", "-f"])
+        "membership", "-f", "-v"])
 
     assert ret.success
 

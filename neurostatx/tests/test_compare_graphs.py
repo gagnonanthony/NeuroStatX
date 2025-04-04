@@ -29,7 +29,7 @@ def test_compute_graph_network(script_runner):
         "--percentile", 80,
         "--in-graph2", in_graph,
         "--out-folder", out_folder,
-        "-f"]
+        "-f", "-v"]
     )
 
     assert ret.success

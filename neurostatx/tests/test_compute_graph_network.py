@@ -29,7 +29,7 @@ def test_compute_graph_network(script_runner):
         "--id-column", "subjectkey",
         "--plot-distribution",
         "--import-data",
-        "--desc-columns", 1, "-f"]
+        "--desc-columns", 5, "-f"]
     )
 
     assert ret.success

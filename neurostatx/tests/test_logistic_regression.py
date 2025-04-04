@@ -31,7 +31,7 @@ def test_logistic_regression(script_runner):
         "--covariates", "iq",
         "--permutations", 10,
         "--plot-distributions",
-        "-f"]
+        "-f", "-v", "-s"]
     )
 
     assert ret.success

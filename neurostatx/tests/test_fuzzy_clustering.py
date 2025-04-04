@@ -31,7 +31,7 @@ def test_execution_fuzzy(script_runner):
         "--k", 3,
         "--parallelplot",
         "--radarplot",
-        "-f"]
+        "-f", "-v", "-s"]
     )
 
     assert ret.success

@@ -31,7 +31,7 @@ def test_partial_least_square(script_runner):
         "--attributes", "iq",
         "--permutations", 100,
         "--plot-distributions",
-        "-f"]
+        "-f", "-v", "-s"]
     )
 
     assert ret.success
