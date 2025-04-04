@@ -256,8 +256,8 @@ def ConfirmatoryFA(
         modeldict = {}
         for col in loadings_df.columns:
             idx = loadings_df.index[
-                (loadings_df[col] >= threshold) |
-                (loadings_df[col] <= -threshold)
+                (loadings_df[col] >= threshold) | (loadings_df[col] <=
+                                                   -threshold)
             ].tolist()
             modeldict[col] = idx
 

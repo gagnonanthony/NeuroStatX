@@ -186,7 +186,7 @@ def CompareClustering(
     dict_df = {
         i: DatasetLoader().load_data(df).get_data() for i,
         df in enumerate(in_dataset)
-        }
+    }
 
     # Dropping desc column.
     descriptive_columns = [n for n in range(0, desc_columns)]

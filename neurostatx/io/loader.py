@@ -521,14 +521,14 @@ class GraphLoader:
 
         # Get adjacency matrix.
         adj = np.delete(
-                nx.to_numpy_array(self.graph, weight=weight),
-                [i for i in range(1, len(cntr_node) + 1)],
-                axis=0
-                )
+            nx.to_numpy_array(self.graph, weight=weight),
+            [i for i in range(1, len(cntr_node) + 1)],
+            axis=0
+        )
         df = pd.DataFrame(
-                adj[:, 1:(len(cntr_node) + 1)], index=sub_node,
-                columns=[f'Cluster {i+1}' for i in range(len(cntr_node))]
-                )
+            adj[:, 1:(len(cntr_node) + 1)], index=sub_node,
+            columns=[f'Cluster {i+1}' for i in range(len(cntr_node))]
+        )
 
         return DatasetLoader().import_data(df)
 

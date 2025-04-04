@@ -292,11 +292,11 @@ def PartialLeastSquareRegression(
     )
 
     DatasetLoader().import_data(
-            [mse_c, mse_cv, score_c, score_cv, rscore, score, perm_score,
-             score_pval],
-            columns=['Statistics'],
-            index=['MSE_c', 'MSE_cv', 'R2_c', 'R2_cv', 'R_c', 'R2_score',
-                   'R2_perm', 'pval']).save_data(
+        [mse_c, mse_cv, score_c, score_cv, rscore, score, perm_score,
+         score_pval],
+        columns=['Statistics'],
+        index=['MSE_c', 'MSE_cv', 'R2_c', 'R2_cv', 'R_c', 'R2_score',
+               'R2_perm', 'pval']).save_data(
         f"{out_folder}/statistics.xlsx",
         header=True,
         index=True

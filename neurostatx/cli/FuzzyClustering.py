@@ -382,7 +382,7 @@ def FuzzyClustering(
             f"{out_folder}/PCA/variance_explained.csv",
             index=True,
             header=True
-            )
+        )
 
         # Exporting PCA components and transformed data.
         components = DatasetLoader().import_data(
@@ -394,14 +394,14 @@ def FuzzyClustering(
         df = DatasetLoader().import_data(
             X,
             columns=["Component #1", "Component #2", "Component #3"]
-            ).join(
+        ).join(
                 desc_data, left=True
-            )
+        )
         df.save_data(
-                f"{out_folder}/PCA/transformed_data.csv",
-                index=True,
-                header=True
-            )
+            f"{out_folder}/PCA/transformed_data.csv",
+            index=True,
+            header=True
+        )
 
         components.custom_function(
             flexible_barplot,
