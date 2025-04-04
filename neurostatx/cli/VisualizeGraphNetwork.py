@@ -5,14 +5,13 @@ import coloredlogs
 import logging
 
 from cyclopts import App, Parameter
-import networkx as nx
 import numpy as np
 from typing import List
 from typing_extensions import Annotated
 
 from neurostatx.io.utils import (assert_input, assert_output_dir_exist)
-from neurostatx.network.viz import (visualize_network, create_cmap_from_list)
-from neurostatx.network.utils import fetch_attributes_df
+from neurostatx.io.loader import GraphLoader
+from neurostatx.network.viz import create_cmap_from_list
 
 
 # Initializing the app.
@@ -294,12 +293,11 @@ def VisualizeGraphNetwork(
 
     # Loading graph.
     logging.info("Loading graph data.")
-    G = nx.read_gml(in_graph)
+    G = GraphLoader().load_graph(in_graph)
 
     # Visualizing and saving network.
     logging.info("Generating graph.")
-    visualize_network(
-        G,
+    G.visualize(
         output=f"{out_folder}/graph_network.png",
         weight=weight,
         centroids_labelling=label_centroids,
@@ -326,7 +324,7 @@ def VisualizeGraphNetwork(
             label_name.append('cohort')
 
         # Loading df.
-        df = fetch_attributes_df(G, attributes=label_name)
+        df = G.fetch_attributes_df(label_name).get_data()
 
         # Fetching data for label as array.
         for label in label_name:
@@ -355,8 +353,7 @@ def VisualizeGraphNetwork(
             else:
                 sub_alpha = np.array([1] * len(nodes_cmap))
 
-            visualize_network(
-                G,
+            G.visualize(
                 output=f"{out_folder}/graph_network_{label}.png",
                 weight=weight,
                 centroids_labelling=label_centroids,

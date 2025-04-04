@@ -85,19 +85,173 @@ class DatasetLoader:
         self.nb_subjects, self.nb_variables = self.data.shape
         return self
 
-    def import_data(self, data):
+    def import_data(self, data, columns=None, index=None, **kwargs):
         """
-        Import data directly from a DataFrame.
+        Import data from a DataFrame or a array-like object.
 
         Parameters
         ----------
-        data: pandas.DataFrame
-            DataFrame containing the data to import.
-        """
-        if not isinstance(data, pd.DataFrame):
-            raise ValueError("Provided data is not a pandas DataFrame.")
+        data: pandas.DataFrame or array-like
+            Data to import.
+        columns: list, optional
+            List of columns to use. If None, all columns will be used.
 
-        self.data = data
+        Returns
+        -------
+        DatasetLoader
+            DatasetLoader object with the imported data.
+        """
+        if isinstance(data, pd.DataFrame):
+            self.data = data
+        elif isinstance(data, dict):
+            self.data = pd.DataFrame.from_dict(data,
+                                               columns=columns,
+                                               **kwargs)
+        else:
+            self.data = pd.DataFrame(data, columns=columns, index=index)
+        self.nb_subjects, self.nb_variables = self.data.shape
+        return self
+
+    def get_descriptive_columns(self, columns):
+        """
+        Get descriptive columns from the data.
+
+        Parameters
+        ----------
+        columns: list
+            List of descriptive columns.
+
+        Returns
+        -------
+        data: pandas.DataFrame
+            DataFrame containing the descriptive columns.
+        """
+        if not hasattr(self, 'data'):
+            raise ValueError("Data not loaded. Please load data first.")
+
+        if not isinstance(columns, list):
+            raise ValueError("Provided columns is not a list.")
+
+        return self.data[self.data.columns[columns]]
+
+    def drop_columns(self, columns):
+        """
+        Drop specified columns from the data.
+
+        Parameters
+        ----------
+        columns: list
+            List of columns index or names to drop.
+
+        Returns
+        -------
+        DatasetLoader
+            DatasetLoader object with the specified columns dropped.
+        """
+        if not hasattr(self, 'data'):
+            raise ValueError("Data not loaded. Please load data first.")
+
+        if not isinstance(columns, list):
+            raise ValueError("Provided columns is not a list.")
+
+        if isinstance(columns[0], int):
+            self.data.drop(self.data.columns[columns], axis=1, inplace=True)
+        else:
+            self.data.drop(columns, axis=1, inplace=True)
+
+        self.nb_subjects, self.nb_variables = self.data.shape
+        return self
+
+    def join(self, df, left=True, **kwargs):
+        """
+        Join two DataFrames.
+
+        Parameters
+        ----------
+        df: pandas.DataFrame
+            DataFrame to join with.
+        left: bool, optional
+            If true, provided DataFrame is the left DataFrame.
+            If false, provided DataFrame is the right DataFrame.
+            Default is True.
+        **kwargs
+            Additional keyword arguments for the pd.concat function.
+
+        Returns
+        -------
+        data: pandas.DataFrame
+            Joined DataFrame.
+        """
+        if not isinstance(df, pd.DataFrame | pd.Series):
+            raise ValueError(
+                "Provided data is not a pandas DataFrame or Series.")
+        if not hasattr(self, 'data'):
+            raise ValueError("Data not loaded. Please load data first.")
+
+        if left:
+            self.data = pd.concat([df, self.data], axis=1, **kwargs)
+        else:
+            self.data = pd.concat([self.data, df], axis=1, **kwargs)
+        self.nb_subjects, self.nb_variables = self.data.shape
+        return self
+
+    def reset_index(self, **kwargs):
+        """
+        Reset the index of the DataFrame.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments for the pd.DataFrame.reset_index
+            function.
+        """
+        if not hasattr(self, 'data'):
+            raise ValueError("Data not loaded. Please load data first.")
+
+        self.data.reset_index(drop=True, inplace=True, **kwargs)
+        return self
+
+    def set_type(self, dtype, columns=None):
+        """
+        Set the type of the specified columns.
+
+        Parameters
+        ----------
+        dtype: str
+            Type to set.
+        columns: list, optional
+            List of columns to set the type for. If None, all columns will be
+            converted.
+
+        Returns
+        -------
+        data: pandas.DataFrame
+            DataFrame with the specified type set.
+        """
+        if not hasattr(self, 'data'):
+            raise ValueError("Data not loaded. Please load data first.")
+
+        if columns is None:
+            self.data = self.data.astype(dtype)
+        else:
+            self.data[self.data.columns[columns]] = self.data[
+                self.data.columns[columns]].astype(dtype)
+
+        return self
+
+    def transpose(self):
+        """
+        Transpose the data.
+
+        Returns
+        -------
+        DatasetLoader
+            DatasetLoader object with the transposed data.
+        """
+        if not hasattr(self, 'data'):
+            raise ValueError("Data not loaded. Please load data first.")
+
+        self.data = self.data.T
         self.nb_subjects, self.nb_variables = self.data.shape
         return self
 
@@ -131,6 +285,33 @@ class DatasetLoader:
             raise ValueError("Data not loaded. Please load data first.")
 
         return self.data
+
+    def save_data(self, file, **kwargs):
+        """
+        Save the data to a file.
+
+        Parameters
+        ----------
+        file: str
+            Output file name.
+        **kwargs
+            Additional keyword arguments.
+        """
+        if not hasattr(self, 'data'):
+            raise ValueError("Data not loaded. Please load data first.")
+
+        _, ext = os.path.splitext(file)
+        if ext == ".csv":
+            self.data.to_csv(file, **kwargs)
+        elif ext == ".xlsx":
+            self.data.to_excel(file, **kwargs)
+        elif ext == ".tsv":
+            self.data.to_csv(file, sep="\t", **kwargs)
+        elif ext == ".txt":
+            self.data.to_csv(file, sep="\t", **kwargs)
+        else:
+            raise ValueError("File format not supported. Currently supported "
+                             "formats are .csv, .xlsx, .tsv, .txt.")
 
     def custom_function(self, func, **kwargs):
         """

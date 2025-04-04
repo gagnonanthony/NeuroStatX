@@ -3,46 +3,11 @@ import os
 import shutil
 import sys
 
-from detect_delimiter import detect
-import pandas as pd
-
 
 """
 Some function comes from the scilpy toolbox. Please see :
 https://github.com/scilus/scilpy
 """
-
-
-def load_df_in_any_format(file, **kwargs):
-    """
-    Load tabular data in any format (.txt, .csv, .xlsx).
-
-    Parameters
-    ----------
-    file: str
-        Input file to load.
-
-    Returns
-    -------
-    df: pandas.DataFrame
-    """
-    _, ext = os.path.splitext(file)
-    if ext == ".csv":
-        df = pd.read_csv(file, **kwargs)
-    elif ext == ".xlsx":
-        df = pd.read_excel(file, **kwargs)
-    elif ext == ".tsv":
-        df = pd.read_csv(file, sep="\t", **kwargs)
-    elif ext == ".txt":
-        with open(file, "r") as f:
-            f = f.read()
-            delimiter = detect(f, whitelist=["\t", ":", ";", " ", ","])
-        df = pd.read_csv(file, sep=delimiter, **kwargs)
-    else:
-        raise ValueError("File format not supported. Currently supported "
-                         "formats are .csv, .xlsx, .tsv, .txt.")
-
-    return df
 
 
 def add_overwrite_arg(p):

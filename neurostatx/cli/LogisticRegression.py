@@ -8,9 +8,7 @@ import warnings
 
 from cyclopts import App, Parameter
 import matplotlib.pyplot as plt
-import networkx as nx
 import numpy as np
-import pandas as pd
 from sklearn.preprocessing import scale
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.model_selection import train_test_split
@@ -20,7 +18,7 @@ from typing import List
 from typing_extensions import Annotated
 
 from neurostatx.io.utils import (assert_input, assert_output_dir_exist)
-from neurostatx.network.utils import fetch_attributes_df, fetch_edge_data
+from neurostatx.io.loader import DatasetLoader, GraphLoader
 from neurostatx.statistics.models import (permutation_testing, ScoringMethod,
                                           Penalty, Solver)
 from neurostatx.io.viz import generate_coef_plot, flexible_hist
@@ -287,28 +285,28 @@ def LogisticRegression(
 
     # Load graph file.
     logging.info("Loading graph and dataset.")
-    G = nx.read_gml(in_graph)
+    G = GraphLoader().load_graph(in_graph)
 
     # Fetching covariates, attributes and edge data.
     logging.info("Fetching covariates, attributes and edge data.")
-    attributes_df = fetch_attributes_df(G, attributes)
-    edge_df = fetch_edge_data(G, weight)
-    covariates_df = fetch_attributes_df(G, covariates)
+    attributes_df = G.fetch_attributes_df(attributes=attributes)
+    edge_df = G.fetch_edge_data(weight=weight)
+    covariates_df = G.fetch_attributes_df(attributes=covariates)
 
     # Preprocessing data.
     logging.info("Scaling data.")
-    edge = edge_df.apply(lambda x: np.log(x))
-    predictor = pd.concat([pd.DataFrame(scale(edge), columns=edge_df.columns,
-                                        index=edge_df.index),
-                          covariates_df], axis=1)
+    edge = edge_df.get_data().apply(lambda x: np.log(x))
+    edge = edge_df.import_data(scale(edge), columns=edge_df.get_data().columns,
+                               index=edge_df.get_data().index)
+    covariates_df.join(edge_df.get_data(), left=True)
 
     # Performing Cross-Validation.
     logging.info("Fitting model with permutation testing.")
 
     # Splitting into a training and testing set.
     X_train, X_test, y_train, y_test = train_test_split(
-        predictor,
-        attributes_df,
+        covariates_df.get_data(),
+        attributes_df.get_data(),
         test_size=test_size,
         random_state=1234
     )
@@ -345,7 +343,7 @@ def LogisticRegression(
         )
 
     logging.info("Exporting statistics and plots.")
-    for i in range(0, len(attributes_df.columns)):
+    for i in range(0, len(attributes_df.get_data().columns)):
         display = RocCurveDisplay.from_predictions(
             LabelBinarizer().fit(y_train).transform(y_test)[:, i],
             mod.predict_proba(X_test)[:, 1],
@@ -358,41 +356,59 @@ def LogisticRegression(
             xlabel="False Positive Rate (FPR)",
             ylabel="True Positive Rate (TPR)",
             title=f"Receiver Operating Characteristic (ROC) Curve for \
-            {attributes_df.columns[i]}"
+            {attributes_df.get_data().columns[i]}"
         )
         plt.tight_layout()
-        plt.savefig(f"{out_folder}/roc_curve_{attributes_df.columns[i]}.png")
+        plt.savefig(
+            f"{out_folder}/roc_curve_{attributes_df.get_data().columns[i]}.png"
+        )
         plt.close()
 
     # Generating distribution plots.
     if plot_distributions:
-        edge_viz = pd.DataFrame(edge, columns=edge_df.columns)
-        flexible_hist(edge_viz,
-                      f'{out_folder}/Distributions/edges_distributions.png',
-                      cmap="magma", title="Edges' Distributions",
-                      xlabel="Edges' Weights", ylabel="Density")
+        edge.custom_function(
+            flexible_hist,
+            output=f'{out_folder}/Distributions/edges_distributions.png',
+            cmap="magma", title="Edges' Distributions",
+            xlabel="Edges' Weights", ylabel="Density"
+        )
 
     # Generating coefficient plot.
     coef = {
         f'coef{i+1}': coef[:, i].T for i in range(0, coef.shape[1])
     }
-    coef['varname'] = predictor.columns
-    coef_df = pd.DataFrame(coef)
-    coef_df.to_excel(f"{out_folder}/Coefficients/coefficients.xlsx")
+    coef['varname'] = covariates_df.get_data().columns
+    coef_df = DatasetLoader().import_data(
+        coef
+    )
+    coef_df.save_data(
+        f"{out_folder}/Coefficients/coefficients.csv",
+        header=True,
+        index=False
+    )
 
-    coef_pval_df = pd.DataFrame(coef_pval,
-                                index=predictor.columns,
-                                columns=attributes_df.columns)
-    coef_pval_df.to_excel(f"{out_folder}/Coefficients/coefficients_pval.xlsx")
+    DatasetLoader().import_data(
+        coef_pval,
+        columns=attributes_df.get_data().columns,
+        index=covariates_df.get_data().columns
+    ).save_data(
+        f"{out_folder}/Coefficients/coefficients_pval.csv",
+        header=True
+    )
 
-    stats = pd.DataFrame([score, np.median(perm_score), score_pval],
-                         columns=['Statistics'],
-                         index=['Score', 'Median Permuted Score', 'P-Value'])
-    stats.to_excel(f"{out_folder}/statistics.xlsx", header=True, index=True)
+    DatasetLoader().import_data(
+        [score, np.median(perm_score), score_pval],
+        columns=['Statistics'],
+        index=['Score', 'Median Permuted Score', 'P-Value']
+    ).save_data(
+        f"{out_folder}/statistics.csv",
+        header=True,
+        index=True
+    )
 
-    for i in range(0, len(attributes_df.columns)):
+    for i in range(0, len(attributes_df.get_data().columns)):
         generate_coef_plot(
-            coef_df,
+            coef_df.get_data(),
             coef_pval[:, i],
             coefname=f'coef{i+1}',
             varname='varname',

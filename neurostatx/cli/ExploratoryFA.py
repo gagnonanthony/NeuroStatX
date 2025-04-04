@@ -5,26 +5,19 @@
 import coloredlogs
 import dill as pickle
 import logging
-import sys
 
 from cyclopts import App, Parameter
 from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity
 from factor_analyzer.factor_analyzer import calculate_kmo
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import seaborn as sns
 from sklearn.model_selection import train_test_split
-from typing import List
 from typing_extensions import Annotated
 
-from neurostatx.io.utils import (
-    assert_input,
-    assert_output_dir_exist,
-    load_df_in_any_format,
-)
+from neurostatx.io.utils import assert_input, assert_output_dir_exist
+from neurostatx.io.loader import DatasetLoader
 from neurostatx.io.viz import flexible_barplot
-from neurostatx.utils.preprocessing import merge_dataframes
 from neurostatx.utils.factor import (
     RotationTypes,
     MethodTypes,
@@ -40,7 +33,7 @@ app = App(default_parameter=Parameter(negative=()))
 @app.default()
 def ExploratoryFA(
     in_dataset: Annotated[
-        List[str],
+        str,
         Parameter(
             show_default=False,
             group="Essential Files Options",
@@ -99,20 +92,20 @@ def ExploratoryFA(
             group="Factorial Analysis parameters",
         ),
     ] = 1234,
-    mean: Annotated[
-        bool,
-        Parameter(
-            "--mean",
-            group="Imputing parameters",
-        ),
-    ] = False,
-    median: Annotated[
-        bool,
-        Parameter(
-            "--median",
-            group="Imputing parameters",
-        ),
-    ] = False,
+    # mean: Annotated[
+    #    bool,
+    #    Parameter(
+    #        "--mean",
+    #        group="Imputing parameters",
+    #    ),
+    # ] = False,
+    # median: Annotated[
+    #    bool,
+    #    Parameter(
+    #        "--median",
+    #        group="Imputing parameters",
+    #    ),
+    # ] = False,
     verbose: Annotated[
         bool,
         Parameter(
@@ -182,11 +175,8 @@ def ExploratoryFA(
 
     Parameters
     ----------
-    in_dataset : List[str]
-        Input dataset(s) to use in the factorial analysis. If multiple files
-        are provided as input, will be merged according to the subject id
-        columns. For multiple inputs, use this: --in-dataset df1 --in-dataset
-        df2 [...]
+    in_dataset : str
+        Input dataset to use in the factorial analysis.
     id_column : str
         Name of the column containing the subject's ID tag. Required for proper
         handling of IDs and merging multiple datasets.
@@ -210,11 +200,6 @@ def ExploratoryFA(
         in the EFA. (value from 0 to 1)
     random_state : int, optional
         Random seed for reproducibility.
-    mean : bool, optional
-        Impute missing values in the original dataset based on the column mean.
-    median : bool, optional
-        Impute missing values in the original dataset based on the column
-        median.
     verbose : bool, optional
         If true, produce verbose output.
     save_parameters : bool, optional
@@ -242,16 +227,7 @@ def ExploratoryFA(
 
     # Loading dataset.
     logging.info("Loading {}".format(in_dataset))
-    if len(in_dataset) > 1:
-        if id_column is None:
-            sys.exit(
-                "Column name for index matching is required when inputting"
-                " multiple dataframes."
-            )
-        dict_df = {i: load_df_in_any_format(i) for i in in_dataset}
-        df = merge_dataframes(dict_df, id_column)
-    else:
-        df = load_df_in_any_format(in_dataset[0])
+    df = DatasetLoader().load_data(in_dataset)
     descriptive_columns = [n for n in range(0, desc_columns)]
 
     # Imputing missing values (or not).
@@ -275,24 +251,35 @@ def ExploratoryFA(
     if train_dataset_size != 1:
         logging.info("Splitting into train and test datasets. Using training "
                      "dataset for EFA.")
-        train, test = train_test_split(df, train_size=train_dataset_size,
-                                       random_state=random_state)
-        train.reset_index(inplace=True, drop=True)
-        train.to_excel(f"{out_folder}/train_dataset.xlsx", header=True,
-                       index=False)
-        test.reset_index(inplace=True, drop=True)
-        test.to_excel(f"{out_folder}/test_dataset.xlsx", header=True,
-                      index=False)
+        train, test = df.custom_function(
+            train_test_split,
+            train_size=train_dataset_size,
+            random_state=random_state,
+        )
+        train = DatasetLoader().import_data(train).reset_index()
+        train.save_data(
+            f"{out_folder}/train_dataset.xlsx",
+            header=True,
+            index=False
+            )
+        test = DatasetLoader().import_data(test).reset_index()
+        test.save_data(
+            f"{out_folder}/test_dataset.xlsx",
+            header=True,
+            index=False
+        )
     else:
         logging.info("Using the full dataset for EFA.")
         train = df
 
-    desc_col = train[train.columns[descriptive_columns]]
-    train.drop(df.columns[descriptive_columns], axis=1, inplace=True)
+    desc_col = train.get_descriptive_columns(descriptive_columns)
+    train.drop_columns(descriptive_columns)
 
     # Requirement for factorial analysis.
-    chi_square_value, p_value = calculate_bartlett_sphericity(train)
-    kmo_all, kmo_model = calculate_kmo(train)
+    chi_square_value, p_value = train.custom_function(
+        calculate_bartlett_sphericity
+    )
+    kmo_all, kmo_model = train.custom_function(calculate_kmo)
     logging.info(
         "Bartlett's test of sphericity returned a p-value of {} and "
         "Keiser-Meyer-Olkin (KMO)"
@@ -301,19 +288,22 @@ def ExploratoryFA(
 
     # Horn's parallel analysis.
     suggfactor, suggcomponent = horn_parallel_analysis(
-        train.values, out_folder, rotation=None, method=method
+        train.get_data().values, out_folder, rotation=None, method=method
     )
     if nb_factors is None:
         nb_factors = suggfactor
 
-    efa_mod, ev, v, scores, loadings, communalities = efa(
-        train, rotation=rotation, method=method, nfactors=nb_factors
+    efa_mod, ev, v, scores, loadings, communalities = train.custom_function(
+        efa,
+        rotation=rotation,
+        method=method,
+        nfactors=nb_factors
     )
 
     # Plot scree plot to determine the optimal number of factors using
     # the Kaiser's method. (eigenvalues > 1)
-    plt.scatter(range(1, train.shape[1] + 1), ev)
-    plt.plot(range(1, train.shape[1] + 1), ev)
+    plt.scatter(range(1, train.get_data().shape[1] + 1), ev)
+    plt.plot(range(1, train.get_data().shape[1] + 1), ev)
     sns.set_style("whitegrid")
     plt.title("Scree Plot of the eigenvalues for each factor")
     plt.xlabel("Factors")
@@ -325,20 +315,20 @@ def ExploratoryFA(
     columns = [f"Factor {i}" for i in range(1, nb_factors + 1)]
 
     # Export EFA and CFA transformed data.
-    efa_out = pd.DataFrame(
-        scores, columns=columns
+    DatasetLoader().import_data(scores, columns=columns).join(
+        desc_col, left=True
+    ).save_data(
+        f"{out_folder}/EFA_scores.xlsx", header=True, index=False
     )
-    efa_out = pd.concat([desc_col, efa_out], axis=1)
-    efa_out.to_excel(f"{out_folder}/EFA_scores.xlsx", header=True,
-                     index=False)
 
     # Plot correlation matrix between all raw variables.
-    corr = pd.DataFrame(efa_mod.corr_, index=train.columns,
-                        columns=train.columns)
-    mask = np.triu(np.ones_like(corr, dtype=bool))
+    corr = DatasetLoader().import_data(
+        efa_mod.corr_, columns=train.get_data().columns,
+        index=train.get_data().columns)
+    mask = np.triu(np.ones_like(corr.get_data(), dtype=bool))
     f, ax = plt.subplots(figsize=(11, 9))
     ax = sns.heatmap(
-        corr,
+        corr.get_data(),
         mask=mask,
         cmap="BrBG",
         vmax=1,
@@ -356,15 +346,16 @@ def ExploratoryFA(
     plt.close()
 
     # Plot EFA loadings in a barplot.
-    efa_loadings = pd.DataFrame(
-        loadings, columns=columns, index=train.columns
+    efa_loadings = DatasetLoader().import_data(
+        loadings, columns=columns, index=train.get_data().columns
     )
-    efa_communalities = pd.DataFrame(
-        communalities, columns=["Communalities"], index=train.columns
+    efa_communalities = DatasetLoader().import_data(
+        communalities, columns=["Communalities"],
+        index=train.get_data().columns
     )
 
     flexible_barplot(
-        efa_loadings,
+        efa_loadings.get_data(),
         nb_factors,
         title="Loadings values for the EFA",
         output=f"{out_folder}/barplot_loadings.png",
@@ -372,18 +363,18 @@ def ExploratoryFA(
     )
 
     # Export EFA loadings for all variables.
-    eigen_table = pd.DataFrame(
+    DatasetLoader().import_data(
         ev,
-        index=[f"Factor {i}" for i in range(1, len(train.columns) + 1)],
         columns=["Eigenvalues"],
-    )
-    eigen_table.to_excel(
+        index=[f"Factor {i}" for i in range(1,
+                                            len(train.get_data().columns) + 1)]
+    ).save_data(
         f"{out_folder}/eigenvalues.xlsx", header=True, index=True
     )
-    efa_loadings.to_excel(
-        f"{out_folder}/loadings.xlsx", header=True, index=True
+    efa_loadings.save_data(
+        f"{out_folder}/loadings.csv", header=True, index=True
     )
-    efa_communalities.to_excel(
+    efa_communalities.save_data(
         f"{out_folder}/communalities.xlsx", header=True, index=True
     )
 

@@ -5,7 +5,6 @@ import coloredlogs
 import logging
 
 import matplotlib.pyplot as plt
-import pandas as pd
 from cyclopts import App, Parameter
 from typing import List
 from typing_extensions import Annotated
@@ -203,9 +202,9 @@ def CompareClustering(
     # Exporting symmetric matrix.
     if len(columns_name) == 0:
         columns_name = [f'{i+1}' for i in range(0, len(in_dataset))]
-    mat = pd.DataFrame(ari, columns=columns_name,
-                       index=columns_name)
-    mat.to_excel(f'{out_folder}/ari_matrix.xlsx', index=True, header=True)
+    mat = DatasetLoader().import_data(
+        ari, columns=columns_name, index=columns_name)
+    mat.save_data(f'{out_folder}/ari_matrix.csv', index=True, header=True)
 
     # Create heatmap.
     with plt.rc_context(
@@ -213,7 +212,7 @@ def CompareClustering(
          "axes.titleweight": "bold"}
     ):
         fig, ax = plt.subplots(figsize=(12, 10))
-        sns.heatmap(mat, annot=True, ax=ax, cmap=cmap, linewidths=1,
+        sns.heatmap(mat.get_data(), annot=True, ax=ax, cmap=cmap, linewidths=1,
                     vmin=-1, vmax=1)
         ax.set_title(title)
         plt.savefig(f"{out_folder}/ari_heatmap.png")

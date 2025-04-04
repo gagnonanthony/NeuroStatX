@@ -7,7 +7,6 @@ import dill as pickle
 import logging
 
 from cyclopts import App, Parameter
-import pandas as pd
 from typing_extensions import Annotated
 
 from neurostatx.io.utils import (
@@ -148,9 +147,8 @@ def ApplyModel(
     #                     "missing values prior to applying the model.")
 
     descriptive_columns = [n for n in range(0, desc_columns)]
-    desc_data = df.get_data().iloc[:, descriptive_columns]
-    df.get_data().drop(df.get_data().columns[descriptive_columns], axis=1,
-                       inplace=True)
+    desc_data = df.get_descriptive_columns(descriptive_columns)
+    df.drop_columns(descriptive_columns)
 
     # Loading model.
     logging.info("Loading model")
@@ -159,14 +157,20 @@ def ApplyModel(
 
     # Applying model.
     logging.info("Applying model")
-    out = apply_various_models(df.get_data(), mod)
+    out = df.custom_function(
+        apply_various_models,
+        mod=mod
+    )
 
     # Saving transformed dataset.
     logging.info("Saving transformed dataset")
-    columns = desc_data.columns.append(out.columns)
-    out = pd.concat([desc_data, out], axis=1, ignore_index=True)
-    out.columns = columns
-    out.to_excel(f"{out_folder}/transformed_dataset.xlsx", index=False)
+    DatasetLoader().import_data(out).join(
+        desc_data, left=True
+    ).save_data(
+        f"{out_folder}/transformed_dataset.xlsx",
+        header=True,
+        index=False
+    )
 
 
 if __name__ == "__main__":

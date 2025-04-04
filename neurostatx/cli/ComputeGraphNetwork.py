@@ -5,7 +5,6 @@ import coloredlogs
 import logging
 
 from cyclopts import App, Parameter
-import pandas as pd
 from typing_extensions import Annotated
 
 from neurostatx.io.utils import assert_input, assert_output_dir_exist
@@ -207,26 +206,23 @@ def ComputeGraphNetwork(
 
     # Loading membership matrix.
     logging.info("Loading membership data.")
-    raw_df = DatasetLoader().load_data(in_dataset).get_data()
+    raw_df = DatasetLoader().load_data(in_dataset)
     descriptive_columns = [n for n in range(0, desc_columns)]
 
     # Creating the array.
-    desc_data = raw_df[raw_df.columns[descriptive_columns]]
-    clean_df = raw_df.drop(
-        raw_df.columns[descriptive_columns], axis=1, inplace=False
-    ).astype("float")
-    df_with_ids = DatasetLoader().import_data(
-        pd.concat([desc_data[desc_data.columns[0]], clean_df], axis=1)
-        )
+    desc_data = raw_df.get_descriptive_columns(descriptive_columns)
+    raw_df.drop_columns(descriptive_columns)
+    raw_df.join(desc_data[desc_data.columns[0]], left=True)
 
     # Plotting membership distributions and delta.
     if plot_distribution:
         membership_distribution(
-            clean_df.values, output=f"{out_folder}/membership_distribution.png"
+            raw_df.get_data().values[:, 1:],
+            output=f"{out_folder}/membership_distribution.png"
         )
 
     # Fetching dataframe of nodes and edges.
-    df, _, _ = df_with_ids.custom_function(
+    df, _, _ = raw_df.custom_function(
         get_nodes_and_edges
     )
 

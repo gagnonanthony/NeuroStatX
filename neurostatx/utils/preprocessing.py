@@ -276,8 +276,8 @@ def compute_pca(X, n_components):
 
     Parameters
     ----------
-    X : Array
-        Data array.
+    X : pd.DataFrame
+        Dataframe to compute PCA on.
     n_components : int
         Number of components.
 
@@ -297,10 +297,10 @@ def compute_pca(X, n_components):
         KMO model.
     """
 
-    chi_square_value, p_value = calculate_bartlett_sphericity(X)
-    kmo_all, kmo_model = calculate_kmo(X)
-    pca = PCA(n_components=n_components).fit(X)
-    X = pca.transform(X)
+    chi_square_value, p_value = calculate_bartlett_sphericity(X.values)
+    kmo_all, kmo_model = calculate_kmo(X.values)
+    pca = PCA(n_components=n_components).fit(X.values)
+    X = pca.transform(X.values)
     exp_var = pca.explained_variance_ratio_
     components = pca.components_
 
