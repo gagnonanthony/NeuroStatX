@@ -395,7 +395,7 @@ def FuzzyClustering(
             X,
             columns=["Component #1", "Component #2", "Component #3"]
         ).join(
-                desc_data, left=True
+            desc_data, left=True
         )
         df.save_data(
             f"{out_folder}/PCA/transformed_data.csv",
