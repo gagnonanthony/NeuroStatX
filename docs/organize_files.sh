@@ -28,7 +28,7 @@ for file in neurostatx.*.*.md; do
   sed -i 's/^# /#### /' "$file"
 
   # Replace title in the frontmatter
-  sed -i "s/title: \"neurostatx\.$middle_part\.$third_part\"/title: \"$third_part\"/" "$file"  
+  sed -i "s/title: \"neurostatx\.$middle_part\.$third_part\"/title: \"$middle_part\.$third_part\"/" "$file"  
 
   # Create the folder within the output directory if it doesn't exist
   mkdir -p "$output_dir/$folder_name"
