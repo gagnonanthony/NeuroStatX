@@ -544,6 +544,7 @@ class GraphLoader:
                   subject_alpha=0.3,
                   subject_node_color="black",
                   subject_edge_color=None,
+                  edge_width_multiplier=10,
                   colormap="plasma",
                   title="Graph Network",
                   legend_title="Membership values"):
@@ -619,6 +620,11 @@ class GraphLoader:
         sub_shape = np.array([subject_node_shape] * len(sub_node.nodes()))
         # sub_alpha = np.array([subject_alpha] * len(sub_node.nodes()))
 
+        # Assess alpha values are between 0 and 1. If not, normalize them.
+        if max(widths.values()) > 1 or min(widths.values()) < 0:
+            widths = {k: (v - 0) / (max(widths.values()) - 0)
+                      for k, v in widths.items()}
+
         # Plotting the graph.
         fig = plt.figure(figsize=(12, 8))
         ax = fig.add_subplot()
@@ -647,7 +653,7 @@ class GraphLoader:
             self.graph,
             pos,
             edgelist=widths.keys(),
-            width=(list(widths.values()) * 10),
+            width=1 + np.array(list(widths.values())) * edge_width_multiplier,
             edge_color=list(widths.values()),
             edge_cmap=getattr(plt.cm, colormap),
             alpha=list(widths.values()),
