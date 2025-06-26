@@ -9,15 +9,16 @@
 
 
 NeuroStatX is a command-line toolbox to perform statistical analysis on
-neuroscience data. It had been developped mostly as part of my PhD project,
-which aims to understand the relationship between the brain, cognition and
-behavior, hence the focus on neuroscience data. As my project goes forward,
-new functionalities and scripts will be added. **Contributions are welcome!**.
+neuroscience data. It has been developed mainly as part of my PhD project,
+which aims to understand the relationship between the brain, cognition, and
+behavior; hence, the focus on neuroscience data. As my project goes forward,
+new functionalities and scripts will be added. **Contributions are welcome!**
+
 
 > [!NOTE] 
 > NeuroStatX also offers a strong testing infrastructure to ensure robust and
-> reproducible results when applicable. Unit test are already implemented for
-> most functions, and CLI script are tested to ensure proper execution.
+> reproducible results when applicable. Unit tests are already implemented for
+> most functions, and CLI scripts are tested to ensure proper execution.
 
 ## Installation
 
