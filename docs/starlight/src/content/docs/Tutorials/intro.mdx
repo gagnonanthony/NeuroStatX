@@ -3,37 +3,50 @@ title: Introduction to NeuroStatX
 description: Learn how to use DatasetLoader and GraphLoader in NeuroStatX to load tabular and network-based datasets.
 ---
 
+import CommandOutputs from '../../../components/CommandOutputs.astro';
+
 ### Loading and Preparing Data
 
-The `NeuroStatX` package provides modular data loading utilities for **tabular** and **network-based** data,
+The `NeuroStatX` package provides modular data loading utilities for **tabular** and **network-based** data
 commonly encountered in neurocognitive and connectomic research.
 This tutorial introduces the two main loader classes:
 
 - `DatasetLoader` for structured behavioral, cognitive, or demographic data
 - `GraphLoader` for network data (e.g., constructing a graph from fuzzy membership values)
 
+:::note
+If you haven't installed `neurostatx` yet, you can do it via `pip`! Or head over to the [installation section](/NeuroStatX/getting-started/installation).
+```bash
+pip install neurostatx
+```
+:::
+
 ---
 
 ### **`DatasetLoader`**
 
-The `DatasetLoader` class is designed to be able to contain tabular-like data 
-and access various basic information automatically. You can also interact with
+The `DatasetLoader` class is designed to be able to contain **tabular-like data**
+and access various kind of basic information automatically. You can also interact with
 the data, apply functions, and save it in multiple formats.
 
 Here is a brief list of the underlying functions:
-- Load data from any formats.
-- Import data from existing objects.
+- Load data from **any formats**.
+- Import data from **existing objects**.
 - Access metadata.
-- Join dataset together.
+- **Join** dataset together.
 - Save in any formats.
-- Apply custom functions.
+- Apply **custom functions**.
 
 #### **Basic Usage**
 
 To cover the basic usage of the `DatasetLoader` class, let's use the `data/example.csv`
-spreadsheet. It contains 50 dummy subjects, with their sex, age, cognitive, and
+spreadsheet. You can find this dataset on the `data/` folder on the 
+[`NeuroStatX GitHub`](https://github.com/gagnonanthony/NeuroStatX).
+It contains 50 dummy subjects, with their sex, age, cognitive, and
 behavioral scores.
 
+<CommandOutputs>
+<span slot="command">
 ```python
 from neurostatx.io.loader import DatasetLoader
 
@@ -43,29 +56,41 @@ df = DatasetLoader()
 # Load the dataframe
 df.load_data("data/example.csv")
 ```
+</span>
+</CommandOutputs>
 
 **Accessing basic metadata**
 
 Our example dataset is currently loaded, we can access some basic information,
 such as the number of subjects or the number of variables it contains. 
 
+<CommandOutputs>
+<span slot="command">
 ```python
 print(df.get_metadata())
 ```
-Running this will return:
+</span>
+<span slot="output">
 ```
 {'nb_subjects': 50, 'nb_variables': 9}
 ```
+</span>
+</CommandOutputs>
+
 **Filtering methods**
 
 Once loaded, one might be interested in dropping some columns, or extracting only
 the descriptive columns from the dataset. The `DatasetLoader` already have built-in
 functions to do this. Let's start by viewing the top 5 rows of the data.
 
+<CommandOutputs>
+<span slot="command">
 ```python
 df.get_data().head(5)
 ```
-```csv
+</span>
+<span slot="output">
+```python
       ids     Sex   Age       Int       Ext    Stress        VA      EFPS       MEM
 0  PC2VLN  Female  10.9  0.853711 -0.155164  0.356608 -0.009190 -0.312745  0.046885
 1  XL1LON    Male  11.6  0.712829  0.893640  0.629955  0.446043  0.422631  0.336953
@@ -73,13 +98,19 @@ df.get_data().head(5)
 3  TJWBKZ    Male  10.3 -0.172911 -1.340310 -0.582634  0.238857 -0.144028 -0.178835
 4  KWQW9D    Male  10.8 -0.258481 -0.895303 -0.610380 -0.297869 -0.111272  0.016617
 ```
+</span>
+</CommandOutputs>
 
 We can see two descriptive columns, `Age` and `Sex`. Now, let's try extracting them.
 
+<CommandOutputs>
+<span slot="command">
 ```python
 df.get_descriptive_columns([1,2]).head(5) # Since they are at position 1 and 2 in the columns
 ```
-```csv
+</span>
+<span slot="output">
+```python
       Sex   Age
 0  Female  10.9
 1    Male  11.6
@@ -87,15 +118,21 @@ df.get_descriptive_columns([1,2]).head(5) # Since they are at position 1 and 2 i
 3    Male  10.3
 4    Male  10.8
 ```
+</span>
+</CommandOutputs>
 
 However, they were not removed from the actual dataset, simply _**extracted**_.
 Let's truly remove them from the dataset now using the `drop_columns()` function.
 
+<CommandOutputs>
+<span slot="command">
 ```python
 df.drop_columns([1,2])
 df.get_data().head(5)
 ```
-```csv
+</span>
+<span slot="output">
+```python
       ids       Int       Ext    Stress        VA      EFPS       MEM
 0  PC2VLN  0.853711 -0.155164  0.356608 -0.009190 -0.312745  0.046885
 1  XL1LON  0.712829  0.893640  0.629955  0.446043  0.422631  0.336953
@@ -103,6 +140,8 @@ df.get_data().head(5)
 3  TJWBKZ -0.172911 -1.340310 -0.582634  0.238857 -0.144028 -0.178835
 4  KWQW9D -0.258481 -0.895303 -0.610380 -0.297869 -0.111272  0.016617
 ```
+</span>
+</CommandOutputs>
 
 As you can see, they were successfully removed from the dataset! Now you get the basics
 for loading and manipulating datasets. In the following tutorials, you will also learn
@@ -115,8 +154,8 @@ Let's move to the `GraphLoader` class now.
 
 The `GraphLoader` class is a versatile class to load, build, save, and visualize
 graph network object. Similarly to the `DatasetLoader` class, any functions can
-be applied to this class, assuming it it suppose to run a graph network object.
-Here is a brief list of possible functions:
+be applied to this class, assuming it is designed to run on a graph network object.
+Here is a brief list of currently implemented functions:
 - Load a graph network from a file in any format.
 - Build a graph from an edge list.
 - Compute the layout of the graph.
@@ -126,46 +165,60 @@ Here is a brief list of possible functions:
 
 #### **Basic Usage**
 
-Since we do not have a graph network, let's create a small dataframe to build a
-graph from using the `GraphLoader` class.
+Since we do not have currently a graph network, let's build one from scratch, starting
+by creating a small dataframe then feeding it to the `GraphLoader` class.
 
+<CommandOutputs>
+<span slot="command">
 ```python
 import pandas as pd
 from neurostatx.io.loader import GraphLoader
 
-data = pd.DataFrame({'source': ['c1', 'c2', 'c3'],
-                     'target': ['c2', 'c3', 'c1'],
-                     'weight': [0.2, 0.5, 0.7]})
+# Dummy dataframe containing 3 columns and 3 rows.
+data = pd.DataFrame({
+      'source': ['c1', 'c2', 'c3'],
+      'target': ['c2', 'c3', 'c1'],
+      'weight': [0.2, 0.5, 0.7]
+})
 
 # Build our graph.
 G = GraphLoader().build_graph(data, edge_attr="weight")
 ```
+</span>
+</CommandOutputs>
 
 We now have a built graph network to play around with! As you can see in the code
 snippet above, it contains 3 nodes (a, b, c), with three weighted edges (a -> b, b -> c, and
 c -> a). Now let's try visualizing it. First, we need to compute a layout, meaning we
-need to determine where our nodes will be in our network space. For weighted graph,
-this allows the relative position of each node to be determined using the edge's weight.
-Higher weight will mean closer positions between nodes, and vice-versa.
+need to determine where our nodes will be in our network space. There is multiple
+options to do this, but let's stick to the default for now (e.g., spring layout).
+For weighted graph, this allows the relative position of each node to be
+determined using the edge's weight.
 
 :::note
 There is some randomness in the layout function, so recomputing the layout of any
 graph network will results in some changes between iterations.
 :::
 
+<CommandOutputs>
+<span slot="command">
 ```python
 G.layout(weight="weight")
 G.visualize("test.png", weight="weight")
 ```
+</span>
+</CommandOutputs>
 
 If you open `test.png`, you will see your graph network with weight as the
 edge color and size!
-![GraphImage](/src/assets/tutorials/graphnetwork.png)
+![GraphImage](../../../assets/tutorials/graphnetwork.png)
 
 If you want, you can play around with the `visualize()` function to get the look
 you desire. Here a modified version of the previous graph. Of course, the node positions
-will stay the same, since we do not recompute the layout.
+will stay the same, since we did not recompute the layout.
 
+<CommandOutputs>
+<span slot="command">
 ```python
 G.visualize("test.png",
             weight="weight",
@@ -175,25 +228,37 @@ G.visualize("test.png",
             title="Beautiful Graph Network",
             legend_title="Weight")
 ```
+</span>
+</CommandOutputs>
 
-![GraphImageCustom](/src/assets/tutorials/graphnetworkclean.png)
+![GraphImageCustom](../../../assets/tutorials/graphnetworkclean.png)
 
 **Adding node and edge attributes**
 
 An interesting aspect of graph network is that you can append data to both nodes
 and edges. For example, if nodes are subjects, we could potentially add demographic
-data such as age. First, let's look at which data is currently associated with each
-node.
+data such as age to each node. First, let's look at which data is currently contained within
+each node.
 
+<CommandOutputs>
+<span slot="command">
 ```python
 G.get_graph().nodes(data=True)
 ```
+</span>
+<span slot="output">
 ```python
 NodeDataView({'c1': {'pos': [0.9999999999999999, -0.13638075527832896]}, 'c2': {'pos': [-0.9483498360161102, -0.5075132847536213]}, 'c3': {'pos': [-0.05165016398389009, 0.6438940400319502]}})
 ```
+</span>
+</CommandOutputs>
 
-Let's now add age to each node and see what happen.
+We see that only the node positions is accessible for now. Those came from our
+previous computation of the graph layout. Let's now add age to each node and
+see what happen.
 
+<CommandOutputs>
+<span slot="command">
 ```python
 # Create a dictionary of age for each node.
 age = {
@@ -206,14 +271,20 @@ age = {
 G.add_node_attribute(age)
 G.get_graph().nodes(data=True)
 ```
+</span>
+<span slot="output">
 ```python
 NodeDataView({'c1': {'pos': [0.9999999999999999, -0.13638075527832896], 'age': 20}, 'c2': {'pos': [-0.9483498360161102, -0.5075132847536213], 'age': 26}, 'c3': {'pos': [-0.05165016398389009, 0.6438940400319502], 'age': 32}})
 ```
+</span>
+</CommandOutputs>
 
-You can now see that each node has its associated age. To add edge attributes,
+You can see that each node has now its associated age. To add edge attributes,
 you can repeat the previous process but use the `add_edge_attributes()` function.
 Here is a small example.
 
+<CommandOutputs>
+<span slot="command">
 ```python
 # Create a dictionary of pair of nodes and the edge attribute.
 length = {
@@ -226,22 +297,29 @@ length = {
 G.add_edge_attribute(length)
 G.get_graph().edges(data=True)
 ```
-
+</span>
+<span slot="output">
 ```python
 EdgeDataView([('c1', 'c2', {'weight': 0.2, 'length': 100}), ('c1', 'c3', {'weight': 0.7, 'length': 150}), ('c2', 'c3', {'weight': 0.5, 'length': 200})])
 ```
+</span>
+</CommandOutputs>
 
 You can even see the previous `weight` data that we initially set! Now, we could recompute
 a graph layout using the length rather than weight, and visualize the results.
 
+<CommandOutputs>
+<span slot="command">
 ```python
 # Layout computation.
 G.layout(weight="length")
 G.visualize("test_length.png", weight="length")
 ```
+</span>
+</CommandOutputs>
 
-![GraphNetworkLength](/src/assets/tutorials/graphnetworklength.png)
+![GraphNetworkLength](../../../assets/tutorials/graphnetworklength.png)
 
-There it is! You recomputed and visualize the graph network using the length
+There it is! You recomputed and visualized the graph network using the length
 data rather than the weight. Now, you can save your graph network using `save_graph()`,
-and then load it back using `load_graph()` ! 
+and then load it back using `load_graph()` similarly to the `DatasetLoader`. 
