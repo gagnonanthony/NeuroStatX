@@ -5,7 +5,7 @@ import starlight from "@astrojs/starlight";
 // https://astro.build/config
 export default defineConfig({
   site: 'https://gagnonanthony.github.io',
-  base: '/NeuroStatX',
+  base: '/NeuroStatX/',
   integrations: [starlight(
     {
         favicon: "/public/favicon-32x32.png",
@@ -27,8 +27,8 @@ export default defineConfig({
             {
                 label: "Tutorials",
                 items: [
-                    { label: "Introduction to NeuroStatX", link: "./tutorials/intro" },
-                    { label: "Applying Fuzzy Clustering", link: "./tutorials/fuzzyclustering" },
+                    { label: "Introduction to NeuroStatX", link: "tutorials/intro" },
+                    { label: "Applying Fuzzy Clustering", link: "tutorials/fuzzyclustering" },
                 ]
             },
             {
