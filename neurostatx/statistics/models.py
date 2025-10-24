@@ -350,3 +350,140 @@ def permutation_test(estimator,
                           axis=0) + 1) / (n_permutations + 1)
 
     return mod, score, coef, perm_score, score_pvalue, perm_coef, coef_pvalue
+
+
+class PHQ9Labeler():
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        """
+        Method kept for consistency with the scikit-learn API. But in this
+        case, will simply call the `transform` method since no actual model
+        gets fitted here.
+
+        Needs to contain only 9 columns representing the ordered PHQ-9 items.
+        Should be in the form of a DataFrame with shape (n_samples, 9).
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Input features (n_samples, 9) with only the 9 PHQ-9 items as
+            columns and subject as rows.
+        y : pd.Series, optional
+            Target variable. Not used in this model. Keeps the API consistent.
+
+        Returns
+        -------
+        pd.DataFrame
+            Transformed features.
+        """
+        if X.shape[1] != 9:
+            raise ValueError("Input DataFrame must contain exactly 9 columns"
+                             " representing the ordered PHQ-9 items.")
+
+        return self.transform(X)
+
+    def transform(self, X):
+        """
+        Transform the input features to assign the label based on the fuzzy
+        weighting of the PHQ-9 items. Needs to contain only 9 columns
+        representing the ordered PHQ-9 items. Should be in the form of a
+        DataFrame with shape (n_samples, 9).
+
+        Final labels will be either:
+
+        - Not depressed
+        - Mild
+        - Moderate
+        - Mod-Severe
+        - Severe
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Input features.
+
+        Returns
+        -------
+        pd.DataFrame
+            Transformed features.
+        """
+        if X.shape[1] != 9:
+            raise ValueError("Input DataFrame must contain exactly 9 columns"
+                             " representing the ordered PHQ-9 items.")
+
+        def _transform_row(row):
+            # Apply the fuzzy matching logic to each row.
+            q1, q2, q3, q4, q5, q6, q7, q8, q9 = row.values
+
+            if not (q1 > 1 or q2 > 1):
+                return "Not Depressed"
+
+            # Compute uD (sum of q1, q2, q6, q9) divided by 12
+            uD = np.sum([q1, q2, q6, q9]) / 12
+
+            if uD < 0.33:
+                return "Not Depressed"
+
+            # Sort the array for easier comparisons.
+            s_array = np.sort([q1, q2, q6, q9])
+
+            # --- uD = 0.33 ---
+            if np.isclose(uD, 0.33, atol=0.01) and (q1 >= 2 and q2 >= 2):
+                return "Moderate"
+
+            # --- uD = 0.417 ---
+            if np.isclose(uD, 0.417, atol=0.01):
+                if np.array_equal(s_array, np.array([1, 1, 1, 2])):
+                    return "Mild"
+                elif (q1 > 2 or q2 > 2 or q6 > 2 or q9 > 2):
+                    return "Moderate"
+
+            # --- uD = 0.5 ---
+            if np.isclose(uD, 0.5, atol=0.01):
+                if (s_array[3] == 2 and s_array[2] == 2 and
+                        s_array[1] == 2 and s_array[0] < 2):
+                    return "Mod-Severe"
+                elif (s_array[3] == 2 and s_array[2] == 2 and
+                      s_array[1] < 2 and s_array[0] < 2):
+                    return "Moderate"
+                elif np.array_equal(s_array, np.array([1, 1, 1, 3])):
+                    return "Moderate"
+                elif (s_array[3] == 3 and s_array[2] == 3):
+                    return "Mod-Severe"
+
+            # --- uD = 0.58 ---
+            if np.isclose(uD, 0.58, atol=0.01):
+                return "Mod-Severe"
+
+            # --- uD = 0.66 ---
+            if np.isclose(uD, 0.66, atol=0.01):
+                if np.array_equal(s_array, np.array([1, 1, 3, 3])):
+                    return "Mod-Severe"
+                elif np.array_equal(s_array, np.array([2, 2, 2, 2])):
+                    return "Severe"
+                elif np.array_equal(s_array, np.array([1, 2, 2, 3])):
+                    return "Mod-Severe"
+                elif (s_array[3] == 3 and s_array[2] == 3 and
+                      s_array[1] == 2):
+                    return "Severe"
+
+            # --- uD = 0.75 ---
+            if np.isclose(uD, 0.75, atol=0.01):
+                if np.array_equal(s_array, np.array([2, 2, 2, 3])):
+                    return "Severe"
+                elif (s_array[3] == 3 and s_array[2] == 3 and
+                      s_array[1] == 2):
+                    return "Mod-Severe"
+                elif (s_array[3] == 3 and s_array[2] == 3 and
+                      s_array[1] == 3):
+                    return "Severe"
+
+            # --- uD = 0.83, 0.91, or 1 ---
+            if (np.isclose(uD, 0.83, atol=0.01) or
+                np.isclose(uD, 0.91, atol=0.01) or
+                    np.isclose(uD, 1, atol=0.01)):
+                return "Severe"
+
+        return X.apply(_transform_row, axis=1)
