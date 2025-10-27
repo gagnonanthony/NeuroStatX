@@ -42,7 +42,10 @@ class TestFuzzyLabelers(unittest.TestCase):
                                               'expected'])
 
         results = PHQ9Labeler().transform(test_cases_df.iloc[:, :-1])
+        results_fit = PHQ9Labeler().fit(test_cases_df.iloc[:, :-1])
         self.assertTrue((results == test_cases_df['expected'].tolist()).all())
+        self.assertTrue(
+            (results_fit == test_cases_df['expected'].tolist()).all())
 
     def test_fuzzy_labeler_gad7(self):
         # Test case for the GAD-7 labeler.
@@ -107,6 +110,28 @@ class TestFuzzyLabelers(unittest.TestCase):
                                               'Q6', 'Q7', 'expected'])
         results = GAD7Labeler().transform(
             test_cases_df.iloc[:, :-1])
-        print(results)
-        print(test_cases_df['expected'])
+        results_fit = GAD7Labeler().fit(
+            test_cases_df.iloc[:, :-1])
         self.assertTrue((results == test_cases_df['expected'].tolist()).all())
+        self.assertTrue(
+            (results_fit == test_cases_df['expected'].tolist()).all())
+
+    def test_assess_valueerror(self):
+        # Test that invalid inputs raise ValueError
+        invalid_data = pd.DataFrame({
+            'Q1': [4, -1, 2],
+            'Q2': [0, 1, 5],
+            'Q3': [1, 2, 3],
+            'Q4': [0, 0, 0],
+            'Q5': [0, 0, 0],
+            'Q6': [0, 0, 0],
+            'Q7': [0, 0, 0],
+            'Q8': [0, 0, 0],
+            'Q9': [0, 0, 0]
+        })
+
+        with self.assertRaises(ValueError):
+            GAD7Labeler().transform(invalid_data.iloc[:, :-5])
+            GAD7Labeler().fit(invalid_data.iloc[:, :-3])
+            PHQ9Labeler().transform(invalid_data.iloc[:, :-5])
+            PHQ9Labeler().fit(invalid_data.iloc[:, :-3])

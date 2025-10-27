@@ -447,19 +447,15 @@ class PHQ9Labeler:
 
             # --- uD = 0.5 ---
             if np.isclose(uD, 0.5, atol=0.01):
-                if (
-                    s_array[3] == 2
-                    and s_array[2] == 2
-                    and s_array[1] == 2
-                    and s_array[0] < 2
-                ):
+                if s_array[3] == 2 and \
+                    s_array[2] == 2 and \
+                    s_array[1] == 2 and \
+                        s_array[0] < 2:
                     return "Mod-Severe"
-                elif (
-                    s_array[3] == 2
-                    and s_array[2] == 2
-                    and s_array[1] < 2
-                    and s_array[0] < 2
-                ):
+                elif s_array[3] == 2 and \
+                    s_array[2] == 2 and \
+                    s_array[1] < 2 and \
+                        s_array[0] < 2:
                     return "Moderate"
                 elif np.array_equal(s_array, np.array([1, 1, 1, 3])):
                     return "Moderate"
@@ -491,11 +487,9 @@ class PHQ9Labeler:
                     return "Severe"
 
             # --- uD = 0.83, 0.91, or 1 ---
-            if (
-                np.isclose(uD, 0.83, atol=0.01)
-                or np.isclose(uD, 0.91, atol=0.01)
-                or np.isclose(uD, 1, atol=0.01)
-            ):
+            if np.isclose(uD, 0.83, atol=0.01) or \
+               np.isclose(uD, 0.91, atol=0.01) or \
+               np.isclose(uD, 1, atol=0.01):
                 return "Severe"
 
         return X.apply(_transform_row, axis=1)
