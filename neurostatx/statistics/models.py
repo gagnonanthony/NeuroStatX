@@ -487,3 +487,171 @@ class PHQ9Labeler():
                 return "Severe"
 
         return X.apply(_transform_row, axis=1)
+
+
+class GAD7Labeler():
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        """
+        Method kept for consistency with the scikit-learn API. But in this
+        case, will simply call the `transform` method since no actual model
+        gets fitted here.
+
+        Needs to contain only 7 columns representing the GAD-7 items.
+        Should be in the form of a DataFrame with shape (n_samples, 7).
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Input features (n_samples, 7) with only the 7 GAD-7 items as
+            columns and subject as rows.
+        y : pd.Series, optional
+            Target variable. Not used in this model. Keeps the API consistent.
+
+        Returns
+        -------
+        pd.DataFrame
+            Transformed features.
+        """
+        if X.shape[1] != 7:
+            raise ValueError("Input DataFrame must contain exactly 7 columns"
+                             " representing the GAD-7 items.")
+
+        return self.transform(X)
+
+    def transform(self, X):
+        """
+        Transform the input features to assign the label based on the GAD-7
+        scoring.
+
+        Needs to contain only 7 columns representing the GAD-7 items.
+        Should be in the form of a DataFrame with shape (n_samples, 7).
+
+        Final labels will be either:
+
+        - Not anxious
+        - Mild
+        - Moderate
+        - Severe
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Input features.
+
+        Returns
+        -------
+        pd.DataFrame
+            Transformed features.
+        """
+        if X.shape[1] != 7:
+            raise ValueError("Input DataFrame must contain exactly 7 columns"
+                             " representing the GAD-7 items.")
+
+        def _transform_row(row):
+            # Apply the GAD-7 scoring fuzzy logic to each row.
+            q1, q2, q3, q4, q5, q6, q7 = row.values
+
+            # Compute uA (sum of q1 to q7) divided by 21
+            uA = np.sum([q1, q2, q3, q4, q5, q6, q7]) / 21
+
+            if uA < 0.285:
+                return "Not Anxious"
+
+            # Sort the array for easier comparisons.
+            s_array = np.sort([q1, q2, q3, q4, q5, q6, q7])
+
+            # --- 0.285 < uA < 0.428 ---
+            if 0.285 < uA < 0.428:
+                return "Mild"
+
+            # --- uA = 0.428 ---
+            if np.isclose(uA, 0.428, atol=0.01):
+                if s_array[6] == 2 and s_array[5] == 2 \
+                    and s_array[4] == 1 and s_array[3] == 1 \
+                        and s_array[2] == 1 and s_array[1] == 1 \
+                        and s_array[0] == 1:
+                    return "Mild"
+                else:
+                    return "Moderate"
+
+            # --- uA = 0.476 ---
+            if np.isclose(uA, 0.476, atol=0.01):
+                if s_array[6] == 3 and s_array[5] == 2 \
+                    and s_array[4] == 1 and s_array[3] == 1 \
+                        and s_array[2] == 1 and s_array[1] == 1 \
+                        and s_array[0] == 1:
+                    return "Mild"
+                elif s_array[6] == 2 and s_array[5] == 2 \
+                    and s_array[4] == 2 and s_array[3] == 1 \
+                        and s_array[2] == 1 and s_array[1] == 1 \
+                        and s_array[0] == 1:
+                    return "Mild"
+                else:
+                    return "Moderate"
+
+            # --- uA = 0.523 ---
+            if np.isclose(uA, 0.523, atol=0.01):
+                if (s_array[6] == 3 and s_array[5] == 2 and s_array[4] == 2
+                    and s_array[3] == 1 and s_array[2] == 1 and s_array[1] == 1
+                    and s_array[0] == 1) or \
+                    (s_array[6] == 2 and s_array[5] == 2 and
+                     s_array[4] == 2 and s_array[3] == 2 and s_array[2] == 1
+                     and s_array[1] == 1 and s_array[0] == 1):
+                    return "Mild"
+                else:
+                    return "Moderate"
+
+            # --- uA = 0.571 ---
+            if np.isclose(uA, 0.571, atol=0.01):
+                return "Moderate"
+
+            # --- uA = 0.619 ---
+            if np.isclose(uA, 0.619, atol=0.01):
+                if (s_array[6] == 3 and s_array[5] == 3 and
+                    s_array[4] == 3 and s_array[3] == 2 and
+                    s_array[2] == 2) or \
+                        (s_array[6] == 3 and s_array[5] == 3 and
+                            s_array[4] == 2 and s_array[3] == 2 and
+                            s_array[2] == 2 and s_array[1] == 1):
+                    return "Severe"
+                else:
+                    return "Moderate"
+
+            # --- uA = 0.666 ---
+            if np.isclose(uA, 0.666, atol=0.01):
+                if (s_array[6] == 3 and s_array[5] == 3 and
+                    s_array[4] == 3 and s_array[3] == 3 and
+                    s_array[2] == 1 and s_array[1] == 1 and
+                    s_array[0] == 0) or \
+                        (s_array[6] == 3 and s_array[5] == 3 and
+                         s_array[4] == 3 and s_array[3] == 2 and
+                         s_array[2] == 1 and s_array[1] == 1 and
+                         s_array[0] == 1) or \
+                        (np.array_equal(s_array,
+                                        np.array([2, 2, 2, 2, 2, 2, 2]))):
+                    return "Moderate"
+                else:
+                    return "Severe"
+
+            # --- uA = 0.714 ---
+            if np.isclose(uA, 0.714, atol=0.01):
+                if (s_array[6] == 3 and s_array[5] == 3 and
+                    s_array[4] == 3 and s_array[3] == 3 and
+                    s_array[2] == 3) or \
+                        (s_array[6] == 3 and s_array[5] == 3 and
+                         s_array[4] == 3 and s_array[3] == 3) or \
+                        (s_array[6] == 3 and s_array[5] == 3 and
+                            s_array[4] == 3 and s_array[3] == 2 and
+                            s_array[2] == 2 and s_array[1] == 2):
+                    return "Severe"
+                else:
+                    return "Moderate"
+
+            # --- uA = 0.761, 0.809, 0.857, 0.904, or 1 ---
+            if uA > 0.760:
+                return "Severe"
+
+        return X.apply(_transform_row, axis=1)

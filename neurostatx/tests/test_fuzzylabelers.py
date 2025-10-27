@@ -2,7 +2,7 @@ import unittest
 
 import pandas as pd
 
-from neurostatx.statistics.models import PHQ9Labeler
+from neurostatx.statistics.models import PHQ9Labeler, GAD7Labeler
 
 
 class TestFuzzyLabelers(unittest.TestCase):
@@ -42,6 +42,71 @@ class TestFuzzyLabelers(unittest.TestCase):
                                               'expected'])
 
         results = PHQ9Labeler().transform(test_cases_df.iloc[:, :-1])
+        self.assertTrue((results == test_cases_df['expected'].tolist()).all())
+
+    def test_fuzzy_labeler_gad7(self):
+        # Test case for the GAD-7 labeler.
+        # We define mock scores for 7 questions, trying to cover all cases.
+        test_cases = [
+            (0, 0, 0, 0, 0, 0, 0, "Not Anxious"),
+            (1, 0, 0, 0, 0, 0, 0, "Not Anxious"),
+            (0, 2, 3, 0, 0, 0, 0, "Not Anxious"),
+            (1, 1, 1, 1, 1, 2, 0, "Mild"),
+            (2, 2, 2, 0, 0, 0, 0, "Mild"),
+            (3, 3, 2, 0, 0, 0, 0, "Mild"),
+            (2, 2, 1, 1, 1, 1, 1, "Mild"),
+            (3, 3, 3, 0, 0, 0, 0, "Moderate"),
+            (3, 0, 2, 2, 1, 1, 0, "Moderate"),
+            (2, 2, 2, 1, 1, 1, 0, "Moderate"),
+            (2, 2, 2, 2, 1, 0, 0, "Moderate"),
+            (3, 2, 1, 1, 1, 1, 1, "Mild"),
+            (2, 2, 2, 1, 1, 1, 1, "Mild"),
+            (3, 3, 3, 0, 0, 0, 1, "Moderate"),
+            (3, 3, 1, 1, 0, 1, 1, "Moderate"),
+            (2, 2, 2, 2, 1, 1, 0, "Moderate"),
+            (2, 2, 2, 3, 1, 0, 0, "Moderate"),
+            (3, 2, 2, 1, 1, 1, 1, "Mild"),
+            (2, 2, 2, 2, 1, 1, 1, "Mild"),
+            (3, 3, 3, 1, 1, 0, 0, "Moderate"),
+            (2, 2, 2, 2, 2, 1, 0, "Moderate"),
+            (3, 3, 2, 2, 1, 0, 0, "Moderate"),
+            (3, 3, 3, 3, 0, 0, 0, "Moderate"),
+            (2, 2, 2, 2, 2, 2, 0, "Moderate"),
+            (3, 3, 3, 3, 1, 0, 0, "Moderate"),
+            (3, 3, 3, 1, 1, 1, 1, "Moderate"),
+            (3, 3, 2, 2, 1, 1, 1, "Moderate"),
+            (3, 2, 2, 2, 2, 2, 0, "Moderate"),
+            (2, 2, 2, 2, 2, 2, 1, "Moderate"),
+            (3, 3, 3, 2, 2, 0, 0, "Severe"),
+            (3, 3, 2, 2, 2, 1, 0, "Severe"),
+            (3, 3, 3, 3, 1, 0, 1, "Moderate"),
+            (3, 3, 3, 2, 1, 1, 1, "Moderate"),
+            (2, 2, 2, 2, 2, 2, 2, "Moderate"),
+            (3, 3, 3, 3, 2, 0, 0, "Severe"),
+            (3, 3, 3, 2, 2, 1, 0, "Severe"),
+            (3, 3, 2, 2, 2, 2, 0, "Severe"),
+            (3, 3, 2, 2, 2, 1, 1, "Severe"),
+            (3, 2, 2, 2, 2, 2, 1, "Severe"),
+            (3, 3, 2, 2, 2, 2, 1, "Moderate"),
+            (3, 2, 2, 2, 2, 2, 2, "Moderate"),
+            (3, 3, 3, 2, 1, 1, 2, "Moderate"),
+            (3, 3, 3, 3, 3, 0, 0, "Severe"),
+            (3, 3, 3, 3, 2, 1, 0, "Severe"),
+            (3, 3, 3, 2, 2, 2, 0, "Severe"),
+            (3, 3, 3, 3, 3, 1, 0, "Severe"),
+            (3, 3, 3, 2, 2, 2, 2, "Severe"),
+            (3, 3, 3, 3, 2, 2, 2, "Severe"),
+            (3, 3, 3, 3, 3, 2, 2, "Severe"),
+            (3, 3, 3, 3, 3, 3, 2, "Severe"),
+            (3, 3, 3, 3, 3, 3, 3, "Severe")
+        ]
+
+        # Transform test cases into DataFrame and run the labeler
+        test_cases_df = pd.DataFrame(test_cases,
+                                     columns=['Q1', 'Q2', 'Q3', 'Q4', 'Q5',
+                                              'Q6', 'Q7', 'expected'])
+        results = GAD7Labeler().transform(
+            test_cases_df.iloc[:, :-1])
         print(results)
         print(test_cases_df['expected'])
         self.assertTrue((results == test_cases_df['expected'].tolist()).all())
