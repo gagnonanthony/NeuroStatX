@@ -12,9 +12,9 @@ class TestFuzzyLabelers(unittest.TestCase):
         # We define score for 9 questions, but only Q1, Q2, Q6, and Q9 are
         # used.
         test_cases = [
-            (3, 0, 0, 0, 0, 0, 0, 0, 0, "Not Depressed"),
-            (0, 2, 0, 0, 0, 1, 0, 0, 0, "Not Depressed"),
-            (1, 0, 0, 0, 0, 1, 0, 0, 1, "Not Depressed"),
+            (3, 0, 0, 0, 0, 0, 0, 0, 0, "Subthreshold"),
+            (0, 2, 0, 0, 0, 1, 0, 0, 0, "Subthreshold"),
+            (1, 0, 0, 0, 0, 1, 0, 0, 1, "Subthreshold"),
             (2, 1, 1, 0, 0, 1, 0, 0, 1, "Mild"),
             (2, 2, 0, 0, 0, 0, 0, 0, 0, "Moderate"),
             (1, 3, 0, 0, 0, 1, 0, 0, 0, "Moderate"),
@@ -51,9 +51,9 @@ class TestFuzzyLabelers(unittest.TestCase):
         # Test case for the GAD-7 labeler.
         # We define mock scores for 7 questions, trying to cover all cases.
         test_cases = [
-            (0, 0, 0, 0, 0, 0, 0, "Not Anxious"),
-            (1, 0, 0, 0, 0, 0, 0, "Not Anxious"),
-            (0, 2, 3, 0, 0, 0, 0, "Not Anxious"),
+            (0, 0, 0, 0, 0, 0, 0, "Subthreshold"),
+            (1, 0, 0, 0, 0, 0, 0, "Subthreshold"),
+            (0, 2, 3, 0, 0, 0, 0, "Subthreshold"),
             (1, 1, 1, 1, 1, 2, 0, "Mild"),
             (2, 2, 2, 0, 0, 0, 0, "Mild"),
             (3, 3, 2, 0, 0, 0, 0, "Mild"),
@@ -90,9 +90,9 @@ class TestFuzzyLabelers(unittest.TestCase):
             (3, 3, 2, 2, 2, 2, 0, "Severe"),
             (3, 3, 2, 2, 2, 1, 1, "Severe"),
             (3, 2, 2, 2, 2, 2, 1, "Severe"),
-            (3, 3, 2, 2, 2, 2, 1, "Moderate"),
-            (3, 2, 2, 2, 2, 2, 2, "Moderate"),
-            (3, 3, 3, 2, 1, 1, 2, "Moderate"),
+            (3, 3, 2, 2, 2, 2, 1, "Severe"),
+            (3, 2, 2, 2, 2, 2, 2, "Severe"),
+            (3, 3, 3, 2, 1, 1, 2, "Severe"),
             (3, 3, 3, 3, 3, 0, 0, "Severe"),
             (3, 3, 3, 3, 2, 1, 0, "Severe"),
             (3, 3, 3, 2, 2, 2, 0, "Severe"),
@@ -116,7 +116,7 @@ class TestFuzzyLabelers(unittest.TestCase):
         self.assertTrue(
             (results_fit == test_cases_df['expected'].tolist()).all())
 
-    def test_assess_valueerror(self):
+    def test_assess_ValueError_PHQ9_fit(self):
         # Test that invalid inputs raise ValueError
         invalid_data = pd.DataFrame({
             'Q1': [4, -1, 2],
@@ -131,7 +131,55 @@ class TestFuzzyLabelers(unittest.TestCase):
         })
 
         with self.assertRaises(ValueError):
-            GAD7Labeler().transform(invalid_data.iloc[:, :-5])
-            GAD7Labeler().fit(invalid_data.iloc[:, :-3])
-            PHQ9Labeler().transform(invalid_data.iloc[:, :-5])
             PHQ9Labeler().fit(invalid_data.iloc[:, :-3])
+
+    def test_assess_ValueError_PHQ9_transform(self):
+        # Test that invalid inputs raise ValueError
+        invalid_data = pd.DataFrame({
+            'Q1': [4, -1, 2],
+            'Q2': [0, 1, 5],
+            'Q3': [1, 2, 3],
+            'Q4': [0, 0, 0],
+            'Q5': [0, 0, 0],
+            'Q6': [0, 0, 0],
+            'Q7': [0, 0, 0],
+            'Q8': [0, 0, 0],
+            'Q9': [0, 0, 0]
+        })
+
+        with self.assertRaises(ValueError):
+            PHQ9Labeler().transform(invalid_data.iloc[:, :-3])
+
+    def test_assess_ValueError_GAD7_fit(self):
+        # Test that invalid inputs raise ValueError
+        invalid_data = pd.DataFrame({
+            'Q1': [4, -1, 2],
+            'Q2': [0, 1, 5],
+            'Q3': [1, 2, 3],
+            'Q4': [0, 0, 0],
+            'Q5': [0, 0, 0],
+            'Q6': [0, 0, 0],
+            'Q7': [0, 0, 0],
+            'Q8': [0, 0, 0],
+            'Q9': [0, 0, 0]
+        })
+
+        with self.assertRaises(ValueError):
+            GAD7Labeler().fit(invalid_data.iloc[:, :-3])
+
+    def test_assess_ValueError_GAD7_transform(self):
+        # Test that invalid inputs raise ValueError
+        invalid_data = pd.DataFrame({
+            'Q1': [4, -1, 2],
+            'Q2': [0, 1, 5],
+            'Q3': [1, 2, 3],
+            'Q4': [0, 0, 0],
+            'Q5': [0, 0, 0],
+            'Q6': [0, 0, 0],
+            'Q7': [0, 0, 0],
+            'Q8': [0, 0, 0],
+            'Q9': [0, 0, 0]
+        })
+
+        with self.assertRaises(ValueError):
+            GAD7Labeler().transform(invalid_data.iloc[:, :-3])

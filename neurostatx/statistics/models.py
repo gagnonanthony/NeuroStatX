@@ -423,25 +423,30 @@ class PHQ9Labeler:
             q1, q2, q3, q4, q5, q6, q7, q8, q9 = row.values
 
             if not (q1 > 1 or q2 > 1):
-                return "Not Depressed"
+                return "Subthreshold"
 
             # Compute uD (sum of q1, q2, q6, q9) divided by 12
             uD = np.sum([q1, q2, q6, q9]) / 12
 
             if uD < 0.33:
-                return "Not Depressed"
+                return "Subthreshold"
 
             # Sort the array for easier comparisons.
             s_array = np.sort([q1, q2, q6, q9])
 
             # --- uD = 0.33 ---
-            if np.isclose(uD, 0.33, atol=0.01) and (q1 >= 2 and q2 >= 2):
-                return "Moderate"
+            if np.isclose(uD, 0.33, atol=0.01):
+                if (q1 >= 2 and q2 >= 2):
+                    return "Moderate"
+                else:
+                    return "Subthreshold"
 
             # --- uD = 0.417 ---
             if np.isclose(uD, 0.417, atol=0.01):
                 if np.array_equal(s_array, np.array([1, 1, 1, 2])):
                     return "Mild"
+                elif np.array_equal(s_array, np.array([0, 1, 2, 2])):
+                    return "Moderate"
                 elif q1 > 2 or q2 > 2 or q6 > 2 or q9 > 2:
                     return "Moderate"
 
@@ -459,6 +464,8 @@ class PHQ9Labeler:
                     return "Moderate"
                 elif np.array_equal(s_array, np.array([1, 1, 1, 3])):
                     return "Moderate"
+                elif np.array_equal(s_array, np.array([0, 1, 2, 3])):
+                    return "Mod-Severe"
                 elif s_array[3] == 3 and s_array[2] == 3:
                     return "Mod-Severe"
 
@@ -568,7 +575,7 @@ class GAD7Labeler:
             uA = np.sum([q1, q2, q3, q4, q5, q6, q7]) / 21
 
             if uA < 0.285:
-                return "Not Anxious"
+                return "Subthreshold"
 
             # Sort the array for easier comparisons.
             s_array = np.sort([q1, q2, q3, q4, q5, q6, q7])
@@ -632,20 +639,8 @@ class GAD7Labeler:
                 else:
                     return "Severe"
 
-            # --- uA = 0.714 ---
-            if np.isclose(uA, 0.714, atol=0.01):
-                if np.array_equal(s_array[2:],
-                                  np.array([3, 3, 3, 3, 3])) or \
-                    np.array_equal(s_array[3:],
-                                   np.array([3, 3, 3, 3])) or \
-                    np.array_equal(s_array[1:],
-                                   np.array([2, 2, 2, 3, 3, 3])):
-                    return "Severe"
-                else:
-                    return "Moderate"
-
-            # --- uA = 0.761, 0.809, 0.857, 0.904, or 1 ---
-            if uA > 0.760:
+            # --- uA = 0.713, 0.761, 0.809, 0.857, 0.904, or 1 ---
+            if uA > 0.713:
                 return "Severe"
 
         return X.apply(_transform_row, axis=1)
