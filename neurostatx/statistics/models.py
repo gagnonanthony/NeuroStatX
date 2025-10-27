@@ -585,63 +585,29 @@ class GAD7Labeler:
 
             # --- uA = 0.428 ---
             if np.isclose(uA, 0.428, atol=0.01):
-                if (
-                    s_array[6] == 2
-                    and s_array[5] == 2
-                    and s_array[4] == 1
-                    and s_array[3] == 1
-                    and s_array[2] == 1
-                    and s_array[1] == 1
-                    and s_array[0] == 1
-                ):
+                if np.array_equal(s_array,
+                                  np.array([1, 1, 1, 1, 1, 2, 2])):
                     return "Mild"
                 else:
                     return "Moderate"
 
             # --- uA = 0.476 ---
             if np.isclose(uA, 0.476, atol=0.01):
-                if (
-                    s_array[6] == 3
-                    and s_array[5] == 2
-                    and s_array[4] == 1
-                    and s_array[3] == 1
-                    and s_array[2] == 1
-                    and s_array[1] == 1
-                    and s_array[0] == 1
-                ):
+                if np.array_equal(s_array,
+                                  np.array([1, 1, 1, 1, 1, 2, 3])):
                     return "Mild"
-                elif (
-                    s_array[6] == 2
-                    and s_array[5] == 2
-                    and s_array[4] == 2
-                    and s_array[3] == 1
-                    and s_array[2] == 1
-                    and s_array[1] == 1
-                    and s_array[0] == 1
-                ):
+                elif np.array_equal(s_array,
+                                    np.array([1, 1, 1, 1, 2, 2, 2])):
                     return "Mild"
                 else:
                     return "Moderate"
 
             # --- uA = 0.523 ---
             if np.isclose(uA, 0.523, atol=0.01):
-                if (
-                    s_array[6] == 3
-                    and s_array[5] == 2
-                    and s_array[4] == 2
-                    and s_array[3] == 1
-                    and s_array[2] == 1
-                    and s_array[1] == 1
-                    and s_array[0] == 1
-                ) or (
-                    s_array[6] == 2
-                    and s_array[5] == 2
-                    and s_array[4] == 2
-                    and s_array[3] == 2
-                    and s_array[2] == 1
-                    and s_array[1] == 1
-                    and s_array[0] == 1
-                ):
+                if np.array_equal(s_array,
+                                  np.array([1, 1, 1, 1, 2, 2, 3])) or \
+                    np.array_equal(s_array,
+                                   np.array([1, 1, 1, 2, 2, 2, 2])):
                     return "Mild"
                 else:
                     return "Moderate"
@@ -652,77 +618,34 @@ class GAD7Labeler:
 
             # --- uA = 0.619 ---
             if np.isclose(uA, 0.619, atol=0.01):
-                if (
-                    s_array[6] == 3
-                    and s_array[5] == 3
-                    and s_array[4] == 3
-                    and s_array[3] == 2
-                    and s_array[2] == 2
-                ) or (
-                    s_array[6] == 3
-                    and s_array[5] == 3
-                    and s_array[4] == 2
-                    and s_array[3] == 2
-                    and s_array[2] == 2
-                    and s_array[1] == 1
-                ):
+                if np.array_equal(s_array[2:],
+                                  np.array([2, 2, 3, 3, 3])) or \
+                    np.array_equal(s_array[1:],
+                                   np.array([1, 2, 2, 2, 3, 3])):
                     return "Severe"
                 else:
                     return "Moderate"
 
             # --- uA = 0.666 ---
             if np.isclose(uA, 0.666, atol=0.01):
-                if (
-                    (
-                        s_array[6] == 3
-                        and s_array[5] == 3
-                        and s_array[4] == 3
-                        and s_array[3] == 3
-                        and s_array[2] == 1
-                        and s_array[1] == 1
-                        and s_array[0] == 0
-                    )
-                    or (
-                        s_array[6] == 3
-                        and s_array[5] == 3
-                        and s_array[4] == 3
-                        and s_array[3] == 2
-                        and s_array[2] == 1
-                        and s_array[1] == 1
-                        and s_array[0] == 1
-                    )
-                    or (np.array_equal(s_array,
-                                       np.array([2, 2, 2, 2, 2, 2, 2])))
-                ):
+                if np.array_equal(s_array,
+                                  np.array([0, 1, 1, 3, 3, 3, 3])) or \
+                    np.array_equal(s_array,
+                                   np.array([1, 1, 1, 2, 3, 3, 3])) or \
+                    np.array_equal(s_array,
+                                   np.array([2, 2, 2, 2, 2, 2, 2])):
                     return "Moderate"
                 else:
                     return "Severe"
 
             # --- uA = 0.714 ---
             if np.isclose(uA, 0.714, atol=0.01):
-                if (
-                    (
-                        s_array[6] == 3
-                        and s_array[5] == 3
-                        and s_array[4] == 3
-                        and s_array[3] == 3
-                        and s_array[2] == 3
-                    )
-                    or (
-                        s_array[6] == 3
-                        and s_array[5] == 3
-                        and s_array[4] == 3
-                        and s_array[3] == 3
-                    )
-                    or (
-                        s_array[6] == 3
-                        and s_array[5] == 3
-                        and s_array[4] == 3
-                        and s_array[3] == 2
-                        and s_array[2] == 2
-                        and s_array[1] == 2
-                    )
-                ):
+                if np.array_equal(s_array[2:],
+                                  np.array([3, 3, 3, 3, 3])) or \
+                    np.array_equal(s_array[3:],
+                                   np.array([3, 3, 3, 3])) or \
+                    np.array_equal(s_array[1:],
+                                   np.array([2, 2, 2, 3, 3, 3])):
                     return "Severe"
                 else:
                     return "Moderate"
