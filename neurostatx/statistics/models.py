@@ -7,8 +7,8 @@ from enum import Enum
 import numpy as np
 from sklearn.base import clone, is_classifier
 from sklearn.cross_decomposition import PLSRegression
-from sklearn.model_selection import (cross_val_predict, KFold, check_cv)
-from sklearn.metrics import (mean_squared_error, r2_score, check_scoring)
+from sklearn.model_selection import cross_val_predict, KFold, check_cv
+from sklearn.metrics import mean_squared_error, r2_score, check_scoring
 from sklearn.utils import indexable, check_random_state
 from sklearn.utils.metaestimators import _safe_split
 from sklearn.utils.parallel import Parallel, delayed
@@ -159,15 +159,17 @@ def plsr_cv(X,
     return plsr, mse, score_c, score_cv, rscore, mse_c, mse_cv
 
 
-def permutation_testing(estimator,
-                        X,
-                        Y,
-                        binary=False,
-                        nb_permutations=1000,
-                        scoring='r2',
-                        splits=10,
-                        processes=1,
-                        verbose=False):
+def permutation_testing(
+    estimator,
+    X,
+    Y,
+    binary=False,
+    nb_permutations=1000,
+    scoring="r2",
+    splits=10,
+    processes=1,
+    verbose=False,
+):
     """
     Function to perform permutation testing on a model.
 
@@ -213,7 +215,7 @@ def permutation_testing(estimator,
     v = 1 if verbose else 0
 
     # Lauching permutation testing.
-    mod, score, coef, perm_score, score_pvalue, perm_coef, coef_pvalue = \
+    mod, score, coef, perm_score, score_pvalue, perm_coef, coef_pvalue = (
         permutation_test(
             estimator,
             X,
@@ -222,18 +224,14 @@ def permutation_testing(estimator,
             cv=splits,
             n_permutations=nb_permutations,
             n_jobs=processes,
-            verbose=v)
+            verbose=v,
+        )
+    )
 
     return mod, score, coef, perm_score, score_pvalue, perm_coef, coef_pvalue
 
 
-def _permutation_scorer(estimator,
-                        X,
-                        Y,
-                        groups,
-                        cv,
-                        scorer,
-                        fit_params):
+def _permutation_scorer(estimator, X, Y, groups, cv, scorer, fit_params):
     """Core worker for permutation testing.
 
     Args:
@@ -270,18 +268,20 @@ def _permutation_scorer(estimator,
                                                   axis=0)
 
 
-def permutation_test(estimator,
-                     X,
-                     Y,
-                     *,
-                     groups=None,
-                     cv=None,
-                     n_permutations=100,
-                     n_jobs=None,
-                     random_state=0,
-                     verbose=0,
-                     scoring=None,
-                     fit_params=None):
+def permutation_test(
+    estimator,
+    X,
+    Y,
+    *,
+    groups=None,
+    cv=None,
+    n_permutations=100,
+    n_jobs=None,
+    random_state=0,
+    verbose=0,
+    scoring=None,
+    fit_params=None
+):
     """Core function to perform permutation testing.
 
     Args:
@@ -324,9 +324,9 @@ def permutation_test(estimator,
     scorer = check_scoring(estimator, scoring=scoring)
     random_state = check_random_state(random_state)
 
-    mod, score, coef = _permutation_scorer(clone(estimator),
-                                           X, y, groups, cv, scorer,
-                                           fit_params=fit_params)
+    mod, score, coef = _permutation_scorer(
+        clone(estimator), X, y, groups, cv, scorer, fit_params=fit_params
+    )
 
     results = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(_permutation_scorer)(
@@ -346,13 +346,14 @@ def permutation_test(estimator,
     perm_score = np.array(perm_score)
     perm_coef = np.array(perm_coef)
     score_pvalue = (np.sum(perm_score >= score) + 1) / (n_permutations + 1)
-    coef_pvalue = (np.sum(abs(perm_coef) >= abs(coef),
-                          axis=0) + 1) / (n_permutations + 1)
+    coef_pvalue = (np.sum(abs(perm_coef) >= abs(coef), axis=0) + 1) / (
+        n_permutations + 1
+    )
 
     return mod, score, coef, perm_score, score_pvalue, perm_coef, coef_pvalue
 
 
-class PHQ9Labeler():
+class PHQ9Labeler:
     def __init__(self):
         pass
 
@@ -379,8 +380,10 @@ class PHQ9Labeler():
             Transformed features.
         """
         if X.shape[1] != 9:
-            raise ValueError("Input DataFrame must contain exactly 9 columns"
-                             " representing the ordered PHQ-9 items.")
+            raise ValueError(
+                "Input DataFrame must contain exactly 9 columns"
+                " representing the ordered PHQ-9 items."
+            )
 
         return self.transform(X)
 
@@ -410,8 +413,10 @@ class PHQ9Labeler():
             Transformed features.
         """
         if X.shape[1] != 9:
-            raise ValueError("Input DataFrame must contain exactly 9 columns"
-                             " representing the ordered PHQ-9 items.")
+            raise ValueError(
+                "Input DataFrame must contain exactly 9 columns"
+                " representing the ordered PHQ-9 items."
+            )
 
         def _transform_row(row):
             # Apply the fuzzy matching logic to each row.
@@ -437,20 +442,28 @@ class PHQ9Labeler():
             if np.isclose(uD, 0.417, atol=0.01):
                 if np.array_equal(s_array, np.array([1, 1, 1, 2])):
                     return "Mild"
-                elif (q1 > 2 or q2 > 2 or q6 > 2 or q9 > 2):
+                elif q1 > 2 or q2 > 2 or q6 > 2 or q9 > 2:
                     return "Moderate"
 
             # --- uD = 0.5 ---
             if np.isclose(uD, 0.5, atol=0.01):
-                if (s_array[3] == 2 and s_array[2] == 2 and
-                        s_array[1] == 2 and s_array[0] < 2):
+                if (
+                    s_array[3] == 2
+                    and s_array[2] == 2
+                    and s_array[1] == 2
+                    and s_array[0] < 2
+                ):
                     return "Mod-Severe"
-                elif (s_array[3] == 2 and s_array[2] == 2 and
-                      s_array[1] < 2 and s_array[0] < 2):
+                elif (
+                    s_array[3] == 2
+                    and s_array[2] == 2
+                    and s_array[1] < 2
+                    and s_array[0] < 2
+                ):
                     return "Moderate"
                 elif np.array_equal(s_array, np.array([1, 1, 1, 3])):
                     return "Moderate"
-                elif (s_array[3] == 3 and s_array[2] == 3):
+                elif s_array[3] == 3 and s_array[2] == 3:
                     return "Mod-Severe"
 
             # --- uD = 0.58 ---
@@ -465,31 +478,30 @@ class PHQ9Labeler():
                     return "Severe"
                 elif np.array_equal(s_array, np.array([1, 2, 2, 3])):
                     return "Mod-Severe"
-                elif (s_array[3] == 3 and s_array[2] == 3 and
-                      s_array[1] == 2):
+                elif s_array[3] == 3 and s_array[2] == 3 and s_array[1] == 2:
                     return "Severe"
 
             # --- uD = 0.75 ---
             if np.isclose(uD, 0.75, atol=0.01):
                 if np.array_equal(s_array, np.array([2, 2, 2, 3])):
                     return "Severe"
-                elif (s_array[3] == 3 and s_array[2] == 3 and
-                      s_array[1] == 2):
+                elif s_array[3] == 3 and s_array[2] == 3 and s_array[1] == 2:
                     return "Mod-Severe"
-                elif (s_array[3] == 3 and s_array[2] == 3 and
-                      s_array[1] == 3):
+                elif s_array[3] == 3 and s_array[2] == 3 and s_array[1] == 3:
                     return "Severe"
 
             # --- uD = 0.83, 0.91, or 1 ---
-            if (np.isclose(uD, 0.83, atol=0.01) or
-                np.isclose(uD, 0.91, atol=0.01) or
-                    np.isclose(uD, 1, atol=0.01)):
+            if (
+                np.isclose(uD, 0.83, atol=0.01)
+                or np.isclose(uD, 0.91, atol=0.01)
+                or np.isclose(uD, 1, atol=0.01)
+            ):
                 return "Severe"
 
         return X.apply(_transform_row, axis=1)
 
 
-class GAD7Labeler():
+class GAD7Labeler:
     def __init__(self):
         pass
 
@@ -516,8 +528,10 @@ class GAD7Labeler():
             Transformed features.
         """
         if X.shape[1] != 7:
-            raise ValueError("Input DataFrame must contain exactly 7 columns"
-                             " representing the GAD-7 items.")
+            raise ValueError(
+                "Input DataFrame must contain exactly 7 columns"
+                " representing the GAD-7 items."
+            )
 
         return self.transform(X)
 
@@ -547,8 +561,10 @@ class GAD7Labeler():
             Transformed features.
         """
         if X.shape[1] != 7:
-            raise ValueError("Input DataFrame must contain exactly 7 columns"
-                             " representing the GAD-7 items.")
+            raise ValueError(
+                "Input DataFrame must contain exactly 7 columns"
+                " representing the GAD-7 items."
+            )
 
         def _transform_row(row):
             # Apply the GAD-7 scoring fuzzy logic to each row.
@@ -569,37 +585,63 @@ class GAD7Labeler():
 
             # --- uA = 0.428 ---
             if np.isclose(uA, 0.428, atol=0.01):
-                if s_array[6] == 2 and s_array[5] == 2 \
-                    and s_array[4] == 1 and s_array[3] == 1 \
-                        and s_array[2] == 1 and s_array[1] == 1 \
-                        and s_array[0] == 1:
+                if (
+                    s_array[6] == 2
+                    and s_array[5] == 2
+                    and s_array[4] == 1
+                    and s_array[3] == 1
+                    and s_array[2] == 1
+                    and s_array[1] == 1
+                    and s_array[0] == 1
+                ):
                     return "Mild"
                 else:
                     return "Moderate"
 
             # --- uA = 0.476 ---
             if np.isclose(uA, 0.476, atol=0.01):
-                if s_array[6] == 3 and s_array[5] == 2 \
-                    and s_array[4] == 1 and s_array[3] == 1 \
-                        and s_array[2] == 1 and s_array[1] == 1 \
-                        and s_array[0] == 1:
+                if (
+                    s_array[6] == 3
+                    and s_array[5] == 2
+                    and s_array[4] == 1
+                    and s_array[3] == 1
+                    and s_array[2] == 1
+                    and s_array[1] == 1
+                    and s_array[0] == 1
+                ):
                     return "Mild"
-                elif s_array[6] == 2 and s_array[5] == 2 \
-                    and s_array[4] == 2 and s_array[3] == 1 \
-                        and s_array[2] == 1 and s_array[1] == 1 \
-                        and s_array[0] == 1:
+                elif (
+                    s_array[6] == 2
+                    and s_array[5] == 2
+                    and s_array[4] == 2
+                    and s_array[3] == 1
+                    and s_array[2] == 1
+                    and s_array[1] == 1
+                    and s_array[0] == 1
+                ):
                     return "Mild"
                 else:
                     return "Moderate"
 
             # --- uA = 0.523 ---
             if np.isclose(uA, 0.523, atol=0.01):
-                if (s_array[6] == 3 and s_array[5] == 2 and s_array[4] == 2
-                    and s_array[3] == 1 and s_array[2] == 1 and s_array[1] == 1
-                    and s_array[0] == 1) or \
-                    (s_array[6] == 2 and s_array[5] == 2 and
-                     s_array[4] == 2 and s_array[3] == 2 and s_array[2] == 1
-                     and s_array[1] == 1 and s_array[0] == 1):
+                if (
+                    s_array[6] == 3
+                    and s_array[5] == 2
+                    and s_array[4] == 2
+                    and s_array[3] == 1
+                    and s_array[2] == 1
+                    and s_array[1] == 1
+                    and s_array[0] == 1
+                ) or (
+                    s_array[6] == 2
+                    and s_array[5] == 2
+                    and s_array[4] == 2
+                    and s_array[3] == 2
+                    and s_array[2] == 1
+                    and s_array[1] == 1
+                    and s_array[0] == 1
+                ):
                     return "Mild"
                 else:
                     return "Moderate"
@@ -610,42 +652,77 @@ class GAD7Labeler():
 
             # --- uA = 0.619 ---
             if np.isclose(uA, 0.619, atol=0.01):
-                if (s_array[6] == 3 and s_array[5] == 3 and
-                    s_array[4] == 3 and s_array[3] == 2 and
-                    s_array[2] == 2) or \
-                        (s_array[6] == 3 and s_array[5] == 3 and
-                            s_array[4] == 2 and s_array[3] == 2 and
-                            s_array[2] == 2 and s_array[1] == 1):
+                if (
+                    s_array[6] == 3
+                    and s_array[5] == 3
+                    and s_array[4] == 3
+                    and s_array[3] == 2
+                    and s_array[2] == 2
+                ) or (
+                    s_array[6] == 3
+                    and s_array[5] == 3
+                    and s_array[4] == 2
+                    and s_array[3] == 2
+                    and s_array[2] == 2
+                    and s_array[1] == 1
+                ):
                     return "Severe"
                 else:
                     return "Moderate"
 
             # --- uA = 0.666 ---
             if np.isclose(uA, 0.666, atol=0.01):
-                if (s_array[6] == 3 and s_array[5] == 3 and
-                    s_array[4] == 3 and s_array[3] == 3 and
-                    s_array[2] == 1 and s_array[1] == 1 and
-                    s_array[0] == 0) or \
-                        (s_array[6] == 3 and s_array[5] == 3 and
-                         s_array[4] == 3 and s_array[3] == 2 and
-                         s_array[2] == 1 and s_array[1] == 1 and
-                         s_array[0] == 1) or \
-                        (np.array_equal(s_array,
-                                        np.array([2, 2, 2, 2, 2, 2, 2]))):
+                if (
+                    (
+                        s_array[6] == 3
+                        and s_array[5] == 3
+                        and s_array[4] == 3
+                        and s_array[3] == 3
+                        and s_array[2] == 1
+                        and s_array[1] == 1
+                        and s_array[0] == 0
+                    )
+                    or (
+                        s_array[6] == 3
+                        and s_array[5] == 3
+                        and s_array[4] == 3
+                        and s_array[3] == 2
+                        and s_array[2] == 1
+                        and s_array[1] == 1
+                        and s_array[0] == 1
+                    )
+                    or (np.array_equal(s_array,
+                                       np.array([2, 2, 2, 2, 2, 2, 2])))
+                ):
                     return "Moderate"
                 else:
                     return "Severe"
 
             # --- uA = 0.714 ---
             if np.isclose(uA, 0.714, atol=0.01):
-                if (s_array[6] == 3 and s_array[5] == 3 and
-                    s_array[4] == 3 and s_array[3] == 3 and
-                    s_array[2] == 3) or \
-                        (s_array[6] == 3 and s_array[5] == 3 and
-                         s_array[4] == 3 and s_array[3] == 3) or \
-                        (s_array[6] == 3 and s_array[5] == 3 and
-                            s_array[4] == 3 and s_array[3] == 2 and
-                            s_array[2] == 2 and s_array[1] == 2):
+                if (
+                    (
+                        s_array[6] == 3
+                        and s_array[5] == 3
+                        and s_array[4] == 3
+                        and s_array[3] == 3
+                        and s_array[2] == 3
+                    )
+                    or (
+                        s_array[6] == 3
+                        and s_array[5] == 3
+                        and s_array[4] == 3
+                        and s_array[3] == 3
+                    )
+                    or (
+                        s_array[6] == 3
+                        and s_array[5] == 3
+                        and s_array[4] == 3
+                        and s_array[3] == 2
+                        and s_array[2] == 2
+                        and s_array[1] == 2
+                    )
+                ):
                     return "Severe"
                 else:
                     return "Moderate"
