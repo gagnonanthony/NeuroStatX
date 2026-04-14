@@ -802,14 +802,14 @@ woff = ["brotli (>=1.0.1) ; platform_python_implementation == \"CPython\"", "bro
 
 [[package]]
 name = "gdown"
-version = "5.1.0"
+version = "5.2.2"
 description = "Google Drive Public File/Folder Downloader"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "gdown-5.1.0-py3-none-any.whl", hash = "sha256:421530fd238fa15d41ba43219a79fdc28efe8ac11022173abad333701b77de2c"},
-    {file = "gdown-5.1.0.tar.gz", hash = "sha256:550a72dc5ca2819fe4bcc15d80d05d7c98c0b90e57256254b77d0256b9df4683"},
+    {file = "gdown-5.2.2-py3-none-any.whl", hash = "sha256:e1ed2638abb931668725c79298900629b31e20f02b7c55a2685e9249edb51e09"},
+    {file = "gdown-5.2.2.tar.gz", hash = "sha256:a4bafbaa627d67bdaa68d274e9e957127ba810b4bcf4505e2b57ea45aa0aa1e6"},
 ]
 
 [package.dependencies]
@@ -819,7 +819,7 @@ requests = {version = "*", extras = ["socks"]}
 tqdm = "*"
 
 [package.extras]
-test = ["build", "mypy", "pytest", "pytest-xdist", "ruff", "twine", "types-requests"]
+test = ["build", "mypy", "pytest", "pytest-xdist", "ruff", "twine", "types-requests", "types-setuptools"]
 
 [[package]]
 name = "graphviz"
@@ -3131,4 +3131,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">= 3.10, < 3.12"
-content-hash = "d47e892549151b8bb56d5bb9e494406520e96695087b878f519013a20570f3b3"
+content-hash = "2038b27a1b129bbe43e512ee098e30c49f5e8f23e382da881d208b7496693aaf"
