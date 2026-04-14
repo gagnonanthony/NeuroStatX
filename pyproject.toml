@@ -63,7 +63,7 @@ VisualizeGraphNetwork = 'neurostatx.cli.VisualizeGraphNetwork:app'
 LogisticRegression = 'neurostatx.cli.LogisticRegression:app'
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0.0"
+pytest = ">=8,<10"
 pytest-cov = "^4.1.0"
 flake8 = "^6.1.0"
 ipykernel = "^6.27.1"
