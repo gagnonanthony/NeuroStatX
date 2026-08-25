@@ -22,7 +22,9 @@ export default defineConfig({
         sidebar: [
             {
                 label: "Getting Started",
-                autogenerate: {directory: "getting-started"},
+                items: [
+                    { autogenerate: {directory: "getting-started"} }
+                ]
             },
             {
                 label: "Tutorials",
@@ -33,7 +35,9 @@ export default defineConfig({
             },
             {
                 label: "Documentation",
-                autogenerate: {directory: "API"},
+                items: [
+                    { autogenerate: {directory: "API"} }
+                ]
             }
         ],
         title: "NeuroStatX Documentation",
@@ -46,9 +50,9 @@ export default defineConfig({
             './src/styles/custom.css',
             './src/fonts/font-face.css'
         ],
-        social: {
-            github: 'https://github.com/gagnonanthony/NeuroStatX'
-        },
+        social: [
+            { icon: 'github', label: 'GitHub', href: 'https://github.com/gagnonanthony/NeuroStatX' }
+        ],
         defaultLocale: '',
         }
   )]
