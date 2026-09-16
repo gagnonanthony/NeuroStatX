@@ -7,3 +7,4 @@ updates:
       - "dependencies"
     schedule:
       interval: "daily"
+    open-pull-requests-limit: 0
