@@ -5,22 +5,35 @@ import pandas as pd
 
 
 def get_nodes_and_edges(df, edge_attr="membership"):
-    """
-    Function to generate a dataframe containing edges' data.
+    """Build an edgelist from a subject-by-cluster membership table.
 
     Parameters
     ----------
     df : DataFrame
-        Pandas DataFrame containing edges data and
-        ids (membership matrix from clustering results).
-
+        Table whose first column is subject IDs and remaining columns are
+        cluster memberships.
     edge_attr : str, optional
-        Edge attribute to use as weights for the layout.
+        Name of the weight column in the returned edgelist. Defaults to
+        ``"membership"``.
 
     Returns
     -------
-    DataFrame
-        Pandas DataFrame of starting node, target node and edge weights.
+    edges : DataFrame
+        Edgelist with ``node1``, ``node2``, and ``edge_attr``.
+    subject_list : Series
+        Subject identifiers from the first column.
+    center_list : list
+        Cluster-centroid labels (``c1``, ``c2``, ...).
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.network.utils import get_nodes_and_edges
+    >>> df = pd.DataFrame({"id": ["s1", "s2"], "c1": [0.8, 0.2],
+    ...                    "c2": [0.2, 0.8]})
+    >>> edges, subjects, centers = get_nodes_and_edges(df)
+    >>> list(centers)
+    ['c1', 'c2']
     """
 
     center_list = [f"c{i+1}" for i in range(0, len(df.columns) - 1)]
@@ -45,20 +58,28 @@ def get_nodes_and_edges(df, edge_attr="membership"):
 
 
 def extract_subject_percentile(mat, percentile):
-    """
-    Function to extract subjects that are above the Xth percentile.
+    """Label subjects whose membership delta exceeds a percentile.
 
     Parameters
     ----------
-    mat : Array
-        Fuzzy C-partitioned membership matrix.
+    mat : array
+        Fuzzy membership matrix of shape (n_clusters, n_samples).
     percentile : float
-        Percentile value.
+        Percentile of the first-minus-second membership gap.
 
     Returns
     -------
-    label_dict
-        Dictionary of binary arrays for each clusters.
+    label_dict : dict
+        Mapping of cluster keys to arrays of cluster index or 0.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from neurostatx.network.utils import extract_subject_percentile
+    >>> mat = np.array([[0.9, 0.2], [0.1, 0.8]])
+    >>> labels = extract_subject_percentile(mat, 50)
+    >>> sorted(labels)
+    ['c1', 'c2']
     """
 
     # Fetching 1st and 2nd highest membership value.
@@ -78,22 +99,29 @@ def extract_subject_percentile(mat, percentile):
 
 
 def construct_attributes_dict(df, labels, id_column):
-    """
-    Function to construct a dictionary of nodes' attributes from a DataFrame.
+    """Build a node-attribute dictionary from selected DataFrame columns.
 
     Parameters
     ----------
     df : DataFrame
-        Pandas DataFrame containing nodes' attributes.
-    labels : List
-        List of labels to add as nodes' attributes.
+        Table of node attributes.
+    labels : list
+        Column names to store as node attributes.
     id_column : str
-        Name of the column containing the subject's ID tag.
+        Column used as the node identifier.
 
     Returns
     -------
-    attributes_dict
-        Dictionary of nodes' attributes.
+    attributes_dict : dict
+        Mapping of node ID to attribute dictionary.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.network.utils import construct_attributes_dict
+    >>> df = pd.DataFrame({"id": ["s1", "s2"], "age": [20, 30]})
+    >>> construct_attributes_dict(df, ["age"], "id")["s1"]["age"]
+    20
     """
 
     # Set index to id_column.

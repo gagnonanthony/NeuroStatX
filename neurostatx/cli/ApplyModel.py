@@ -19,6 +19,7 @@ from neurostatx.statistics.utils import apply_various_models
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
+"""Cyclopts application for the ApplyModel command-line tool."""
 
 
 @app.default()
@@ -82,21 +83,17 @@ def ApplyModel(
         ),
     ] = False,
 ):
-    """Apply Model
-    -----------
-    Apply a model to a dataset. Features in the dataset will be scaled prior
-    to applying the model.
+    """Apply a pickled SEMopy, FactorAnalyzer, or sklearn model to a dataset.
 
-    Currently Supported Models
-    --------------------------
+    Features in the dataset are scaled before the model is applied.
+
+    Notes
+    -----
+    Currently supported models:
+
     * SEMopy
     * FactorAnalyzer
     * sklearn
-
-    Example Usage
-    -------------
-    ApplyModel --in-dataset dataset.xlsx --model model.pkl --id-column ID
-    --desc-columns 1 --out-folder ./output -v -f -s
 
     Parameters
     ----------
@@ -109,13 +106,20 @@ def ApplyModel(
     desc_columns : int
         Number of columns to use as descriptors.
     out_folder : str, optional
-        Output folder.
+        Output folder. Defaults to ``./ApplyModel/``.
     verbose : bool, optional
-        Increase verbosity.
+        Increase verbosity. Defaults to False.
     save_parameters : bool, optional
-        Save parameters to a file.
+        Save parameters to a file. Defaults to False.
     overwrite : bool, optional
-        Overwrite output folder if it already exists.
+        Overwrite output folder if it already exists. Defaults to False.
+
+    Examples
+    --------
+    ```bash
+    ApplyModel --in-dataset dataset.xlsx --model model.pkl --id-column ID
+    --desc-columns 1 --out-folder ./output -v -f -s
+    ```
     """
 
     if verbose:

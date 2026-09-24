@@ -20,28 +20,7 @@ jobs:
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 2.5.1
-          virtualenvs-create: true
-          installer-parallel: true
-      - name: Install NeuroStatX & dependencies
-        run: |
-          poetry install --with=docs --no-root --no-interaction
-          poetry install --with=docs --no-interaction
-      - name: Build markdown files
-        run: |
-          source $(poetry env info --path)/bin/activate
-          cd docs/api/
-          make markdown
-          cd _build/markdown/
-          python ../../../add_frontmatter.py *
-          bash ../../../organize_files.sh ../../../starlight/src/content/docs/API/
-          cd ../../../../
+      - uses: astral-sh/setup-uv@v6
       - name: Install Astro
         uses: withastro/action@v6
         with:

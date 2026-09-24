@@ -8,20 +8,29 @@ from tqdm import tqdm
 
 
 def remove_nans(df):
-    """
-    Clean up dataset by removing all rows containing NaNs.
+    """Split a table into rows with missing values and complete rows.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Pandas dataframe.
+        Input table.
 
     Returns
     -------
     rows_with_nans : pd.DataFrame
-        Dataframe containing rows with NaNs.
+        Rows that contain at least one NaN.
     complete_rows : pd.DataFrame
-        Cleaned dataframe.
+        Rows with no missing values.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from neurostatx.utils.preprocessing import remove_nans
+    >>> df = pd.DataFrame({"a": [1.0, np.nan], "b": [2.0, 3.0]})
+    >>> nans, complete = remove_nans(df)
+    >>> len(complete)
+    1
     """
     rows_with_nans = df[df.isna().any(axis=1)]
     complete_rows = df.drop(index=rows_with_nans.index)
@@ -30,23 +39,29 @@ def remove_nans(df):
 
 
 def rename_columns(df, old_names, new_names):
-    """
-    Function renaming specific columns according to a list of new and old
-    column names.
+    """Rename selected columns and return a copy of the table.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Pandas dataframe object.
-    old_names : List[str]
-        List of old column name as strings.
-    new_names : List[str]
-        List of new column name as strings.
+        Input table.
+    old_names : list of str
+        Current column names.
+    new_names : list of str
+        Replacement column names, same length as ``old_names``.
 
     Returns
     -------
-    df : pd.DataFrame
-        Pandas dataframe object containing the renamed columns.
+    new_df : pd.DataFrame
+        Copy of ``df`` with renamed columns.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.utils.preprocessing import rename_columns
+    >>> df = pd.DataFrame({"a": [1], "b": [2]})
+    >>> rename_columns(df, ["a"], ["x"]).columns.tolist()
+    ['x', 'b']
     """
     if len(old_names) != len(new_names):
         raise ValueError("Number of old names and new names must be the same.")
@@ -67,23 +82,30 @@ def rename_columns(df, old_names, new_names):
 
 
 def binary_to_yes_no(df, cols):
-    """
-    Function to change binary answers (1/0) to Yes or No in specific columns
-    from a Pandas Dataframe.
-    **Please validate that yes and no are assigned to the correct values,
-    default behavior is yes = 1 and no = 0.**
+    """Recode 1/0 columns to ``Yes`` / ``No`` in place.
+
+    Values of 1 become ``Yes``, 0 become ``No``, and other values become
+    ``Don't know or missing value``.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Pandas dataframe object.
-    cols : List[str]
-        List of column names.
+        Input table. Matching columns are modified in place.
+    cols : list of str
+        Column names to recode.
 
     Returns
     -------
     df : pd.DataFrame
-        Pandas dataframe object with changed binary answers.
+        The same table after recoding.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.utils.preprocessing import binary_to_yes_no
+    >>> df = pd.DataFrame({"flag": [1.0, 0.0]})
+    >>> binary_to_yes_no(df, ["flag"])["flag"].tolist()
+    ['Yes', 'No']
     """
     for col in cols:
         if df[col].isin([0.0, 1.0, 2.0, "nan"]).any():
@@ -98,20 +120,27 @@ def binary_to_yes_no(df, cols):
 
 
 def get_column_indices(df, column_names):
-    """
-    Function to extract column index based on a list of column names.
+    """Return integer positions for the requested column names.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Pandas dataframe object.
-    column_names : List[str]
-        List of column names as strings.
+        Input table.
+    column_names : list of str
+        Column names to look up.
 
     Returns
     -------
-    indices : List[int]
-        List of column index.
+    indices : list of int
+        Column positions. Missing names are skipped.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.utils.preprocessing import get_column_indices
+    >>> df = pd.DataFrame({"a": [1], "b": [2]})
+    >>> get_column_indices(df, ["b", "a"])
+    [1, 0]
     """
     indices = []
     for name in column_names:
@@ -124,19 +153,25 @@ def get_column_indices(df, column_names):
 
 
 def plot_distributions(df, out_folder, context="poster", font_scale=1):
-    """
-    Script to visualize distribution plots for a complete dataframe.
+    """Write a histogram and ECDF for each column in ``df``.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Pandas dataframe.
+        Input table.
     out_folder : str
-        Path to the output folder.
+        Directory where ``{column}.png`` files are written.
     context : str, optional
-        Style to apply to the plots. Defaults to 'poster'.
+        Seaborn context. Defaults to ``"poster"``.
     font_scale : float, optional
-        Font scale. Defaults to 1.
+        Seaborn font scale. Defaults to 1.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.utils.preprocessing import plot_distributions
+    >>> df = pd.DataFrame({"a": [1, 2, 3]})
+    >>> plot_distributions(df, ".")
     """
 
     # Setting plotting parameters.
@@ -155,21 +190,28 @@ def plot_distributions(df, out_folder, context="poster", font_scale=1):
 
 
 def compute_shapiro_wilk_test(df):
-    """
-    Function computing the normality statistic using the Shapiro Wilk's test
-    for normality and outputting W and p values.
+    """Run a Shapiro-Wilk normality test on each column.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Pandas dataframe.
+        Input table.
 
     Returns
     -------
-    wilk : List[float]
-        Shapiro-Wilk values (W).
-    pvalues : List[float]
-        Associated p-values.
+    wilk : list of float
+        Shapiro-Wilk W statistics.
+    pvalues : list of float
+        Corresponding p-values.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.utils.preprocessing import compute_shapiro_wilk_test
+    >>> df = pd.DataFrame({"a": [1.0, 2.0, 3.0, 4.0]})
+    >>> wilk, pvalues = compute_shapiro_wilk_test(df)
+    >>> len(wilk)
+    1
     """
 
     wilk = []
@@ -187,29 +229,37 @@ def compute_shapiro_wilk_test(df):
 def compute_correlation_coefficient(
     df, out_folder, context="poster", font_scale=0.2, cmap=None, annot=False
 ):
-    """
-    Function to compute a correlation matrix for all variables in a dataframe.
+    """Compute a Pearson correlation matrix and write a heatmap.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Pandas dataframe.
+        Input table.
     out_folder : str
-        Path to the output folder.
+        Directory where ``correlation_heatmap.png`` is written.
     context : str, optional
-        Style to apply to the plots. Defaults to 'poster'.
+        Seaborn context. Defaults to ``"poster"``.
     font_scale : float, optional
-        Font scale. Defaults to 0.2.
+        Seaborn font scale. Defaults to 0.2.
     cmap : str, optional
-        Cmap to use in the heatmap. Defaults to None.
+        Heatmap colormap. Defaults to None.
     annot : bool, optional
-        Flag to write correlation values inside the heatmap squares.
-        Defaults to False.
+        If True, write correlation values on the heatmap. Defaults to False.
 
     Returns
     -------
     corr_mat : pd.DataFrame
-        Correlation matrix with Pearson correlation coefficients.
+        Pearson correlation matrix.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.utils.preprocessing import (
+    ...     compute_correlation_coefficient)
+    >>> df = pd.DataFrame({"a": [1, 2, 3], "b": [2, 4, 6]})
+    >>> corr = compute_correlation_coefficient(df, ".")
+    >>> corr.loc["a", "b"]
+    1.0
     """
 
     # Setting plotting parameters.
@@ -234,26 +284,33 @@ def compute_correlation_coefficient(
 
 
 def merge_dataframes(dict_df, index, repeated_columns=False):
-    """
-    Function to merge a variable number of dataframe by matching the values of
-    a specific column (hereby labeled as index.) Index values must appear only
-    once in the dataframe for the function to work.
+    """Join several tables on a shared index column.
+
+    Index values must be unique within each table.
 
     Parameters
     ----------
-    dict_df : Dict[str, pd.DataFrame]
-        Dictionary of pandas dataframe.
+    dict_df : dict
+        Mapping of labels to DataFrames.
     index : str
-        String of the name of the column to use as index (needs to be the same
-        across all dataframes).
+        Shared column used as the join index.
     repeated_columns : bool, optional
-        Flag to use if column name are repeated across dataframe to merge.
+        If True, disambiguate overlapping column names with suffixes.
         Defaults to False.
 
     Returns
     -------
     out : pd.DataFrame
-        Joint large pandas dataframe.
+        Joined table.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.utils.preprocessing import merge_dataframes
+    >>> left = pd.DataFrame({"id": [1, 2], "a": [10, 20]})
+    >>> right = pd.DataFrame({"id": [1, 2], "b": [3, 4]})
+    >>> merge_dataframes({"l": left, "r": right}, "id")["a"].tolist()
+    [10, 20]
     """
 
     keys = list(dict_df.keys())
@@ -271,30 +328,39 @@ def merge_dataframes(dict_df, index, repeated_columns=False):
 
 
 def compute_pca(X, n_components):
-    """
-    Function compute PCA decomposition on a dataset.
+    """Fit a PCA and return scores, diagnostics, and the model.
 
     Parameters
     ----------
     X : pd.DataFrame
-        Dataframe to compute PCA on.
+        Input table.
     n_components : int
-        Number of components.
+        Number of components to keep.
 
     Returns
     -------
-    X : Array
-        Transformed data array.
+    scores : array
+        Transformed data.
     pca : PCA
-        PCA model.
-    exp_var : Array
-        Explained variance.
-    components : Array
-        Components.
+        Fitted PCA model.
+    exp_var : array
+        Explained variance ratio.
+    components : array
+        Principal axes.
     p_value : float
-        Bartlett's p-value.
+        Bartlett sphericity p-value.
     kmo_model : float
-        KMO model.
+        Overall KMO statistic.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.utils.preprocessing import compute_pca
+    >>> X = pd.DataFrame({"a": [1.0, 2.0, 3.0, 4.0],
+    ...                   "b": [2.0, 1.0, 4.0, 3.0]})
+    >>> scores, pca, exp_var, components, p_value, kmo = compute_pca(X, 1)
+    >>> scores.shape
+    (4, 1)
     """
 
     chi_square_value, p_value = calculate_bartlett_sphericity(X.values)

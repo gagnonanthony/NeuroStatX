@@ -18,6 +18,7 @@ from neurostatx.network.viz import (
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
+"""Cyclopts application for the ComputeGraphNetwork command-line tool."""
 
 
 @app.default()
@@ -118,67 +119,59 @@ def ComputeGraphNetwork(
         ),
     ] = "membership",
 ):
-    """Graph Network Clustering Visualization
-    --------------------------------------
-    ComputeGraphNetwork is a script computing an undirected weighted
-    graph network from fuzzy clustering c-partitioned membership matrix. It is
-    designed to work seemlessly with FuzzyClustering. Mapping
-    membership matrices to a graph network allows the future use of graph
-    theory statistics such as shortest path, betweenness centrality, etc.
+    """Build an undirected weighted graph from a fuzzy membership matrix.
+
+    ComputeGraphNetwork is designed to work seamlessly with
+    [FuzzyClustering][neurostatx.cli.FuzzyClustering.FuzzyClustering]. Mapping
+    membership matrices to a graph allows later use of graph-theory statistics
+    such as shortest path and betweenness centrality.
+
+    Notes
+    -----
+
+    **Layout algorithms**
+
+    Node positions are determined from their connections to other nodes (and
+    the weight of those connections). Those connections are also called edges
+    and carry a weight in a weighted graph. Available layout algorithms are:
+
+    * Kamada-Kawai uses the Kamada-Kawai path-length cost function. It is
+      not optimal for large networks because it is computationally intensive.
+    * Spectral layout determines position using the eigenvectors of the graph
+      Laplacian.
+    * Spring layout uses the Fruchterman-Reingold force-directed algorithm. It
+      is suitable for large networks with a high number of nodes and is the
+      default method.
+
+    For large graphs (~10 000 nodes), a spring layout run can take about 5
+    minutes depending on hardware. Layout details are documented in the
+    NetworkX drawing reference [2].
+
+    **Importing data**
+
+    If --import-data is set, descriptive data are stored as node attributes in
+    the .gml file. This is useful for later visualization or statistical
+    analysis (see
+    [AverageWeightedPath][neurostatx.cli.AverageWeightedPath.AverageWeightedPath]
+    or
+    [PartialLeastSquareRegression][neurostatx.cli.PartialLeastSquareRegression.PartialLeastSquareRegression])
+    and reduces the chance of subject mismatch.
+
     The concept of this script was initially proposed in [1].
-
-    Layout Algorithms
-    -----------------
-    In order to generate a graph network, the nodes positions need to be
-    determined in relation with their connections to other nodes (and the
-    weigth of those connections). Those connections are also called edges and
-    contain a weight in the case of a weighted graph network. Possible
-    algorithms to choose from are :
-
-    Kamada Kawai Layout: Use the Kamada-Kawai path-length cost-function. Not
-                        the optimal solution for large network as it is
-                        computer intensive. For details, see [2].
-
-    Spectral Layout: Position is determined using the eigenvectors of the
-                    graph Laplacian. For details, see [2].
-
-    Spring Layout: Use the Fruchterman-Reingold force-directed algorithm.
-                    Suitable for large network with high number of nodes.
-                    For details, see [2]. This is the default method.
-
-    Importing Data Within The .gml File
-    -----------------------------------
-    If the --import-data flag is set to True, the descriptive data will be
-    imported within the .gml file. The imported data will be stored as node's
-    attributes. This is useful for future use of the graph network in
-    visualization scripts or in statistical analysis (view AverageWeightedPath
-    or Plsr). This ensure a robust handling of data and reduce the probability
-    of data mismatch between subjects.
 
     References
     ----------
-    [1] Ariza-Jiménez, L., Villa, L. F., & Quintero, O. L. (2019). Memberships
-        Networks for High-Dimensional Fuzzy Clustering Visualization., Applied
-        Computer Sciences in Engineering (Vol. 1052, pp. 263–273). Springer
-        International Publishing.(https://doi.org/10.1007/978-3-030-31019-6_23)
+    [1] [Ariza-Jiménez, L., Villa, L. F., & Quintero, O. L. (2019). Memberships
+    Networks forHigh-Dimensional Fuzzy Clustering
+    Visualization](https://doi.org/10.1007/978-3-030-31019-6_23)
 
-    [2] NetworkX Documentation
-    (https://networkx.org/documentation/stable/reference/drawing.html)
-
-    Example Usage
-    -------------
-    ::
-
-        ComputeGraphNetwork --in-dataset cluster_membership.xlsx
-        --id-column subjectkey --desc-columns 1 --out-folder output/
-
-    **For large graphs (~10 000 nodes), it might take ~5 mins to run using**
-    **the spring layout and depending on your hardware.**
+    [2] [NetworkX drawing
+    documentation](https://networkx.org/documentation/stable/reference/drawing.html)
 
     Parameters
     ----------
     in_dataset : str
-        Input dataset containing membership values for each clusters.
+        Input dataset containing membership values for each cluster.
     id_column : str
         Name of the column containing the subject's ID tag. Required for
         proper handling of IDs.
@@ -186,22 +179,37 @@ def ComputeGraphNetwork(
         Number of descriptive columns at the beginning of the dataset.
     out_folder : str, optional
         Path of the folder in which the results will be written. If not
-        specified, current folder and default name will be used.
+        specified, current folder and default name will be used. Defaults to
+        ``./graph_results/``.
     verbose : bool, optional
-        If true, produce verbose output.
+        If true, produce verbose output. Defaults to False.
     overwrite : bool, optional
-        If true, force overwriting of existing output files.
+        If true, force overwriting of existing output files. Defaults to False.
     save_parameters : bool, optional
-        If true, save the parameters used in a .txt file.
+        If true, save the parameters used in a .txt file. Defaults to False.
     plot_distribution : bool, optional
-        If true, will plot the membership distribution and delta.
+        If true, will plot the membership distribution and delta. Defaults to
+        False.
     import_data : bool, optional
         If true, will import the data from the input dataset within the graph
-        network file.
+        network file. Defaults to False.
     layout : NetworkLayout, optional
-        Layout algorithm to determine the nodes position.
+        Layout algorithm to determine the nodes position. Defaults to Spring.
+    method : str, optional
+        Layout method passed to the NetworkX layout algorithm. Defaults to
+        ``force``.
+    seed : int, optional
+        Random seed used when computing node positions. Defaults to 42.
     weight : str, optional
-        Name of the column containing the edge weight. Default is 'membership'.
+        Name of the column containing the edge weight. Defaults to
+        ``membership``.
+
+    Examples
+    --------
+    ```bash
+    ComputeGraphNetwork --in-dataset cluster_membership.xlsx
+    --id-column subjectkey --desc-columns 1 --out-folder output/
+    ```
     """
 
     if verbose:

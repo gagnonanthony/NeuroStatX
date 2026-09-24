@@ -21,7 +21,9 @@ class FuzzyCMeans(ClusterMixin, BaseEstimator):
     """Fuzzy C-Means clustering.
 
     Soft clustering estimator with a sklearn-compatible API. Fits a single
-    number of clusters; use :func:`search_fuzzy_cmeans` to evaluate a range
+    number of clusters; use
+    [search_fuzzy_cmeans][neurostatx.clustering.fuzzy.search_fuzzy_cmeans]
+    to evaluate a range
     of ``k``. Based on scikit-fuzzy ``cmeans`` /
     ``cmeans_predict``.
 
@@ -59,7 +61,17 @@ class FuzzyCMeans(ClusterMixin, BaseEstimator):
     inertia_ : float
         Within-cluster sum of squared errors (WSS).
     n_features_in_ : int
-        Number of features seen during :meth:`fit`.
+        Number of features seen during
+        [fit][neurostatx.clustering.fuzzy.FuzzyCMeans.fit].
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from neurostatx.clustering.fuzzy import FuzzyCMeans
+    >>> X = np.array([[0.0, 0.0], [0.1, 0.0], [1.0, 1.0], [0.9, 1.0]])
+    >>> fcm = FuzzyCMeans(n_clusters=2, random_state=0).fit(X)
+    >>> fcm.labels_.shape
+    (4,)
     """
 
     def __init__(
@@ -127,6 +139,15 @@ class FuzzyCMeans(ClusterMixin, BaseEstimator):
         -------
         self : FuzzyCMeans
             Fitted estimator.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from neurostatx.clustering.fuzzy import FuzzyCMeans
+        >>> X = np.array([[0.0, 0.0], [0.1, 0.0], [1.0, 1.0], [0.9, 1.0]])
+        >>> fcm = FuzzyCMeans(n_clusters=2, random_state=0).fit(X)
+        >>> fcm.n_features_in_
+        2
         """
         X = check_array(X, dtype=np.float64, ensure_2d=True)
         cntr, u, _, _, _, n_iter, fpc = fuzz.cmeans(
@@ -160,6 +181,15 @@ class FuzzyCMeans(ClusterMixin, BaseEstimator):
         -------
         labels : ndarray of shape (n_samples,)
             Hard cluster labels.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from neurostatx.clustering.fuzzy import FuzzyCMeans
+        >>> X = np.array([[0.0, 0.0], [0.1, 0.0], [1.0, 1.0], [0.9, 1.0]])
+        >>> fcm = FuzzyCMeans(n_clusters=2, random_state=0).fit(X)
+        >>> fcm.predict(X).shape
+        (4,)
         """
         X = self._validate_predict_input(X)
         u = self._cmeans_predict_u(X)
@@ -177,6 +207,16 @@ class FuzzyCMeans(ClusterMixin, BaseEstimator):
         -------
         membership : ndarray of shape (n_samples, n_clusters)
             Membership degree of each sample to each cluster. Rows sum to 1.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from neurostatx.clustering.fuzzy import FuzzyCMeans
+        >>> X = np.array([[0.0, 0.0], [0.1, 0.0], [1.0, 1.0], [0.9, 1.0]])
+        >>> fcm = FuzzyCMeans(n_clusters=2, random_state=0).fit(X)
+        >>> proba = fcm.predict_proba(X)
+        >>> proba.shape
+        (4, 2)
         """
         X = self._validate_predict_input(X)
         u = self._cmeans_predict_u(X)
@@ -204,7 +244,9 @@ def process_cluster(
     compute_gap,
 ):
     """
-    Core worker of :func:`search_fuzzy_cmeans`. Fit one ``k``, compute
+    Core worker of
+    [search_fuzzy_cmeans][neurostatx.clustering.fuzzy.search_fuzzy_cmeans]
+    . Fit one ``k``, compute
     metrics, and subsample points for visualization.
 
     Must remain a module-level function so it can be pickled by
@@ -326,7 +368,9 @@ def search_fuzzy_cmeans(
         Initial membership matrices, one per ``k`` from ``min_clusters``
         to ``max_clusters``. Defaults to None.
     random_state : int, numpy.RandomState instance or None, optional
-        Seed forwarded to each :class:`FuzzyCMeans` fit. Defaults to None.
+        Seed forwarded to each
+        [FuzzyCMeans][neurostatx.clustering.fuzzy.FuzzyCMeans]
+        fit. Defaults to None.
 
     Returns
     -------
@@ -348,6 +392,17 @@ def search_fuzzy_cmeans(
         GAP statistics (or None if ``compute_gap`` is False).
     sk : tuple of float
         GAP standard errors (or None if ``compute_gap`` is False).
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from neurostatx.clustering.fuzzy import search_fuzzy_cmeans
+    >>> X = np.random.RandomState(0).rand(30, 4)
+    >>> cntr, u, wss, fpc, ss, chi, dbi, gap, sk = search_fuzzy_cmeans(
+    ...     X, min_clusters=2, max_clusters=3, compute_gap=False, n_jobs=1
+    ... )
+    >>> len(cntr)
+    2
     """
     X = check_array(X, dtype=np.float64, ensure_2d=True)
     if max_clusters < min_clusters:
@@ -397,60 +452,72 @@ def fuzzyCmeans(
     processes=1,
     verbose=False,
 ):
-    """
-    Fuzzy C-Means clustering function. Iteratively test and report statistics
-    on multiple number of clusters. Based on documentation found here :
-    https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_cmeans.html
+    """Deprecated wrapper around
+    [search_fuzzy_cmeans][neurostatx.clustering.fuzzy.search_fuzzy_cmeans].
 
-    .. deprecated::
-        Use :class:`FuzzyCMeans` for a single number of clusters, or
-        :func:`search_fuzzy_cmeans` to evaluate a range of ``k``.
+    Notes
+    -----
+    Deprecated. Use [FuzzyCMeans][neurostatx.clustering.fuzzy.FuzzyCMeans]
+    for a single number of clusters, or
+    [search_fuzzy_cmeans][neurostatx.clustering.fuzzy.search_fuzzy_cmeans]
+    to evaluate a range of ``k``.
 
     Parameters
     ----------
-        X : np.array
-            Numpy array with data to cluster (Subject x Features).
-        max_cluster : int, optional
-            Maximum number of clusters to fit a model for. Defaults to 10.
-        m : float, optional
-            Exponentiation value to apply on the membership function.
-            Defaults to 2.
-        error : float, optional
-            Stopping criterion. Defaults to 1E-6.
-        maxiter : int, optional
-            Maximum iteration value. Defaults to 1000.
-        init : 2d array, optional
-            Initial fuzzy c-partitioned matrix. Defaults to None.
-        metric : str, optional
-            Distance metric to use to compute intra/inter subjects/clusters
-            distance. Defaults to euclidean.
-        output : str, optional
-            Output folder to save the visualization. Defaults to "./".
-        processes : int, optional
-            Number of processes to use. Defaults to 1.
-        verbose : bool, optional
-            If true, produce verbose output. Defaults to False.
+    X : np.array
+        Array of data to cluster (subjects x features).
+    max_cluster : int, optional
+        Maximum number of clusters to fit a model for. Defaults to 10.
+    m : float, optional
+        Exponentiation value to apply on the membership function.
+        Defaults to 2.
+    error : float, optional
+        Stopping criterion. Defaults to 1e-6.
+    maxiter : int, optional
+        Maximum number of iterations. Defaults to 1000.
+    init : 2d array, optional
+        Initial fuzzy c-partitioned matrix. Defaults to None.
+    metric : str, optional
+        Distance metric used for intra/inter subject and cluster distance.
+        Defaults to ``"euclidean"``.
+    output : str, optional
+        Output folder for the visualization. Defaults to ``"./"``.
+    processes : int, optional
+        Number of processes to use. Defaults to 1.
+    verbose : bool, optional
+        If True, produce verbose output. Defaults to False.
 
     Returns
     -------
-        cntr : list
-            Cluster centroids array.
-        u : list
-            Membership array.
-        wss : list
-            Within-cluster Sum of Square Error.
-        fpc : list
-            Fuzzy partition coefficient.
-        ss : list
-            Silhouette Coefficient Score.
-        chi : list
-            Calinski-Harabasz Index.
-        dbi : list
-            Davies-Bouldin Index.
-        gap : list
-            GAP statistic.
-        sk : list
-            GAP standard error.
+    cntr : list
+        Cluster centroids for each ``k``.
+    u : list
+        Membership matrices for each ``k``.
+    wss : list
+        Within-cluster sum of squared errors.
+    fpc : list
+        Fuzzy partition coefficients.
+    ss : list
+        Silhouette scores.
+    chi : list
+        Calinski-Harabasz indices.
+    dbi : list
+        Davies-Bouldin indices.
+    gap : list
+        GAP statistics.
+    sk : list
+        GAP standard errors.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from neurostatx.clustering.fuzzy import fuzzyCmeans
+    >>> X = np.random.RandomState(0).rand(20, 3)
+    >>> cntr, u, wss, fpc, ss, chi, dbi, gap, sk = fuzzyCmeans(
+    ...     X, max_cluster=3, processes=1, output=None
+    ... )
+    >>> len(cntr)
+    2
     """
     warnings.warn(
         "fuzzyCmeans() is deprecated and will be removed in a future "

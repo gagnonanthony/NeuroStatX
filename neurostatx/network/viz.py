@@ -6,23 +6,29 @@ from strenum import StrEnum
 
 
 class NetworkLayout(StrEnum, Enum):
+    """NetworkX layout names used when placing graph nodes."""
+
     KamadaKawai = ("kamada_kawai_layout",)
     Spectral = ("spectral_layout",)
     Spring = "spring_layout"
 
 
 def membership_distribution(mat, output="./membership_distribution.png"):
-    """
-    Function returning a plot of the distribution of the maximum membership
-    values for each subject and the delta plot of the difference with the
-    second highest membership from the fuzzy c-partitioned matrix.
+    """Write histograms of top membership values and their delta.
 
     Parameters
     ----------
-    mat : Array
-        Membership fuzzy c-partitioned matrix.
+    mat : array
+        Fuzzy membership matrix with one row per subject.
     output : str, optional
-        Output filename and path. Defaults to "./membership_distribution.png".
+        Output filename. Defaults to ``"./membership_distribution.png"``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from neurostatx.network.viz import membership_distribution
+    >>> mat = np.array([[0.8, 0.2], [0.3, 0.7]])
+    >>> membership_distribution(mat, output="membership.png")
     """
 
     # Fetching 1st highest membership value.
@@ -77,19 +83,24 @@ def membership_distribution(mat, output="./membership_distribution.png"):
 
 
 def creating_node_colormap(percentile_dict):
-    """
-    Function to create a colormap for a set of nodes based on a percentile
-    dictionary.
+    """Map each node to a color from its highest percentile cluster.
 
     Parameters
     ----------
     percentile_dict : dict
-        Percentile dictionary with keys identifying clusters.
+        Mapping of cluster keys to per-node percentile arrays.
 
     Returns
     -------
-    cmap
-        List containing all colors.
+    nodes_cmap : list
+        Color for each node. Nodes with a max of 0 are ``"black"``.
+
+    Examples
+    --------
+    >>> from neurostatx.network.viz import creating_node_colormap
+    >>> colors = creating_node_colormap({"c1": [0, 1], "c2": [0, 0]})
+    >>> colors[0]
+    'black'
     """
 
     cmap = plt.cm.tab10(np.linspace(0, 1, 10))
@@ -108,20 +119,29 @@ def creating_node_colormap(percentile_dict):
 
 
 def create_cmap_from_list(array):
-    """
-    Function to create a cmap from a list of values (corresponding to a
-    condition for each subject.) For example, subject with value = 0 will be
-    mapped black, whereas subject = >1 will be mapped to different colors.
+    """Map per-subject values to node colors.
+
+    Integer zeros are drawn as ``"darkgrey"``; other integers use ``tab10``.
+    Float arrays are ranked and mapped through ``plasma``.
 
     Parameters
     ----------
     array : np.array
-        Array of integers corresponding to condiditions (can be binary also.).
+        Per-subject values. Integers are treated as discrete conditions;
+        floats are treated as a continuous scale.
 
     Returns
     -------
-    cmap
-        List containing all colors.
+    nodes_cmap : list
+        Color for each subject.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from neurostatx.network.viz import create_cmap_from_list
+    >>> colors = create_cmap_from_list(np.array([0, 1, 2]))
+    >>> colors[0]
+    'darkgrey'
     """
 
     if array.dtype == "float64":

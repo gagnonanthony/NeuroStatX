@@ -25,50 +25,47 @@ def neuroCombat(
     mean_only=False,
     ref_batch=None,
 ):
-    """
-    Run ComBat to remove scanner effects in multi-site imaging data
+    """Remove scanner/site effects from multi-site imaging data with ComBat.
 
     Parameters
-    ---------
+    ----------
     dat : DataFrame or np.array
-        Neuroimaging data to correct with shape = (features, samples) e.g.
-        cortical thickness measurements, image voxels, etc
-
-    covars : DataFrame or np.array
-        Contains the batch/scanner covariate as well as additional
-        covariates (optional) that should be preserved during harmonization.
-
+        Imaging features of shape (features, samples).
+    covars : DataFrame
+        Covariates including the batch/scanner column.
     batch_col : str
-        Indicates batch (scanner) column name in covars (e.g. "scanner")
-
-    categorical_cols : List, optional
-        Specifies column names in covars data frame of categorical variables
-        to be preserved during harmonization (e.g. ["sex", "disease"])
-
-    continuous_cols : List, optional
-        Indicates column names in covars data frame of continuous variables
-        to be preserved during harmonization (e.g. ["age"])
-
+        Name of the batch (scanner) column in ``covars``.
+    categorical_cols : list, optional
+        Categorical covariate names to preserve. Defaults to None.
+    continuous_cols : list, optional
+        Continuous covariate names to preserve. Defaults to None.
     eb : bool, optional
-        Should Empirical Bayes be performed? True by default
-
+        If True, use Empirical Bayes. Defaults to True.
     parametric : bool, optional
-        Should parametric adjustements be performed? True by default
-
+        If True, use parametric adjustments. Defaults to True.
     mean_only : bool, optional
-        Should only be the mean adjusted (no scaling)? False by default
-
+        If True, adjust means only (no scaling). Defaults to False.
     ref_batch : str, optional
-        Batch (site or scanner) to be used as reference for batch
-        adjustment. None by default
+        Batch used as the reference level. Defaults to None.
 
     Returns
     -------
-    A dictionary of length 3:
-    - data: A numpy array with the same shape as `dat` which has now been
-        ComBat-harmonized
-    - estimates: A dictionary of the ComBat estimates used for harmonization
-    - info: A dictionary of the inputs needed for ComBat harmonization
+    result : dict
+        Mapping with ``data`` (harmonized array), ``estimates``, and
+        ``info``.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from neurostatx.statistics.harmonization import neuroCombat
+    >>> dat = np.random.RandomState(0).rand(4, 6)
+    >>> covars = pd.DataFrame({"scanner": [1, 1, 1, 2, 2, 2],
+    ...                        "age": [20, 30, 40, 25, 35, 45]})
+    >>> out = neuroCombat(dat, covars, batch_col="scanner",
+    ...                   continuous_cols=["age"])
+    >>> out["data"].shape
+    (4, 6)
     """
     ##############################
     # CLEANING UP INPUT DATA #

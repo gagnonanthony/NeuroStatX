@@ -10,6 +10,8 @@ from strenum import StrEnum
 
 
 class RotationTypes(StrEnum, Enum):
+    """Factor rotation methods for exploratory factor analysis."""
+
     promax = "promax"
     oblimin = "oblimin"
     varimax = "varimax"
@@ -20,6 +22,8 @@ class RotationTypes(StrEnum, Enum):
 
 
 class MethodTypes(StrEnum, Enum):
+    """Factor extraction methods for exploratory factor analysis."""
+
     minres = "minres"
     ml = "ml"
     principal = "principal"
@@ -45,55 +49,44 @@ class FormattedTextPrompt(str):
 def horn_parallel_analysis(
     x, output_folder, method="minres", rotation=None, nfactors=1, niter=20
 ):
-    """
-    This function is mimicking the function from the psych R package
-    fa.parallel to compute the horn's parallel analysis to determine the
-    appropriate number of factors to use in factorial analysis.
+    """Estimate the number of factors and components with Horn's method.
 
-    Portion of this code comes from this post on stackoverflow :
-    https://stackoverflow.com/questions/62303782/is-there-a-way-to-conduct-a-parallel-analysis-in-python
-    and from the translation of the original function fa.parallel in the psych
-    R package :
-    https://github.com/cran/psych/blob/ee72f0cc2aa7c85a844e3ef63c8629096f22c35d/R/fa.parallel.R
-
-    Results have been compared between the original R code and this function
-    and no difference have been observed between the two (see pull request #11,
-    https://github.com/gagnonanthony/NeuroStatX/pull/11)
+    Compares observed eigenvalues to those from random data, following
+    psych's ``fa.parallel``.
 
     Parameters
     ----------
     x : np.array
-        Input dataset with only variables to include in the EFA.
+        Variables to include in the analysis.
+    output_folder : str
+        Directory where ``horns_parallel_screeplot.png`` is written.
     method : str, optional
-        Method used to fit the model.
-        List of possible methods:
-            - minres: Minimal Residual
-            - ml: Maximum Likelihood Factor
-            - principal: Principal Component
-        Defaults to "minres".
+        Extraction method: ``"minres"``, ``"ml"``, or ``"principal"``.
+        Defaults to ``"minres"``.
     rotation : str, optional
-        Rotation method to apply to the factor loadings:
-        List of possible rotations:
-            - varimax: Orthogonal Rotation
-            - promax: Oblique Rotation
-            - oblimin: Oblique Rotation
-            - oblimax: Orthogonal Rotation
-            - quartimin: Oblique Rotation
-            - quartimax: Orthogonal Rotation
-            - equamax: Orthogonal Rotation
-        Defaults to None.
+        Rotation applied when fitting. Defaults to None.
     nfactors : int, optional
-        Number of factors (latent variables) to extract from the data.
+        Number of factors extracted while computing eigenvalues.
         Defaults to 1.
     niter : int, optional
-        Number of iterations to perform the parallel analysis. Defaults to 20.
+        Number of random-data iterations. Defaults to 20.
 
     Returns
     -------
     suggfactors : int
-        Suggested number of factors to use in the factorial analysis.
+        Suggested number of factors.
     suggcomponents : int
-        Suggested number of components to use in the factorial analysis.
+        Suggested number of components.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from neurostatx.utils.factor import horn_parallel_analysis
+    >>> rng = np.random.RandomState(0)
+    >>> x = rng.rand(40, 5)
+    >>> suggfactors, suggcomponents = horn_parallel_analysis(
+    ...     x, output_folder=".", niter=2
+    ... )
     """
 
     # Getting input data dimension.
@@ -165,48 +158,46 @@ def horn_parallel_analysis(
 
 
 def efa(df, method, rotation, nfactors=1):
-    """
-    Function to compute a simple exploratory factor analysis (EFA)
-    using the factor_analyzer package.
+    """Fit an exploratory factor analysis with factor_analyzer.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Input dataset with only variables to include in the EFA.
+        Variables to include in the EFA.
     method : str
-        Method used to fit the model.
-        List of possible methods:
-            - minres: Minimal Residual
-            - ml: Maximum Likelihood Factor
-            - principal: Principal Component
+        Extraction method: ``"minres"``, ``"ml"``, or ``"principal"``.
     rotation : str
-        Rotation method to apply to the factor loadings:
-        List of possible rotations:
-            - varimax: Orthogonal Rotation
-            - promax: Oblique Rotation
-            - oblimin: Oblique Rotation
-            - oblimax: Orthogonal Rotation
-            - quartimin: Oblique Rotation
-            - quartimax: Orthogonal Rotation
-            - equamax: Orthogonal Rotation
+        Rotation applied to the loadings, or None.
     nfactors : int, optional
-        Number of factors (latent variables) to extract from the data.
-        Defaults to 1.
+        Number of factors to extract. Defaults to 1.
 
     Returns
     -------
-    FactorAnalyzer
-        FactorAnalyzer object containing the model.
+    model : FactorAnalyzer
+        Fitted factor analyzer.
     ev : np.array
-        Original eigenvalues of the model.
+        Original eigenvalues.
     v : np.array
-        Common factor eigenvalues of the model.
+        Common-factor eigenvalues.
     scores : np.array
-        Factor scores of the model.
+        Factor scores.
     loadings : np.array
-        Loadings of the model.
+        Factor loadings.
     communalities : np.array
-        Communalities of the model.
+        Communalities.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from neurostatx.utils.factor import efa
+    >>> rng = np.random.RandomState(0)
+    >>> df = pd.DataFrame(rng.rand(40, 4), columns=list("abcd"))
+    >>> model, ev, v, scores, loadings, communalities = efa(
+    ...     df, method="minres", rotation="varimax", nfactors=1
+    ... )
+    >>> scores.shape[0]
+    40
     """
 
     # Instantiating and fitting the exploratory factorial analysis.
@@ -226,28 +217,37 @@ def efa(df, method, rotation, nfactors=1):
 def cfa(
     df, model
 ):
-    """
-    Used to compute a confirmatory factor analysis (CFA) to evaluate the
-    goodness of fit of the model.
-
-    This function uses the semopy package to evaluate the goodness of fit of
-    the proposed model (https://semopy.com/).
+    """Fit a confirmatory factor analysis model with semopy.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Input dataset with only variables to include in the CFA.
+        Observed indicators included in the CFA.
     model : str
-        Model description for the CFA.
+        semopy model specification.
 
     Returns
     -------
-    semopy.Model
-        Model object containing the CFA.
+    fitted : semopy.Model
+        Fitted CFA model.
     scores : pd.DataFrame
-        Factor scores of the model.
+        Predicted factor scores.
     stats : pd.DataFrame
-        Statistics of the model.
+        Parameter estimates from ``inspect``.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from neurostatx.utils.factor import cfa
+    >>> rng = np.random.RandomState(0)
+    >>> f = rng.randn(40)
+    >>> df = pd.DataFrame({"x1": f + 0.1 * rng.randn(40),
+    ...                    "x2": f + 0.1 * rng.randn(40),
+    ...                    "x3": f + 0.1 * rng.randn(40)})
+    >>> fitted, scores, stats = cfa(df, "F =~ x1 + x2 + x3")
+    >>> "F" in scores.columns
+    True
     """
 
     cfa = semopy.Model(model)

@@ -30,6 +30,7 @@ from neurostatx.clustering.distance import DistanceMetrics
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
+"""Cyclopts application for the FuzzyClustering command-line tool."""
 
 
 @app.default()
@@ -164,129 +165,115 @@ def FuzzyClustering(
         ),
     ] = False,
 ):
-    """Fuzzy Clustering
-    ----------------
-    FuzzyClustering is a wrapper script for a Fuzzy C-Means
-    clustering analysis. By design, the script will compute the analysis for
-    k specified cluster (chosen by --k) and returns various
-    evaluation metrics and summary barplot/parallel plot.
+    """Wrap Fuzzy C-Means clustering over k=2 to k.
 
-    Evaluation Metrics
-    ------------------
-    The fuzzy partition coefficient (FPC) is a metric defined between 0 and 1
-    with 1 representing the better score. It represents how well the data is
-    described by the clustering model. Therefore, a higher FPC represents a
-    better fitted model. On real-world data, local maxima can also be
-    interpreted as one of the optimal solution.
+    FuzzyClustering runs the analysis for each cluster count up to --k and
+    writes evaluation metrics plus summary barplots and parallel plots.
 
-    The Silhouette Coefficient represents an evaluation of cluster's
-    definition. The score is bounded (-1 to 1) with 1 as the perfect score and
-    -1 as not a good clustering result. A higher Silhouette Coefficient relates
-    to a model with better defined clusters (therefore a better model). It
-    tends to have higher score with cluster generated from density-
-    based methods.
+    Notes
+    -----
 
-    The Calinski-Harabasz Index (or the Variance Ratio Criterion) can be used
-    when no known labels are available. It represents the density and
-    separation of clusters. Although it tends to be higher for cluster
-    generated from density-based methods. A higher Calinski-Harabasz Index
-    relates to better defined clusters.
+    **Evaluation metrics**
 
-    Davies-Bouldin Index is reported for all cluster-models. A lower DBI
-    relates to a model with better cluster separation. It represents a measure
-    of similarity between clusters and is solely based on quantities and
-    features of the dataset. It also tends to be generally higher for
-    convex clusters and it uses the centroid distance between clusters
-    therefore limiting the distance metric to euclidean space.
+    The fuzzy partition coefficient (FPC) is defined between 0 and 1, with 1
+    the better score. It represents how well the data are described by the
+    clustering model, so a higher FPC is a better fit. On real-world data,
+    local maxima can also be interpreted as an optimal solution [1], [5].
 
-    Within cluster Sum of Squared error (WSS) represents the average distance
-    from each point to their cluster centroid. WSS is combined with the elbow
-    method to determine the optimal k number of clusters.
+    The Silhouette Coefficient evaluates cluster definition. The score is
+    bounded from -1 to 1, with 1 the perfect score. A higher Silhouette
+    Coefficient relates to better-defined clusters. It tends to be higher for
+    clusters generated from density-based methods [2].
 
-    The GAP statistics is based on the WSS. It relies on computing the
-    difference in cluster compactness between the actual data and simulated
-    data with a null distribution. The optimal k-number of clusters is
-    identified by a maximized GAP statistic (local maxima can also suggest
-    possible solutions.).
+    The Calinski-Harabasz Index (Variance Ratio Criterion) can be used when no
+    known labels are available. It represents the density and separation of
+    clusters, and also tends to be higher for density-based methods. A higher
+    index relates to better-defined clusters.
 
-    Configurations
-    --------------
-    Details regarding the parameters can be seen below. Regarding the
-    --m parameter, it defines the degree of fuzziness of the resulting
-    membership matrix. Using --m 1 will returns crisp clusters, whereas
-    --m >1 will returned more and more fuzzy clusters. It is also possible
-    to pre-initialize the c-partitioned matrix from previous membership matrix.
-    If you want to do that, you need to specify a folder containing all
-    membership matrices for each k number (meaning that if you want to perform
-    clustering up to k=10, you need a membership matrices for each of them.).
-    It also must respect this name convention:
-    ::
+    The Davies-Bouldin Index is reported for all cluster models. A lower DBI
+    relates to better cluster separation. It measures similarity between
+    clusters from quantities and features of the dataset, tends to be higher
+    for convex clusters, and uses centroid distance, so the distance metric
+    is limited to Euclidean space.
 
-                    [init_folder]
-                        |-- cluster_membership_1.npy
-                        |-- cluster_membership_2.npy
-                        |-- [...]
-                        └-- cluster_membership_{k}.npy
+    Within-cluster sum of squared error (WSS) is the average distance from
+    each point to its cluster centroid. Combined with the elbow method, WSS
+    helps determine the optimal k [3], [4].
 
-    Output Folder Structure
-    -----------------------
-    The script creates a default output structure in a destination specified
-    by using --out-folder. Output structure is as follows:
-    ::
+    GAP statistics are based on WSS. They compute the difference in cluster
+    compactness between the actual data and simulated data with a null
+    distribution. The optimal k is identified by a maximized GAP statistic
+    (local maxima can also suggest possible solutions).
 
-                    [out_folder]
-                        |-- CENTROIDS
-                        |       |-- clusters_centroids_2.xlsx
-                        |       |-- [...]
-                        |       └-- clusters_centroids_{k}.xlsx
-                        |-- MEMBERSHIP_DF
-                        |       |-- clusters_membership_2.xlsx
-                        |       |-- [...]
-                        |       └-- clusters_membership_{k}.xlsx
-                        |-- MEMBERSHIP_MAT (in .npy format)
-                        |-- METRICS
-                        |       |-- chi.png
-                        |       |-- [...]
-                        |       └-- wss.png
-                        |-- PARALLEL_PLOTS (optional)
-                        |       |-- parallel_plot_2clusters.png
-                        |       |-- [...]
-                        |       |-- parallel_plot_{k}clusters.png
-                        |-- PCA (optional)
-                        |       |-- transformed_data.xlsx
-                        |       |-- variance_explained.xlsx
-                        |       └-- pca_model.joblib
-                        |-- RADAR_PLOTS (optional)
-                        |       |-- radar_plot_2clusters.png
-                        |       |-- [...]
-                        |       |-- radar_plot_{k}clusters.png
-                        |-- validation_indices.xlsx
-                        └-- viz_multiple_cluster_nb.png
+    **Fuzziness and initialization**
+
+    The --m parameter defines the degree of fuzziness of the resulting
+    membership matrix. Using --m 1 returns crisp clusters, whereas --m > 1
+    returns increasingly fuzzy clusters. The c-partitioned matrix can be
+    pre-initialized from previous membership matrices. Specify a folder
+    containing a membership matrix for each k (if clustering up to k=10, a
+    matrix is needed for each of them) using this name convention:
+
+    ```text
+                [init_folder]
+                    |-- cluster_membership_1.npy
+                    |-- cluster_membership_2.npy
+                    |-- [...]
+                    └-- cluster_membership_{k}.npy
+    ```
+
+    **Output folder structure**
+
+    The script creates a default output structure in the destination specified
+    by --out-folder:
+
+    ```text
+                [out_folder]
+                    |-- CENTROIDS
+                    |       |-- clusters_centroids_2.xlsx
+                    |       |-- [...]
+                    |       └-- clusters_centroids_{k}.xlsx
+                    |-- MEMBERSHIP_DF
+                    |       |-- clusters_membership_2.xlsx
+                    |       |-- [...]
+                    |       └-- clusters_membership_{k}.xlsx
+                    |-- MEMBERSHIP_MAT (in .npy format)
+                    |-- METRICS
+                    |       |-- chi.png
+                    |       |-- [...]
+                    |       └-- wss.png
+                    |-- PARALLEL_PLOTS (optional)
+                    |       |-- parallel_plot_2clusters.png
+                    |       |-- [...]
+                    |       |-- parallel_plot_{k}clusters.png
+                    |-- PCA (optional)
+                    |       |-- transformed_data.xlsx
+                    |       |-- variance_explained.xlsx
+                    |       └-- pca_model.joblib
+                    |-- RADAR_PLOTS (optional)
+                    |       |-- radar_plot_2clusters.png
+                    |       |-- [...]
+                    |       |-- radar_plot_{k}clusters.png
+                    |-- validation_indices.xlsx
+                    └-- viz_multiple_cluster_nb.png
+    ```
 
     References
     ----------
-    [1] Scikit-Fuzzy Documentation
-    (https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_cmeans.html)
+    [1] [scikit-fuzzy c-means
+    example](https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_cmeans.html)
 
-    [2] Scikit-Learn Documentation - Clustering Performance Evaluation
-    (https://scikit-learn.org/stable/modules/clustering.html#clustering-performance-evaluation)
+    [2] [scikit-learn clustering performance
+    evaluation](https://scikit-learn.org/stable/modules/clustering.html#clustering-performance-evaluation)
 
-    [3] Selecting the optimal number of clusters - 1
-    (https://towardsdatascience.com/cheat-sheet-to-implementing-7-methods-for-selecting-optimal-number-of-clusters-in-python-898241e1d6ad)
+    [3] [Selecting the optimal number of
+    clusters](https://towardsdatascience.com/cheat-sheet-to-implementing-7-methods-for-selecting-optimal-number-of-clusters-in-python-898241e1d6ad)
 
-    [4] Selecting the optimal number of clusters - 2
-    (https://towardsdatascience.com/how-to-determine-the-right-number-of-clusters-with-code-d58de36368b1)
+    [4] [How to determine the right number of
+    clusters](https://towardsdatascience.com/how-to-determine-the-right-number-of-clusters-with-code-d58de36368b1)
 
-    [5] Scikit-Fuzzy GitHub Repository
-    (https://github.com/scikit-fuzzy/scikit-fuzzy)
-
-    Example Usage
-    -------------
-    ::
-
-        FuzzyClustering --in-dataset dataset.csv --id-column ID --desc-columns
-        1 --k 10 --m 2 --error 1e-6 --maxiter 1000 --init init_folder --metric
-        euclidean --pca --out-folder ./fuzzy_results/ --processes 4 --verbose
+    [5] [scikit-fuzzy GitHub
+    repository](https://github.com/scikit-fuzzy/scikit-fuzzy)
 
     Parameters
     ----------
@@ -299,43 +286,52 @@ def FuzzyClustering(
         Number of descriptive columns at the beginning of the dataset to
         exclude in statistics and descriptive tables.
     k : int, optional
-        Maximum k number of cluster to fit a model for. (Script will iterate
-        until k is met.)
+        Maximum k number of clusters to fit a model for. The script iterates
+        until k is met. Defaults to 10.
     m : float, optional
-        Exponentiation value to apply on the membership function, will
-        determined the degree of fuzziness of the membership matrix
+        Exponentiation value to apply on the membership function. Determines
+        the degree of fuzziness of the membership matrix. Defaults to 2.
     error : float, optional
-        Error threshold for convergence stopping criterion.
+        Error threshold for convergence stopping criterion. Defaults to 1e-6.
     maxiter : int, optional
-        Maximum number of iterations to perform.
+        Maximum number of iterations to perform. Defaults to 1000.
     init : str, optional
-        Initial fuzzy c-partitioned matrix
+        Initial fuzzy c-partitioned matrix. Defaults to None.
     metric : DistanceMetrics, optional
-        Metric to use to compute distance between original points and clusters
-        centroids.
+        Metric to use to compute distance between original points and cluster
+        centroids. Defaults to euclidean.
     pca : bool, optional
         If set, will perform PCA decomposition to 2 components before
-        clustering.
+        clustering. Defaults to False.
     out_folder : str, optional
         Path of the folder in which the results will be written. If not
-        specified, current folder and default name will be used.
+        specified, current folder and default name will be used. Defaults to
+        ``./fuzzy_results/``.
     processes : int, optional
-        Number of processes to launch in parallel.
+        Number of processes to launch in parallel. Defaults to 1.
     parallelplot : bool, optional
-        If true, will output parallel plot for each cluster solution. Default
-        is False.
+        If true, will output a parallel plot for each cluster solution.
+        Defaults to False.
     radarplot : bool, optional
-        If true, will output radar plot for each cluster solution. Default is
-        True.
+        If true, will output a radar plot for each cluster solution. Defaults
+        to True.
     cmap : str, optional
-        Colormap to use for plotting. Default is "magma". See
+        Colormap to use for plotting. Defaults to ``magma``. See
         https://matplotlib.org/stable/tutorials/colors/colormaps.html.
     verbose : bool, optional
-        If true, produce verbose output.
+        If true, produce verbose output. Defaults to False.
     save_parameters : bool, optional
-        If true, will save input parameters to .txt file.
+        If true, will save input parameters to .txt file. Defaults to False.
     overwrite : bool, optional
-        If true, force overwriting of existing output files.
+        If true, force overwriting of existing output files. Defaults to False.
+
+    Examples
+    --------
+    ```bash
+    FuzzyClustering --in-dataset dataset.csv --id-column ID --desc-columns
+    1 --k 10 --m 2 --error 1e-6 --maxiter 1000 --init init_folder --metric
+    euclidean --pca --out-folder ./fuzzy_results/ --processes 4 --verbose
+    ```
     """
 
     if verbose:

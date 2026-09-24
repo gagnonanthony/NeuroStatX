@@ -23,6 +23,7 @@ from neurostatx.clustering.distance import DistanceMetrics
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
+"""Cyclopts application for the PredictFuzzyMembership command-line tool."""
 
 
 @app.default()
@@ -151,35 +152,28 @@ def PredictFuzzyMembership(
         ),
     ] = False,
 ):
-    """Fuzzy Membership Prediction
-    ---------------------------
-    This script will predict the membership matrix of a dataset using a
-    trained Cmeans model (only the centroids are necessary for the prediction).
+    """Predict fuzzy membership from trained C-Means centroids.
 
-    Configurations
-    --------------
-    Details regarding the parameters can be seen below. Regarding the
-    --m parameter, it defines the degree of fuzziness of the resulting
-    membership matrix. Using --m 1 will returns crisp clusters, whereas
-    --m >1 will returned more and more fuzzy clusters. It is recommended
-    to use the same m value as used during training.
+    Only the centroids from a trained model are required for the prediction.
 
-    Example Usage
-    -------------
-    ::
+    Notes
+    -----
 
-        PredictFuzzyMembership --in_dataset dataset.xlsx --in_cntr
-        centroids.xlsx --id_column ID --desc_columns 1 --out_folder
-        predicted_membership_matrix/ --m 2 --error 1e-6 --maxiter 1000
-        --metric euclidean --verbose --save_parameters --overwrite
+    **Fuzziness**
+
+    The --m parameter defines the degree of fuzziness of the resulting
+    membership matrix. Using --m 1 returns crisp clusters, whereas --m > 1
+    returns increasingly fuzzy clusters. Use the same m value as during
+    training.
 
     Parameters
     ----------
     in_dataset : str
         Input dataset.
     in_cntr : str
-        Centroid file to use for prediction. Should come from a trained Cmeans
-        model (such as ``FuzzyClustering``).
+        Centroid file to use for prediction. Should come from a trained
+        C-Means model such as
+        [FuzzyClustering][neurostatx.cli.FuzzyClustering.FuzzyClustering].
     id_column : str
         Name of the column containing the subject's ID tag. Required for proper
         handling of IDs and merging multiple datasets.
@@ -187,37 +181,48 @@ def PredictFuzzyMembership(
         Number of descriptive columns at the beginning of the dataset to
         exclude in statistics and descriptive tables.
     out_folder : str, optional
-        Output folder for the predicted membership matrix.
+        Output folder for the predicted membership matrix. Defaults to
+        ``./output/``.
     m : float, optional
-        Exponentiation value to apply on the membership function, will
-        determined the degree of fuzziness of the membership matrix.
+        Exponentiation value to apply on the membership function. Determines
+        the degree of fuzziness of the membership matrix. Defaults to 2.
     error : float, optional
-        Error threshold for convergence stopping criterion.
+        Error threshold for convergence stopping criterion. Defaults to 1e-6.
     maxiter : int, optional
-        Maximum number of iterations to perform.
+        Maximum number of iterations to perform. Defaults to 1000.
     metric : DistanceMetrics, optional
-        Metric to use to compute distance between original points and clusters
-        centroids.
+        Metric to use to compute distance between original points and cluster
+        centroids. Defaults to euclidean.
     pca : bool, optional
         If set, will perform PCA decomposition to 3 components before
-        clustering.
+        clustering. Defaults to False.
     pca_model : str, optional
         If set, will load a pre-trained PCA model to apply on the dataset.
+        Defaults to None.
     parallelplot : bool, optional
-        If true, will output parallel plot for each cluster solution. Default
-        is False.
+        If true, will output a parallel plot for each cluster solution.
+        Defaults to False.
     radarplot : bool, optional
-        If true, will output radar plot for each cluster solution. Default is
-        True.
+        If true, will output a radar plot for each cluster solution. Defaults
+        to True.
     cmap : str, optional
-        Colormap to use for plotting. Default is "magma". See Matplotlib
+        Colormap to use for plotting. Defaults to ``magma``. See Matplotlib
         (https://matplotlib.org/stable/tutorials/colors/colormaps.html).
     verbose : bool, optional
-        If true, produce verbose output.
+        If true, produce verbose output. Defaults to False.
     save_parameters : bool, optional
-        If true, will save input parameters to .txt file.
+        If true, will save input parameters to .txt file. Defaults to False.
     overwrite : bool, optional
-        If true, force overwriting of existing output files.
+        If true, force overwriting of existing output files. Defaults to False.
+
+    Examples
+    --------
+    ```bash
+    PredictFuzzyMembership --in_dataset dataset.xlsx --in_cntr
+    centroids.xlsx --id_column ID --desc_columns 1 --out_folder
+    predicted_membership_matrix/ --m 2 --error 1e-6 --maxiter 1000
+    --metric euclidean --verbose --save_parameters --overwrite
+    ```
     """
 
     if verbose:

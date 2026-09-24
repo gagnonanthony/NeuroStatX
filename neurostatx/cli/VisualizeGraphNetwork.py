@@ -16,6 +16,7 @@ from neurostatx.network.viz import create_cmap_from_list
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
+"""Cyclopts application for the VisualizeGraphNetwork command-line tool."""
 
 
 @app.default()
@@ -178,103 +179,103 @@ def VisualizeGraphNetwork(
         ),
     ] = "Membership values",
 ):
-    """Visualizing Graph Network
-    -------------------------
-    VisualizeGraphNetwork is a command line tool to visualize the graph network
-    generated from the clustering results. The script uses the NetworkX library
-    to visualize the graph network. The script also provides options to label
-    specific nodes based on a condition (e.g. a diagnosis, etc.). It is also
-    possible to customize the graph appearance using the Network Visualization
-    Options. The script is made to work hand in hand with the script
-    ComputeGraphNetwork since it requires the precomputation of the nodes'
-    position within the graph file.
+    """Visualize a graph network generated from clustering results.
 
-    Labelling Graph Network Nodes
-    -----------------------------
-    It is possible to label specific nodes based on a condition (e.g. a
-    diagnosis, etc.). To do so, use the --label-name to indicate with binary
-    node attribute to use for labelling. It is also possible to provide
-    multiple label name by using --label-name x --label-name y. The script will
-    output multiple graphs for each label name.
+    VisualizeGraphNetwork uses NetworkX to draw the graph and can label
+    specific nodes based on a condition (for example a diagnosis). Appearance
+    can be customized with the visualization parameters. It is meant to work
+    with
+    [ComputeGraphNetwork][neurostatx.cli.ComputeGraphNetwork.ComputeGraphNetwork]
+    because it requires precomputed node positions in the graph file.
 
-    Cohort Selection
-    ----------------
-    In some case, the graph network file can contain data from multiple cohort
-    at the same time. It might be useful to single out a specific cohort to
-    visualize some data. Using --cohort, the script will fetch data from
-    the specified cohort and filter the --label-name. In order for the script
-    to run successfully, your graph network needs to contain the cohort
-    attributes. If it does not, please add it using the AddNodesAttributes
-    script.
+    Notes
+    -----
 
-    Graph Network Customization
-    ---------------------------
-    To customize the graph appearance, please see the Network Visualization
-    Options below. It should be noted that using subjects_labelling will crowd
-    the network if it contains a high number of nodes. Also, centroids are
-    labelled by default 'c1, c2, ...' and subjects 's1, s2, ...'. The script
-    also exports a graph_network_file.gexf. This file can be used to further
-    customize the network using other APIs such as GEPHI (see [1]).
+    **Labelling nodes**
+
+    Specific nodes can be labelled from a binary node attribute via
+    --label-name. Multiple labels can be provided with repeated --label-name
+    flags; the script writes one graph per label name.
+
+    **Cohort selection**
+
+    When the graph contains data from multiple cohorts, --cohort fetches the
+    specified cohort and filters --label-name. The graph must contain a cohort
+    attribute; add it with
+    [AddNodesAttributes][neurostatx.cli.AddNodesAttributes.AddNodesAttributes]
+    if needed.
+
+    **Graph appearance**
+
+    Using subjects labelling will crowd the network if it contains a high
+    number of nodes. Centroids are labelled by default ``c1, c2, ...`` and
+    subjects ``s1, s2, ...``. The script also exports a
+    ``graph_network_file.gexf`` file that can be customized further in other
+    tools such as Gephi [1].
 
     References
     ----------
-    [1] GEPHI (https://gephi.org/)
-
-    Example Usage
-    -------------
-    ::
-
-        VisualizeGraphNetwork --in-graph graph_network.gml
-        --out-folder output/ --label-name diagnosis
-        --weight membership -v -f -s
+    [1] [Gephi](https://gephi.org/)
 
     Parameters
     ----------
     in_graph : str
         Input graph network to visualize (.gml format).
-    out_folder : str
-        Output folder for the graph network visualization.
-    verbose : bool
-        Verbose mode.
-    overwrite : bool
-        Overwrite existing files.
-    save_parameters : bool
-        Save parameters to a .txt file.
-    label_name : List[str]
-        List of label names to subsequently use for labelling.
-    cohort: int, optional
-        Cohort identifier. If your graph contains data from multiple cohort,
-        you can specify the cohort you want for visulization.
-    background_alpha : bool
-        Use background alpha for the graph.
-    weight : str
-        Weight to use for the graph network.
-    label_centroids : bool
-        Label centroids.
-    label_subjects : bool
-        Label subjects.
-    centroids_size : int
-        Size of the centroids.
-    centroid_alpha : float
-        Alpha of the centroids.
-    centroid_node_color : str
-        Color of the centroids.
-    centroid_edge_color : str
-        Edge color of the centroids.
-    subject_node_size : int
-        Size of the subjects.
-    subject_node_alpha : float
-        Alpha of the subjects.
-    subject_node_color : str
-        Color of the subjects.
-    subject_edge_color : str
-        Edge color of the subjects.
-    colormap : str
-        Colormap to use for the graph network.
-    title : str
-        Title of the graph network.
-    legend_title : str
-        Legend title of the graph network.
+    out_folder : str, optional
+        Output folder for the graph network visualization. Defaults to
+        ``./visualize_network/``.
+    verbose : bool, optional
+        Verbose mode. Defaults to False.
+    overwrite : bool, optional
+        Overwrite existing files. Defaults to False.
+    save_parameters : bool, optional
+        Save parameters to a .txt file. Defaults to False.
+    label_name : List[str], optional
+        List of label names to subsequently use for labelling. Defaults to
+        None.
+    cohort : int, optional
+        Cohort identifier. If your graph contains data from multiple cohorts,
+        you can specify the cohort you want for visualization. Defaults to
+        None.
+    background_alpha : bool, optional
+        Use background alpha for the graph. Defaults to True.
+    weight : str, optional
+        Weight to use for the graph network. Defaults to ``membership``.
+    label_centroids : bool, optional
+        Label centroids. Defaults to True.
+    label_subjects : bool, optional
+        Label subjects. Defaults to False.
+    centroids_size : int, optional
+        Size of the centroids. Defaults to 500.
+    centroid_alpha : float, optional
+        Alpha of the centroids. Defaults to 1.
+    centroid_node_color : str, optional
+        Color of the centroids. Defaults to ``white``.
+    centroid_edge_color : str, optional
+        Edge color of the centroids. Defaults to ``black``.
+    subject_node_size : int, optional
+        Size of the subjects. Defaults to 5.
+    subject_node_alpha : float, optional
+        Alpha of the subjects. Defaults to 0.1.
+    subject_node_color : str, optional
+        Color of the subjects. Defaults to ``darkgrey``.
+    subject_edge_color : str, optional
+        Edge color of the subjects. Defaults to None.
+    colormap : str, optional
+        Colormap to use for the graph network. Defaults to ``plasma``.
+    title : str, optional
+        Title of the graph network. Defaults to ``Network Graph of the
+        clustering membership values.``.
+    legend_title : str, optional
+        Legend title of the graph network. Defaults to ``Membership values``.
+
+    Examples
+    --------
+    ```bash
+    VisualizeGraphNetwork --in-graph graph_network.gml
+    --out-folder output/ --label-name diagnosis
+    --weight membership -v -f -s
+    ```
     """
 
     if verbose:

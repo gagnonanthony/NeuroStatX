@@ -25,6 +25,7 @@ from neurostatx.io.viz import generate_coef_plot, flexible_hist
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
+"""Cyclopts application for the LogisticRegression command-line tool."""
 
 
 @app.default()
@@ -161,65 +162,51 @@ def LogisticRegression(
         ),
     ] = False
 ):
-    """Logistic Regression Analysis
-    ----------------------------
-    This script performs a Logistic Regression on a graph
-    using the edges' weights as predictors and the nodes' attributes as
-    response variable. The script will perform a cross-validation within a
-    training dataset before testing the model on test data. It will then
-    perform a permutation testing to determine if the model is statistically
-    significant. Finally, it will output the coefficients and statistics
-    as well as plots of the distributions of the attributes and edges' weights
-    and the coefficients.
+    """Fit logistic regression of graph edges against node attributes.
 
-    Preprocessing
-    -------------
-    The script will scale the data to unit variance and zero mean and will
-    perform a log transformation on the edges' weights (for now, it assumes
-    that the weights represent a membership value resulting from a fuzzy
-    clustering analysis).
+    LogisticRegression uses edge weights as predictors and node attributes as
+    the response. It cross-validates on a training set, tests on held-out
+    data, then runs permutation testing for statistical significance. It writes
+    coefficients, statistics, and plots of attribute and edge-weight
+    distributions and of the coefficients.
 
-    Nodes' Attributes
-    -----------------
-    The script takes only one graph file as input. The graph file must be in
-    .gml format. The script will then fetch the attributes from the graph
-    file and will perform the analysis on the attributes and edges'
-    weights. At least one attribute needs to be provided in order to fit a
-    model. To set attributes to the nodes in the graph file,
-    please see AddNodesAttributes.
+    Notes
+    -----
 
-    Scoring Options
-    ---------------
-    The script will perform a permutation testing to determine if the model is
-    statistically significant. The script will compute the p-value for the
-    permutation testing using the area under the curve (AUC) by default.
-    However, the user can also choose multiple scores to compute the p-value.
-    The available scores can be seen in [1]. The equation used to compute
-    the single-tailed p-value is:
+    **Preprocessing**
+
+    Data are scaled to unit variance and zero mean. Edge weights are
+    log-transformed; for now this assumes the weights are membership values
+    from a fuzzy clustering analysis.
+
+    **Node attributes**
+
+    The script takes a single .gml graph file, fetches node attributes from it,
+    and fits the model on those attributes and the edge weights. At least one
+    attribute is required. To attach attributes to nodes, see
+    [AddNodesAttributes][neurostatx.cli.AddNodesAttributes.AddNodesAttributes].
+
+    **Scoring**
+
+    Permutation testing assesses whether the model is statistically
+    significant. The p-value uses area under the curve (AUC) by default; other
+    scores are listed in the scikit-learn scoring documentation [1]. The
+    single-tailed p-value is:
 
         p-value = ∑(score_perm >= score) / (nb_permutations)
 
-    Coefficient Significance
-    ------------------------
-    The script will also compute the p-value for the coefficients using the
-    permutation testing. The p-value for the coefficients is computed by
-    comparing the coefficients obtained from the model with the
-    coefficients obtained from the permutation testing. The equation used to
-    compute the two-tailed p-value is:
+    **Coefficient significance**
+
+    Coefficient p-values are also computed from the permutation distribution
+    by comparing model coefficients to permuted coefficients. The two-tailed
+    p-value is:
 
         p-value = ∑(abs(coef_perm) >= abs(coef)) / (nb_permutations)
 
     References
     ----------
-    [1]
-    https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter
-
-    Example Usage
-    -------------
-    ::
-
-        LogisticRegression --in-graph graph.gexf --out-folder output_folder -v
-        -s
+    [1] [scikit-learn scoring
+    parameter](https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter)
 
     Parameters
     ----------
@@ -227,40 +214,51 @@ def LogisticRegression(
         Graph file containing the data for the model.
     out_folder : str
         Output folder.
-    attributes : List[str],
-        Attributes names to include in the model. Must be present in the graph
+    attributes : List[str]
+        Attribute names to include in the model. Must be present in the graph
         file. At least one attribute is required.
     covariates : List[str], optional
         Covariates to include in the model. Must be present in the graph file.
+        Defaults to None.
     weight : str, optional
-        Edge weight to use for the model.
+        Edge weight to use for the model. Defaults to ``membership``.
     splits : int, optional
-        Number of splits to use for the cross-validation.
+        Number of splits to use for the cross-validation. Defaults to 10.
     test_size : float, optional
-        Size of the testing set. Must be between 0 and 1.
+        Size of the testing set. Must be between 0 and 1. Defaults to 0.2.
     cs : int, optional
         Inverse of regularization strength. Smaller values specify stronger
-        regularization.
+        regularization. Defaults to 10.
     max_iter : int, optional
-        Maximum number of iterations for the solver.
+        Maximum number of iterations for the solver. Defaults to 1000.
     penalty : Penalty, optional
         Regularization penalty to use for the LogisticRegression model.
+        Defaults to l2.
     solver : Solver, optional
-        Solver to use for the LogisticRegression model.
+        Solver to use for the LogisticRegression model. Defaults to lbfgs.
     permutations : int, optional
-        Number of permutations to use for the permutation testing.
+        Number of permutations to use for the permutation testing. Defaults to
+        1000.
     scoring : ScoringMethod, optional
-        Scoring method to use for the permutation testing.
+        Scoring method to use for the permutation testing. Defaults to r2.
     processes : int, optional
-        Number of processes to use for the cross-validation.
-    verbose : bool, optional
-        If true, produce verbose output.
+        Number of processes to use for the cross-validation. Defaults to 1.
     plot_distributions : bool, optional
-        If true, will plot the distributions of the edges' weights.
+        If true, will plot the distributions of the edges' weights. Defaults
+        to False.
+    verbose : bool, optional
+        If true, produce verbose output. Defaults to False.
     save_parameters : bool, optional
-        If true, will save input parameters to .txt file.
+        If true, will save input parameters to .txt file. Defaults to False.
     overwrite : bool, optional
-        If true, force overwriting of existing output files.
+        If true, force overwriting of existing output files. Defaults to False.
+
+    Examples
+    --------
+    ```bash
+    LogisticRegression --in-graph graph.gexf --out-folder output_folder -v
+    -s
+    ```
     """
 
     warnings.filterwarnings("ignore")
