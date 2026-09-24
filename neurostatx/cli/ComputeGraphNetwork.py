@@ -96,6 +96,20 @@ def ComputeGraphNetwork(
             group="Layout Options",
         ),
     ] = NetworkLayout.Spring,
+    method: Annotated[
+        str,
+        Parameter(
+            show_default=True,
+            group="Layout Options",
+        ),
+    ] = "force",
+    seed: Annotated[
+        int,
+        Parameter(
+            show_default=True,
+            group="Layout Options",
+        ),
+    ] = 42,
     weight: Annotated[
         str,
         Parameter(
@@ -223,7 +237,8 @@ def ComputeGraphNetwork(
 
     # Fetching dataframe of nodes and edges.
     df, _, _ = raw_df.custom_function(
-        get_nodes_and_edges
+        get_nodes_and_edges,
+        edge_attr=weight
     )
 
     # Creating network graph.
@@ -231,12 +246,12 @@ def ComputeGraphNetwork(
         df,
         "node1",
         "node2",
-        edge_attr="membership"
+        edge_attr=weight
     )
 
     # Computing graph network layout.
     logging.info("Computing graph network layout and setting nodes position.")
-    G.layout(layout=layout, weight=weight)
+    G.layout(layout=layout, weight=weight, method=method, seed=seed)
 
     if import_data:
         logging.info("Importing data within the .gml file.")

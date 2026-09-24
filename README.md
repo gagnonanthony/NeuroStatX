@@ -1,5 +1,5 @@
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
-![Python](https://img.shields.io/badge/Python-3.10/3.11-blue)
+![Python](https://img.shields.io/badge/Python-≥3.12-blue)
 [![PyPI](https://badge.fury.io/py/NeuroStatX.svg)](https://badge.fury.io/py/NeuroStatX)
 [![codecov](https://codecov.io/gh/gagnonanthony/NeuroStatX/graph/badge.svg?token=7P0QUI6B8U)](https://codecov.io/gh/gagnonanthony/NeuroStatX)
 [![CI](https://github.com/gagnonanthony/NeuroStatX/actions/workflows/build-dev.yml/badge.svg?branch=main)](https://github.com/gagnonanthony/NeuroStatX/actions/workflows/build-dev.yml)
@@ -31,7 +31,7 @@ new functionalities and scripts will be added. **Contributions are welcome!**
 > pipx install virtualenv
 >
 > # Set up the virtualenv.
-> virtualenv --python 3.11 /path/to/your/destination/folder/
+> virtualenv --python 3.12 /path/to/your/destination/folder/
 >
 > # Activate your newly created environment
 > source /path/to/your/destination/folder/bin/activate
@@ -44,13 +44,13 @@ pip install neurostatx
 
 ### From source (for developpers).
 
-This library uses *poetry* to manage dependencies. To install it, use pipx with
+This library uses *Poetry 2* to manage dependencies. To install it, use pipx with
 the following command:
 
 ```bash
 pip install pipx
 pipx ensurepath
-pipx install poetry
+pipx install "poetry>=2.0.0"
 ```
 
 > [!WARNING]
@@ -69,8 +69,8 @@ poetry install
 > [!NOTE]
 > The `poetry install` command will install all required dependencies as well
 > as setting up a virtual environment. To access the library environment, use:
-> `poetry shell` from the project root directory. This will activate the
-> project's python environment in your current shell.
+> `eval $(poetry env activate)` from the project root directory. This will
+> activate the project's python environment in your current shell.
 > To access your environment from other directories, use this command (from
 > within the project directory), you might need to modify ~/.bashrc to your 
 > specific login shell (ex: MacOS sometimes uses zsh, so ~/.zshrc or

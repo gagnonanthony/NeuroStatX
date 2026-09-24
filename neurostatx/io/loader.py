@@ -544,7 +544,7 @@ class GraphLoader:
                   subject_alpha=0.3,
                   subject_node_color="black",
                   subject_edge_color=None,
-                  edge_width_multiplier=10,
+                  edge_width_multiplier=1,
                   colormap="plasma",
                   title="Graph Network",
                   legend_title="Membership values"):

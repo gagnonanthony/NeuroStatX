@@ -1,4 +1,4 @@
 .. automodule:: neurostatx.clustering.fuzzy
-   :members: fuzzyCmeans
+   :members: FuzzyCMeans, search_fuzzy_cmeans, fuzzyCmeans
    :undoc-members:
    :show-inheritance:
