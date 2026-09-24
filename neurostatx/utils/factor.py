@@ -3,10 +3,36 @@
 from enum import Enum
 
 from factor_analyzer import FactorAnalyzer
+import factor_analyzer.factor_analyzer as _factor_analyzer_mod
 import matplotlib.pyplot as plt
 import numpy as np
 import semopy
 from strenum import StrEnum
+
+
+def _patch_factor_analyzer_sklearn_compat() -> None:
+    """Accept sklearn 1.8+ with factor-analyzer 0.5.1 from PyPI.
+
+    That release still passes ``force_all_finite`` into ``check_array``,
+    which scikit-learn removed in 1.8. The upstream fix lives only on
+    git, which PyPI will not accept as a dependency.
+    """
+    orig = _factor_analyzer_mod.check_array
+    if getattr(orig, "_neurostatx_patched", False):
+        return
+
+    def check_array(*args, **kwargs):
+        if "force_all_finite" in kwargs and "ensure_all_finite" not in kwargs:
+            kwargs["ensure_all_finite"] = kwargs.pop("force_all_finite")
+        else:
+            kwargs.pop("force_all_finite", None)
+        return orig(*args, **kwargs)
+
+    check_array._neurostatx_patched = True
+    _factor_analyzer_mod.check_array = check_array
+
+
+_patch_factor_analyzer_sklearn_compat()
 
 
 class RotationTypes(StrEnum, Enum):

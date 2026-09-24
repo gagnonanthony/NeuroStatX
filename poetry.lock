@@ -831,29 +831,24 @@ files = [
 tests = ["asttokens (>=2.1.0)", "coverage", "coverage-enable-subprocess", "ipython", "littleutils", "pytest", "rich ; python_version >= \"3.11\""]
 
 [[package]]
-name = "factor_analyzer"
+name = "factor-analyzer"
 version = "0.5.1"
 description = "A Factor Analysis tool written in Python"
 optional = false
 python-versions = "*"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "factor_analyzer-0.5.1.tar.gz", hash = "sha256:03703cd128ee9f91c9bd191a452b06e4a28296b5a24d11823ebb5d8250e8fdf6"},
+]
 
 [package.dependencies]
 numpy = "*"
 pandas = "*"
-scikit-learn = ">=1.6.0"
+scikit-learn = "*"
 scipy = "*"
 
 [package.extras]
 dev = ["pre-commit"]
-
-[package.source]
-type = "git"
-url = "https://github.com/EducationalTestingService/factor_analyzer.git"
-reference = "de933d26808039d965c117874c67260ec5149690"
-resolved_reference = "de933d26808039d965c117874c67260ec5149690"
 
 [[package]]
 name = "filelock"
@@ -3296,4 +3291,4 @@ dev = ["pytest", "setuptools"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "a4469c14367ecec19d7b54e45a72b3c63e19e83caa114b2154bfc758d4b23de0"
+content-hash = "e91a95fad5059bb1382ad5bf325522be821da597109a0da03c4652c414fb818a"
