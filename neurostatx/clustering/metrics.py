@@ -12,28 +12,36 @@ import skfuzzy as fuzz
 
 
 def compute_evaluation_metrics(X, labels, metric="euclidean"):
-    """
-    Function to compute a variety of metrics to evaluate the goodness of fit
-    of a clustering model.
+    """Compute silhouette, Calinski-Harabasz, and Davies-Bouldin scores.
 
     Parameters
     ----------
-        X : array-like
-            Data from clustering algorithm to derive metrics from.
-        labels : list
-            List of labels.
-        metric : str, optional
-            Distance metric to use. Defaults to 'euclidean'. Accept options
-            from sklearn.metrics.pairwise.pairwise_distances.
+    X : array-like
+        Data used to evaluate the clustering solution.
+    labels : list
+        Cluster labels for each sample.
+    metric : str, optional
+        Distance metric passed to the silhouette score. Defaults to
+        ``"euclidean"``. Accepts options from
+        ``sklearn.metrics.pairwise.pairwise_distances``.
 
     Returns
     -------
-        ss : float
-            Silhouette Score (SS).
-        chi : float
-            Calinski Harabasz Score (CHI).
-        dbi : float
-            Davies Bouldin Score (DBI).
+    ss : float
+        Silhouette score.
+    chi : float
+        Calinski-Harabasz index.
+    dbi : float
+        Davies-Bouldin index.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from neurostatx.clustering.metrics import compute_evaluation_metrics
+    >>> X = np.array([[0.0, 0.0], [0.1, 0.0], [1.0, 1.0], [0.9, 1.1]])
+    >>> ss, chi, dbi = compute_evaluation_metrics(X, [0, 0, 1, 1])
+    >>> ss > 0
+    True
     """
 
     # Storing Silhouette score.
@@ -49,21 +57,25 @@ def compute_evaluation_metrics(X, labels, metric="euclidean"):
 
 
 def compute_knee_location(lst, direction="decreasing"):
-    """
-    Funtion to compute the Elbow location using the Kneed package.
+    """Return the elbow location of a clustering metric curve.
 
     Parameters
     ----------
-        lst: list
-            List of values representing the indicators to identify the elbow
-            location.
-        direction: str, optional
-            Direction of the curve. Defaults to 'decreasing'.
+    lst : list
+        Metric values used to locate the elbow, typically one per ``k``.
+    direction : str, optional
+        Curve direction passed to Kneed. Defaults to ``"decreasing"``.
 
     Returns
     -------
-        elbow: int
-            Elbow location.
+    elbow : int
+        Estimated elbow location (cluster count).
+
+    Examples
+    --------
+    >>> from neurostatx.clustering.metrics import compute_knee_location
+    >>> compute_knee_location([10.0, 4.0, 3.5, 3.2])
+    3
     """
 
     knee = KneeLocator(
@@ -75,24 +87,30 @@ def compute_knee_location(lst, direction="decreasing"):
 
 
 def compute_sse(X, cntr, labels):
-    """
-    Function to compute within cluster sum of square error (WSS).
-    Adapted from :
-    https://towardsdatascience.com/how-to-determine-the-right-number-of-clusters-with-code-d58de36368b1
+    """Compute the within-cluster sum of squared errors (WSS).
 
     Parameters
     ----------
-        X : array
-            Original data (S, N).
-        cntr : array
-            Centroid points (N, F).
-        labels : array
-            Discrete labels (S,).
+    X : array
+        Original data of shape (n_samples, n_features).
+    cntr : array
+        Cluster centroids of shape (n_clusters, n_features).
+    labels : array
+        Hard cluster labels of shape (n_samples,).
 
     Returns
     -------
-        WSS : float
-            Within Sum-of-Squares Error (WSS).
+    WSS : float
+        Within-cluster sum of squared errors.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from neurostatx.clustering.metrics import compute_sse
+    >>> X = np.array([[0.0, 0.0], [1.0, 1.0]])
+    >>> cntr = np.array([[0.0, 0.0], [1.0, 1.0]])
+    >>> compute_sse(X, cntr, np.array([0, 1]))
+    0.0
     """
 
     WSS = 0
@@ -114,41 +132,47 @@ def compute_gap_stats(
     metric="euclidean",
     init=None,
 ):
-    """
-    Function to compute the GAP Statistics to determine the optimal number of
-    clusters.
-    Adapted from :
-    https://towardsdatascience.com/cheat-sheet-to-implementing-7-methods-for-selecting-optimal-number-of-clusters-in-python-898241e1d6ad
-    and https://github.com/milesgranger/gap_statistic
+    """Compute the GAP statistic against uniformly sampled reference data.
 
     Parameters
     ----------
-        X : np.array
-            Data array on which clustering will be computed.
-        wss : float
-            Within Cluster Sum of Squared Error (WSS) for this clustering
-            model.
-        nrefs : int
-            Number of random reference data to generate and average.
-        n_cluster : int
-            Number of cluster in for this model.
-        m : int, optional
-            Exponentiation value as used in the main script. Defaults to 2.
-        error : float, optional
-            Convergence error threshold. Defaults to 1E-6.
-        maxiter : int, optional
-            Maximum iterations to perform. Defaults to 1000.
-        metric : str, optional
-            Distance metric to use. Defaults to 'euclidean'.
-        init : array, optional
-            Initial fuzzy c-partitioned matrix. Defaults to None.
+    X : np.array
+        Data array used to generate reference samples.
+    wss : float
+        Within-cluster sum of squared errors for the fitted model.
+    nrefs : int
+        Number of random reference datasets to average.
+    n_cluster : int
+        Number of clusters in the fitted model.
+    m : float, optional
+        Fuzziness exponent passed to Fuzzy C-Means. Defaults to 2.
+    error : float, optional
+        Convergence tolerance. Defaults to 1e-6.
+    maxiter : int, optional
+        Maximum iterations for each reference fit. Defaults to 1000.
+    metric : str, optional
+        Distance metric. Defaults to ``"euclidean"``.
+    init : array, optional
+        Initial fuzzy c-partitioned matrix. Defaults to None.
 
     Returns
     -------
-        gap : float
-            GAP Statistics.
-        sk : float
-            Standard deviation of the GAP statistic.
+    gap : float
+        GAP statistic.
+    sk : float
+        Standard error of the GAP statistic.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from neurostatx.clustering.metrics import compute_gap_stats, compute_sse
+    >>> X = np.array([[0.0, 0.0], [0.1, 0.0], [1.0, 1.0], [0.9, 1.0]])
+    >>> cntr = np.array([[0.05, 0.0], [0.95, 1.0]])
+    >>> labels = np.array([0, 0, 1, 1])
+    >>> gap, sk = compute_gap_stats(X, compute_sse(X, cntr, labels),
+    ...                             nrefs=2, n_cluster=2)
+    >>> gap > 0
+    True
     """
 
     refDisps = np.zeros(nrefs)
@@ -181,23 +205,28 @@ def compute_gap_stats(
 
 
 def find_optimal_gap(gap, sk):
-    """
-    Function to find the optimal k number based on the GAP statistics using
-    the method from Tibshirani R. et al., 2001
-    (https://hastie.su.domains/Papers/gap.pdf). Highlights the first
-    k value where GAP[k] >= GAP[k+1] - SD[k+1].
+    """Return the first k satisfying Tibshirani's GAP rule.
+
+    Selects the first index where ``GAP[k] >= GAP[k+1] - SD[k+1]``.
 
     Parameters
     ----------
-        gap : np.array
-            Ndarray of GAP statistics values for a range of k clusters.
-        sk : np.array
-            Ndarray of standard deviation for each GAP values.
+    gap : np.array
+        GAP statistic values for a range of cluster counts.
+    sk : np.array
+        Standard errors aligned with ``gap``.
 
     Returns
     -------
-        optimal : int
-            Optimal number of clusters.
+    optimal : int
+        Index of the selected solution.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from neurostatx.clustering.metrics import find_optimal_gap
+    >>> find_optimal_gap(np.array([0.2, 0.8, 0.7]), np.array([0.1, 0.1, 0.1]))
+    1
     """
 
     for i in range(len(gap)):
@@ -213,20 +242,29 @@ def find_optimal_gap(gap, sk):
 
 
 def compute_rand_index(dict):
-    """
-    Compute the adjusted Rand Index from a list of fuzzy membership matrices
-    using sklearn.metrics.adjusted_rand_score. A defuzzification step is
-    required since this method applies only to crisp clusters.
+    """Compute pairwise adjusted Rand indices from membership dataframes.
+
+    Hard labels are obtained with ``argmax`` before scoring, because the
+    adjusted Rand index applies only to crisp partitions.
 
     Parameters
     ----------
-        dict : dict
-            Dictonnary containing all dataframes.
+    dict : dict
+        Mapping of labels to membership dataframes.
 
     Returns
     -------
-        np.array
-            Symmetric ndarray.
+    ari : np.array
+        Symmetric pairwise adjusted Rand index matrix.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.clustering.metrics import compute_rand_index
+    >>> a = pd.DataFrame([[0.9, 0.1], [0.2, 0.8]])
+    >>> b = pd.DataFrame([[0.8, 0.2], [0.1, 0.9]])
+    >>> compute_rand_index({"a": a, "b": b}).shape
+    (2, 2)
     """
 
     ari = []

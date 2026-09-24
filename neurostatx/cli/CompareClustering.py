@@ -16,6 +16,7 @@ from neurostatx.clustering.metrics import compute_rand_index
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
+"""Cyclopts application for the CompareClustering command-line tool."""
 
 
 @app.default()
@@ -94,49 +95,33 @@ def CompareClustering(
         ),
     ] = False,
 ):
-    """Compare Clustering Results
-    --------------------------
-    CompareClustering is a script that compares clustering results
-    from multiple solutions using the Adjusted Rand Index (ARI) and produces a
-    heatmap of the results.
+    """Compare clustering solutions with an Adjusted Rand Index (ARI) heatmap.
 
-    Adjusted Rand Index
-    -------------------
-    The Adjusted Rand Index (ARI) is a measure of similarity between two
-    clustering results. It relies on comparing the predicted labels to the
-    ground truth labels (i.e. the true clustering). The ARI is a number
-    between -1 and 1, where 1 means that the two clustering results are
-    identical, 0 means that the two clustering results are independent
-    (as good as random labelling) and -1 means that the two clustering
-    results are completely different. The ARI is an extension of the Rand
-    Index (RI) that takes into account the fact that the RI is expected to
-    be higher for large number of clusters.
+    CompareClustering compares clustering results from multiple solutions using
+    ARI and writes a heatmap of the pairwise scores.
+
+    Notes
+    -----
+
+    **Adjusted Rand Index**
+
+    The Adjusted Rand Index (ARI) measures similarity between two clustering
+    results by comparing predicted labels to ground-truth labels [1]. ARI
+    ranges from -1 to 1, where 1 means the two clusterings are identical, 0
+    means they are independent (as good as random labelling), and -1 means they
+    are completely different. ARI extends the Rand Index (RI) [2] by
+    accounting for the fact that RI is expected to be higher for a large number
+    of clusters. See also [3] and the scikit-learn documentation [4].
 
     References
     ----------
-    [1] Hubert, L., & Arabie, P. (1985). Comparing partitions. Journal of
-    classification, 2(1), 193-218. (https://doi.org/10.1007/BF01908075)
+    [1] [Hubert, L., & Arabie, P. (1985). Comparing partitions](https://doi.org/10.1007/BF01908075)
 
-    [2] Rand, W. M. (1971). Objective criteria for the evaluation of
-    clustering methods. Journal of the American Statistical Association,
-    66(336), 846-850. (https://doi.org/10.2307/2284239)
+    [2] [Rand, W. M. (1971). Objective criteria for the evaluation of clustering methods](https://doi.org/10.2307/2284239)
 
-    [3] D. Steinley, Properties of the Hubert-Arabie adjusted Rand index,
-    Psychological Methods
-    2004 (https://psycnet.apa.org/doi/10.1037/1082-989X.9.3.386)
+    [3] [Steinley, D. (2004). Properties of the Hubert-Arabie adjusted Rand index](https://psycnet.apa.org/doi/10.1037/1082-989X.9.3.386)
 
-    [4] Scikit-Learn Documentation - Adjusted Rand Index
-    (ARI)
-    (https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_rand_score.html)
-
-    Example Usage
-    -------------
-    ::
-
-        CompareClustering --in_dataset dataset1.csv --in_dataset dataset2.csv
-        --in_dataset dataset3.csv --id_column ID --desc_columns 1 --out_folder
-        ./ --columns_name dataset1 dataset2 dataset3 --title "ARI Heatmap"
-        --verbose
+    [4] [scikit-learn Adjusted Rand Index](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_rand_score.html)
 
     Parameters
     ----------
@@ -152,18 +137,27 @@ def CompareClustering(
         Output folder containing the results.
     columns_name : List[str], optional
         Name given to each input dataset (needs to be in the same order as
-        the input datasets).
+        the input datasets). Defaults to ``[]``.
     cmap : str, optional
-        Name of the colormap to use. Defaults to "magma". See
-        https://matplotlib.org/stable/tutorials/colors/colormaps.html
+        Name of the colormap to use. Defaults to ``magma``. See
+        https://matplotlib.org/stable/tutorials/colors/colormaps.html.
     title : str, optional
-        Heatmap title.
+        Heatmap title. Defaults to ``Adjusted Rand Index Heatmap``.
     verbose : bool, optional
-        If true, produce verbose output.
+        If true, produce verbose output. Defaults to False.
     save_parameters : bool, optional
-        If true, will save input parameters to .txt file.
+        If true, will save input parameters to .txt file. Defaults to False.
     overwrite : bool, optional
-        If true, force overwriting of existing output files.
+        If true, force overwriting of existing output files. Defaults to False.
+
+    Examples
+    --------
+    ```bash
+    CompareClustering --in_dataset dataset1.csv --in_dataset dataset2.csv
+    --in_dataset dataset3.csv --id_column ID --desc_columns 1 --out_folder
+    ./ --columns_name dataset1 dataset2 dataset3 --title "ARI Heatmap"
+    --verbose
+    ```
     """
 
     if verbose:

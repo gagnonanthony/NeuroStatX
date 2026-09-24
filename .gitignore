@@ -70,8 +70,10 @@ instance/
 # Scrapy stuff:
 .scrapy
 
-# Sphinx documentation
+# Documentation build artifacts
 docs/_build/
+docs/starlight/dist/
+docs/starlight/.astro/
 
 # PyBuilder
 target/

@@ -16,6 +16,7 @@ from neurostatx.network.viz import creating_node_colormap
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
+"""Cyclopts application for the CompareGraphs command-line tool."""
 
 
 @app.default()
@@ -148,70 +149,77 @@ def CompareGraphs(
         ),
     ] = "Membership values",
 ):
-    """Graph Network Comparison
-    ------------------------
-    CompareGraphs is a script that compares 2 undirected weighted
-    graph network. As of now, the only comparison implemented is the
-    extraction of the Xth percentile nodes from --in-graph1 and label those
-    nodes on --in-graph2. The percentile value is set by --percentile.
+    """Extract high-percentile nodes from one graph and color them on another.
 
-    Graph Network Customization
-    ---------------------------
-    To customize the graph appearance, please see the Network Visualization
-    Options below. It should be noted that using subjects_labelling will crowd
-    the network if it contains a high number of nodes. Also, centroids are
-    labelled by default 'c1, c2, ...' and subjects 's1, s2, ...'.
+    CompareGraphs compares two undirected weighted graph networks by extracting
+    the Xth-percentile nodes from --in-graph1 and labelling those nodes on
+    --in-graph2. The percentile is set by --percentile.
 
-    Example Usage
-    -------------
-    ::
+    Notes
+    -----
 
-        CompareGraphs --in-graph1 graph1.gml --in-matrix membership_mat.npy
-        --percentile 80 --in-graph2 graph2.gml
+    **Graph appearance**
+
+    Graph appearance can be customized with the visualization parameters
+    below. Using subjects labelling will crowd the network if it contains a
+    high number of nodes. Centroids are labelled by default ``c1, c2, ...``
+    and subjects ``s1, s2, ...``.
 
     Parameters
     ----------
     in_graph1 : str
-        1st graph from which subjects above --percentile will be extracted and
-        colored.
+        First graph from which subjects above --percentile will be extracted
+        and colored.
     weight : str
-        Edge's weight to use for the graph.
+        Edge weight to use for the graph.
     percentile : float
         Percentile value used to extract subjects.
     in_graph2 : str
-        2nd graph to color extracted subjects on.
+        Second graph to color extracted subjects on.
     out_folder : str, optional
         Path of the folder in which the results will be written. If not
-        specified, current folder and default name will be used.
+        specified, current folder and default name will be used. Defaults to
+        ``./comparison_results/``.
     verbose : bool, optional
-        If true, produce verbose output.
+        If true, produce verbose output. Defaults to False.
     overwrite : bool, optional
-        If true, force overwriting of existing output files.
+        If true, force overwriting of existing output files. Defaults to False.
     label_centroids : bool, optional
-        If true, centroids will be labelled.
+        If true, centroids will be labelled. Defaults to True.
     label_subjects : bool, optional
-        If true, will label subjects nodes.
+        If true, will label subjects nodes. Defaults to False.
     centroids_size : int, optional
-        Size of the centroids nodes.
+        Size of the centroids nodes. Defaults to 500.
     centroid_alpha : float, optional
         Alpha value representing the transparency of the centroids nodes.
+        Defaults to 1.
     centroid_node_color : str, optional
-        Centroids nodes color to use.
+        Centroids nodes color to use. Defaults to ``white``.
     centroid_edge_color : str, optional
-        Assign a color to the edge of the centroids nodes.
+        Assign a color to the edge of the centroids nodes. Defaults to
+        ``black``.
     subject_node_size : int, optional
-        Assign the size of the subjects nodes.
+        Assign the size of the subjects nodes. Defaults to 5.
     background_alpha : bool, optional
-        If true, will plot the background nodes with alpha = 0.2.
+        If true, will plot the background nodes with alpha = 0.2. Defaults to
+        True.
     subject_edge_color : str, optional
-        Assign a color to the edge of the subjects nodes.
+        Assign a color to the edge of the subjects nodes. Defaults to None.
     colormap : str, optional
         Colormap to use when coloring the edges of the network based on the
-        membership values to each clusters. Available colormap are those from
+        membership values of each cluster. Available colormaps are those from
         Matplotlib
         (https://matplotlib.org/stable/tutorials/colors/colormaps.html).
+        Defaults to ``gray``.
     legend_title : str, optional
-        Legend title (colormap).
+        Legend title (colormap). Defaults to ``Membership values``.
+
+    Examples
+    --------
+    ```bash
+    CompareGraphs --in-graph1 graph1.gml --in-matrix membership_mat.npy
+    --percentile 80 --in-graph2 graph2.gml
+    ```
     """
 
     if verbose:

@@ -13,13 +13,18 @@ from p_tqdm import p_map
 
 
 def get_metrics_ops():
-    """
-    Get a dictionary of all functions related to graph network metrics.
+    """Return the mapping of metric names to callable implementations.
 
     Returns
     -------
-    dict : dict
-        Dictionary of functions.
+    metrics : dict
+        Ordered mapping of metric name to function.
+
+    Examples
+    --------
+    >>> from neurostatx.network.metrics import get_metrics_ops
+    >>> "eigencentrality" in get_metrics_ops()
+    True
     """
     return OrderedDict(
         [
@@ -41,287 +46,328 @@ def get_metrics_ops():
 
 
 def eigencentrality(graph, weight=None):
-    """
-    eigencentrality: GRAPH WEIGHT
-
-    Will return a dictionary of the eigenvector centrality for all nodes.
+    """Compute eigenvector centrality for every node.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as weight. Defaults to None.
 
     Returns
     -------
-    dict
-        Dictionary of the eigenvector centrality for all nodes.
+    scores : dict
+        Eigenvector centrality for each node.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import eigencentrality
+    >>> eigencentrality(nx.path_graph(3))
     """
     return nx.eigenvector_centrality(graph, max_iter=1000, weight=weight)
 
 
 def closenesscentrality(graph, weight=None):
-    """
-    closenesscentrality: GRAPH WEIGHT
-
-    Will return a dictionary of the closeness centrality for all nodes.
+    """Compute closeness centrality for every node.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as distance. Defaults to None.
 
     Returns
     -------
-    dict
-        Dictionary of the closeness centrality for all nodes.
+    scores : dict
+        Closeness centrality for each node.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import closenesscentrality
+    >>> closenesscentrality(nx.path_graph(3))
     """
     return nx.closeness_centrality(graph, distance=weight, wf_improved=True)
 
 
 def betweennesscentrality(graph, weight=None):
-    """
-    betweennesscentrality: GRAPH WEIGHT
-
-    Will return a dictionary of the betweenness centrality for all nodes.
+    """Compute betweenness centrality for every node.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as weight. Defaults to None.
 
     Returns
     -------
-    dict
-        Dictionary of the betweenness centrality for all nodes.
+    scores : dict
+        Betweenness centrality for each node.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import betweennesscentrality
+    >>> betweennesscentrality(nx.path_graph(3))
     """
     return nx.betweenness_centrality(graph, weight=weight)
 
 
 def informationcentrality(graph, weight=None):
-    """
-    informationcentrality: GRAPH WEIGHT
-
-    Will return a dictionary of the information centrality for all nodes.
+    """Compute information centrality for every node.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as weight. Defaults to None.
 
     Returns
     -------
-    dict
-        Dictionary of the information centrality for all nodes.
+    scores : dict
+        Information centrality for each node.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import informationcentrality
+    >>> informationcentrality(nx.path_graph(3))
     """
     return nx.information_centrality(graph, weight=weight, solver="full")
 
 
 def currentflowbc(graph, weight=None):
-    """
-    currentflowbc: GRAPH WEIGHT
-
-    Will return a dictionary of the current flow betweenness centrality
-    for all nodes.
+    """Compute current-flow betweenness centrality for every node.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as weight. Defaults to None.
 
     Returns
     -------
-    dict
-        Dictionary of the current flow betweenness centrality for all nodes.
+    scores : dict
+        Current-flow betweenness centrality for each node.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import currentflowbc
+    >>> currentflowbc(nx.path_graph(3))
     """
     return nx.current_flow_betweenness_centrality(graph, weight=weight,
                                                   solver="full")
 
 
 def loadcentrality(graph, weight=None):
-    """
-    loadcentrality: GRAPH WEIGHT
-
-    Will return a dictionary of the load centrality for all nodes.
+    """Compute load centrality for every node.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as weight. Defaults to None.
 
     Returns
     -------
-    dict
-        Dictionary of the load centrality for all nodes.
+    scores : dict
+        Load centrality for each node.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import loadcentrality
+    >>> loadcentrality(nx.path_graph(3))
     """
     return nx.load_centrality(graph, weight=weight)
 
 
 def harmoniccentrality(graph, weight=None):
-    """
-    harmoniccentrality: GRAPH WEIGHT
-
-    Will return a dictionary of the harmonic centrality for all nodes.
+    """Compute harmonic centrality for every node.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as distance. Defaults to None.
 
     Returns
     -------
-    dict
-        Dictionary of the harmonic centrality for all nodes.
+    scores : dict
+        Harmonic centrality for each node.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import harmoniccentrality
+    >>> harmoniccentrality(nx.path_graph(3))
     """
     return nx.harmonic_centrality(graph, distance=weight)
 
 
 def eccentricity(graph, weight=None):
-    """
-    eccentricity: GRAPH WEIGHT
-
-    Will return a dictionary of the eccentricity for all nodes.
+    """Compute eccentricity for every node.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as weight. Defaults to None.
 
     Returns
     -------
-    dict
-        Dictionary of the eccentricity for all nodes.
+    scores : dict
+        Eccentricity for each node.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import eccentricity
+    >>> eccentricity(nx.path_graph(3))
     """
     return nx.eccentricity(graph, weight=weight)
 
 
 def clustering(graph, weight=None):
-    """
-    clustering: GRAPH WEIGHT
-
-    Will return a dictionary of the clustering coefficient for all nodes.
+    """Compute the clustering coefficient for every node.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as weight. Defaults to None.
 
     Returns
     -------
-    dict
-        Dictionary of the clustering coefficient for all nodes.
+    scores : dict
+        Clustering coefficient for each node.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import clustering
+    >>> clustering(nx.complete_graph(4))
     """
     return nx.clustering(graph, weight=weight)
 
 
 def constraint(graph, nodes, weight=None):
-    """
-    constraint: GRAPH NODES WEIGHT
-
-    Will return a dictionary of the constraint for all specified nodes.
+    """Compute Burt's constraint for the requested nodes.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     nodes : str
-        Nodes to compute the constraint for.
+        Space-separated node identifiers.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as weight. Defaults to None.
 
     Returns
     -------
-    dict
-        Dictionary of the constraint for all specified nodes.
+    scores : dict
+        Constraint for each requested node.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import constraint
+    >>> constraint(nx.path_graph(3), nodes="0 1")
     """
     return nx.constraint(graph, nodes=nodes.split(), weight=weight)
 
 
 def effectivesize(graph, nodes, weight=None):
-    """
-    effectivesize: GRAPH NODES WEIGHT
-
-    Will return a dictionary of the effective size for all specified nodes.
+    """Compute effective size for the requested nodes.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     nodes : str
-        Nodes to compute the effective size for.
+        Space-separated node identifiers.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as weight. Defaults to None.
 
     Returns
     -------
-    dict
-        Dictionary of the effective size for all specified nodes.
+    scores : dict
+        Effective size for each requested node.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import effectivesize
+    >>> effectivesize(nx.path_graph(3), nodes="0 1")
     """
     return nx.effective_size(graph, nodes=nodes.split(), weight=weight)
 
 
 def closenessvitality(graph, nodes, weight=None):
-    """
-    closenessvitality: GRAPH NODE WEIGHT
-
-    Will return a dictionary of the closeness vitality for a single node.
+    """Compute closeness vitality for a single node.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     nodes : str
-        Node to compute the closeness vitality for.
+        Node identifier passed to NetworkX as ``node``.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as weight. Defaults to None.
 
     Returns
     -------
-    dict
-        Dictionary of the closeness vitality for a single node.
+    score : float
+        Closeness vitality of ``nodes``.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import closenessvitality
+    >>> closenessvitality(nx.path_graph(3), nodes=1)
     """
     return nx.closeness_vitality(graph, node=nodes, weight=weight)
 
 
 def degree(graph, weight=None):
-    """
-    degree: GRAPH WEIGHT
-
-    Will return the degree of the specified node.
+    """Return the degree of every node.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as weight. Defaults to None.
 
     Returns
     -------
-    dict
-        Dictionary of the degree for all nodes.
+    degrees : networkx.DegreeView
+        Degree of each node.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import degree
+    >>> dict(degree(nx.path_graph(3)))
+    {0: 1, 1: 2, 2: 1}
     """
     return graph.degree(weight=weight)
 
 
 class PathLengthsMethods(str, Enum):
+    """Shortest-path algorithms accepted by NetworkX path-length helpers."""
+
     Dijkstra = ("dijkstra",)
     BellmanFord = ("bellman-ford",)
     FloydWarshall = ("floyd-warshall",)
@@ -340,42 +386,51 @@ def weightedpath(
     processes=1,
     verbose=False,
 ):
-    """
-    Function to compute the average weighted shortest path length for a group
-    of nodes. The function will also compute the p-value between the group of
-    nodes and the randomly generated null distribution.
+    """Average weighted path length for a group, with a permutation p-value.
 
     Parameters
     ----------
-    graph : Networkx.graph
-        Networkx graph object.
+    graph : networkx.Graph
+        Input graph.
     df : pandas.DataFrame
-        Dataframe containing the nodes.
+        Table of nodes. The index must match graph node labels.
     label_name : str
-        Name of the column containing the group label.
+        Column containing the group label. Nodes with value 0 are excluded.
     cohort : str, optional
-        Name of the cohort. Defaults to None.
+        If set, restrict ``df`` to this ``cohort`` value. Defaults to None.
     iterations : int, optional
-        Number of iterations to run. Defaults to 1000.
+        Number of null-distribution draws. Defaults to 1000.
     weight : str, optional
-        Edge attributes to use as weight. Defaults to None.
+        Edge attribute used as weight. Defaults to None.
     method : str, optional
-        Method to use for path computation. Defaults to "dijkstra".
+        Shortest-path algorithm. Defaults to ``"dijkstra"``.
     distribution : pd.DataFrame, optional
-        Pre-computed distribution. Defaults to None.
+        Precomputed null distribution with a ``label_name`` column. Defaults
+        to None.
     processes : int, optional
-        Number of processes to use. Defaults to 1.
+        Number of worker processes. Defaults to 1.
     verbose : bool, optional
-        Verbose flag. Defaults to False.
+        If True, show a progress bar. Defaults to False.
 
     Returns
     -------
     avg_path_length : float
-        Average path length.
+        Average shortest-path length of the selected subgraph.
     dist : list
-        Null distribution.
+        Null distribution of path lengths.
     pvalue : float
-        P-value.
+        One-sided permutation p-value.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import networkx as nx
+    >>> from neurostatx.network.metrics import weightedpath
+    >>> G = nx.path_graph(4)
+    >>> df = pd.DataFrame({"group": [1, 1, 0, 0]})
+    >>> avg, dist, p = weightedpath(
+    ...     G, df, "group", iterations=5, processes=1
+    ... )
     """
 
     # Cohort selection.

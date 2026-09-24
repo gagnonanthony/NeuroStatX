@@ -15,6 +15,7 @@ from neurostatx.network.utils import construct_attributes_dict
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
+"""Cyclopts application for the AddNodesAttributes command-line tool."""
 
 
 @app.default()
@@ -71,8 +72,8 @@ def AddNodesAttributes(
         ),
     ] = False
 ):
-    """Setting Nodes Attributes
-    ------------------------
+    """Attach tabular labels to graph nodes.
+
     AddNodesAttributes is a script that sets the attributes of the
     nodes of a graph. The attributes are provided via a tabulated data format
     (.csv, .xlsx or .txt) file. The script will automatically match the IDs of
@@ -80,13 +81,6 @@ def AddNodesAttributes(
     to add as attributes can be supplied either via a .txt file or with
     multiple --labels arguments.
 
-    Example Usage
-    -------------
-    ::
-
-        AddNodesAttributes --in-graph graph.gml --in-dataset dataset.xlsx
-        --id-column ID --labels label1 --labels label2 --labels label3
-        --out-file graph_attributes.gexf --verbose
 
     Parameters
     ----------
@@ -101,13 +95,22 @@ def AddNodesAttributes(
     labels : List[str]
         Label(s) name(s) to add as nodes' attributes to the graph. Can be
         supplied multiple times or as a .txt file containing all names in a
-        line separated format.
+        line-separated format.
     out_file : str, optional
-        Output graph file name (.gml).
+        Output graph file name (.gml). Defaults to
+        ``graph_with_attributes.gml``.
     verbose : bool, optional
-        If true, produce verbose output.
+        If true, produce verbose output. Defaults to False.
     overwrite : bool, optional
-        If true, force overwriting of existing output files.
+        If true, force overwriting of existing output files. Defaults to False.
+
+    Examples
+    --------
+    ```bash
+    AddNodesAttributes --in-graph graph.gml --in-dataset dataset.xlsx
+    --id-column ID --labels label1 --labels label2 --labels label3
+    --out-file graph_attributes.gexf --verbose
+    ```
     """
 
     if verbose:

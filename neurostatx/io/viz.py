@@ -4,8 +4,7 @@ import seaborn as sns
 
 
 def determine_layout(nb_axes):
-    """
-    Returns the optimal number of rows and columns for a bar plot.
+    """Return a compact subplot grid for ``nb_axes`` panels.
 
     Parameters
     ----------
@@ -18,6 +17,12 @@ def determine_layout(nb_axes):
         Number of rows.
     num_cols : int
         Number of columns.
+
+    Examples
+    --------
+    >>> from neurostatx.io.viz import determine_layout
+    >>> determine_layout(4)
+    (2, 2)
     """
 
     num_rows = int(np.sqrt(nb_axes))
@@ -30,28 +35,32 @@ def flexible_barplot(
     df, nb_axes, output, cmap='magma', title='Barplot', xlabel=None,
     ylabel=None
 ):
-    """
-    Function to generate a bar plot with multiple axes in a publication-ready
-    style.
+    """Write a multi-panel bar plot from a dataframe.
 
     Parameters
     ----------
-    values : pd.DataFrame
-        Dataframe with the values to plot. The index represents the x-axis and
-        the columns the y-axis.
-    num_axes : int
+    df : pd.DataFrame
+        Values to plot. The index is used as the x-axis and each column is
+        drawn on its own axis.
+    nb_axes : int
         Number of axes to plot.
     output : str
         Output filename.
     cmap : str, optional
-        Name of the colormap to use. Defaults to "magma". See
-        https://matplotlib.org/stable/tutorials/colors/colormaps.html
+        Colormap name. Defaults to ``"magma"``.
     title : str, optional
-        Title of the plot.
+        Title of the figure. Defaults to ``"Barplot"``.
     xlabel : str, optional
-        Label for the x-axis.
+        Label for the x-axis. Defaults to None.
     ylabel : str, optional
-        Label for the y-axis.
+        Label for the y-axis. Defaults to None.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.io.viz import flexible_barplot
+    >>> df = pd.DataFrame({"a": [0.1, 0.2], "b": [0.3, 0.4]}, index=["x", "y"])
+    >>> flexible_barplot(df, nb_axes=2, output="barplot.png")
     """
 
     # Fetch optimal number of rows and columns.
@@ -103,15 +112,14 @@ def flexible_barplot(
 
 
 def generate_coef_plot(df, pval, coefname, varname, output, cmap="magma"):
-    """
-    Function to generate a bar plot with the coefficients and their
-    significance.
+    """Write a horizontal coefficient bar plot with significance stars.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Dataframe containing the coefficients and their associated variable
-        names.
+        Table of coefficients and variable names.
+    pval : array-like
+        P-values aligned with ``df``. Values below 0.05 are marked with ``*``.
     coefname : str
         Name of the column containing the coefficients.
     varname : str
@@ -119,8 +127,14 @@ def generate_coef_plot(df, pval, coefname, varname, output, cmap="magma"):
     output : str
         Output filename.
     cmap : str, optional
-        Name of the colormap to use. Defaults to "magma". See
-        https://matplotlib.org/stable/tutorials/colors/colormaps.html
+        Colormap name. Defaults to ``"magma"``.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.io.viz import generate_coef_plot
+    >>> df = pd.DataFrame({"var": ["a", "b"], "coef": [0.4, -0.2]})
+    >>> generate_coef_plot(df, [0.01, 0.2], "coef", "var", "coef.png")
     """
 
     coef = df[coefname]
@@ -166,21 +180,29 @@ def generate_coef_plot(df, pval, coefname, varname, output, cmap="magma"):
 
 def flexible_hist(df, output, cmap="magma", title="Histogram",
                   xlabel=None, ylabel=None):
-    """
-    Function to generate a single histogram representing the distributions
-    of all the columns within the dataset in a publication-ready style.
+    """Write a single histogram of all dataframe columns.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Dataframe containing the values to plot.
+        Values to plot. Columns are treated as separate variables.
     output : str
         Output filename.
     cmap : str, optional
-        Colormap. Defaults to "magma". See
-        https://matplotlib.org/stable/tutorials/colors/colormaps.html
+        Colormap name. Defaults to ``"magma"``.
     title : str, optional
-        Title of the plot. Defaults to "Histogram".
+        Title of the plot. Defaults to ``"Histogram"``.
+    xlabel : str, optional
+        Label for the x-axis. Defaults to None.
+    ylabel : str, optional
+        Label for the y-axis. Defaults to None.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.io.viz import flexible_hist
+    >>> df = pd.DataFrame({"a": [0.1, 0.2, 0.3], "b": [1.0, 1.1, 0.9]})
+    >>> flexible_hist(df, "hist.png")
     """
 
     with plt.rc_context(

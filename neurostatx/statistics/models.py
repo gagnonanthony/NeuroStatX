@@ -18,6 +18,8 @@ from tqdm import tqdm
 
 
 class ScoringMethod(StrEnum, Enum):
+    """sklearn scoring names accepted by permutation testing."""
+
     accuracy = "accuracy"
     balanced_accuracy = "balanced_accuracy"
     top_k_accuracy = "top_k_accuracy"
@@ -63,12 +65,16 @@ class ScoringMethod(StrEnum, Enum):
 
 
 class Penalty(StrEnum, Enum):
+    """Regularization penalties for logistic regression."""
+
     l1 = "l1"
     l2 = "l2"
     elasticnet = "elasticnet"
 
 
 class Solver(StrEnum, Enum):
+    """sklearn LogisticRegression solver names."""
+
     newton_cg = "newton-cg"
     newton_cholesky = "newton-cholesky"
     lbfgs = "lbfgs"
@@ -84,43 +90,51 @@ def plsr_cv(X,
             splits=10,
             processes=1,
             verbose=False):
-    """
-    Function to perform a PLSR model with cross-validation between a set of
-    predictor and dependent variables.
+    """Fit a PLSR model and choose the component count by cross-validation.
 
     Parameters
     ----------
     X : pd.DataFrame
-        Dataframe containing the predictor variables.
+        Predictor variables.
     Y : pd.DataFrame
-        Dataframe containing the dependent variables.
+        Dependent variables.
     nb_comp : int
-        Number of components to use.
+        Maximum number of components to evaluate.
     max_iter : int, optional
-        Maximum number of iterations. Defaults to 1000.
+        Maximum iterations for PLSR. Defaults to 1000.
     splits : int, optional
-        Number of fold to use in cross-validation. Defaults to 10.
+        Number of cross-validation folds. Defaults to 10.
     processes : int, optional
-        Number of cpus to use during processing. Defaults to 1.
+        Number of parallel jobs. Defaults to 1.
     verbose : bool, optional
-        Verbose mode. Defaults to False.
+        If True, show a progress bar. Defaults to False.
 
     Returns
     -------
-    plsr : PLSR model
-        PLSR model.
+    plsr : PLSRegression
+        Fitted model using the component count with lowest CV MSE.
     mse : list
-        List of mean squared errors.
+        Cross-validated MSE for each component count.
     score_c : float
-        R2 score for the model.
+        In-sample R2 score.
     score_cv : float
-        R2 score for the cross-validation.
+        Cross-validated R2 score.
     rscore : float
-        Square root of the R2 score.
+        Square root of the in-sample R2 score.
     mse_c : float
-        Mean squared error for the model.
+        In-sample mean squared error.
     mse_cv : float
-        Mean squared error for the cross-validation.
+        Cross-validated mean squared error.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.statistics.models import plsr_cv
+    >>> X = pd.DataFrame({"a": [1, 2, 3, 4], "b": [2, 1, 4, 3]})
+    >>> Y = pd.DataFrame({"y": [1.1, 1.9, 3.2, 3.8]})
+    >>> plsr, mse, score_c, score_cv, rscore, mse_c, mse_cv = plsr_cv(
+    ...     X, Y, nb_comp=2, splits=2
+    ... )
     """
 
     v = False if verbose else True
@@ -170,46 +184,58 @@ def permutation_testing(
     processes=1,
     verbose=False,
 ):
-    """
-    Function to perform permutation testing on a model.
+    """Permutation-test an estimator's score and coefficients.
 
     Parameters
     ----------
-    estimator : Model
-        Model to use.
+    estimator : estimator
+        Unfitted sklearn-compatible estimator.
     X : pd.DataFrame
-        Dataframe containing the predictor variables.
+        Predictor variables.
     Y : pd.DataFrame
-        Dataframe containing the dependent variables.
+        Dependent variables.
     binary : bool, optional
-        If the dependent variable is binary. Defaults to False.
+        Unused flag kept for API compatibility. Defaults to False.
     nb_permutations : int, optional
-        Number of iterations to perform. Defaults to 1000.
+        Number of permutations. Defaults to 1000.
     scoring : str, optional
-        Scoring method to use. Defaults to 'r2'.
+        Scoring name passed to sklearn. Defaults to ``"r2"``.
     splits : int, optional
-        Number of fold to use in cross-validation. Defaults to 10.
+        Number of cross-validation folds. Defaults to 10.
     processes : int, optional
-        Number of cpus to use during processing. Defaults to 1.
+        Number of parallel jobs. Defaults to 1.
     verbose : bool, optional
-        Verbose mode. Defaults to False.
+        If True, increase sklearn Parallel verbosity. Defaults to False.
 
     Returns
     -------
-    mod : Model
-        Model.
+    mod : estimator
+        Fitted estimator from the unpermuted data.
     score : float
-        Score for the model.
-    coef : list
-        Coefficients for the model.
-    perm_score : list
-        Scores for the permutation testing.
+        Observed score.
+    coef : array
+        Observed coefficients.
+    perm_score : array
+        Permuted scores.
     score_pvalue : float
-        P-value for the model.
-    perm_coef : list
-        Coefficients for the permutation testing.
-    coef_pvalue : list
-        P-value for the coefficients.
+        P-value for the observed score.
+    perm_coef : array
+        Permuted coefficients.
+    coef_pvalue : array
+        P-values for the coefficients.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from sklearn.linear_model import LinearRegression
+    >>> from neurostatx.statistics.models import permutation_testing
+    >>> rng = np.random.RandomState(0)
+    >>> X = rng.rand(20, 2)
+    >>> Y = X[:, 0] + 0.1 * rng.rand(20)
+    >>> mod, score, coef, perm_score, score_pvalue, perm_coef, coef_pvalue = (
+    ...     permutation_testing(LinearRegression(), X, Y, nb_permutations=5,
+    ...                         splits=3, processes=1)
+    ... )
     """
 
     v = 1 if verbose else 0
@@ -354,30 +380,36 @@ def permutation_test(
 
 
 class PHQ9Labeler:
+    """Assign PHQ-9 severity labels from the nine questionnaire items."""
+
     def __init__(self):
         pass
 
     def fit(self, X, y=None):
-        """
-        Method kept for consistency with the scikit-learn API. But in this
-        case, will simply call the `transform` method since no actual model
-        gets fitted here.
+        """Label PHQ-9 item scores.
 
-        Needs to contain only 9 columns representing the ordered PHQ-9 items.
-        Should be in the form of a DataFrame with shape (n_samples, 9).
+        Delegates to
+        [transform][neurostatx.statistics.models.PHQ9Labeler.transform].
 
         Parameters
         ----------
         X : pd.DataFrame
-            Input features (n_samples, 9) with only the 9 PHQ-9 items as
-            columns and subject as rows.
+            Item scores of shape (n_samples, 9).
         y : pd.Series, optional
-            Target variable. Not used in this model. Keeps the API consistent.
+            Unused target, kept for sklearn compatibility.
 
         Returns
         -------
-        pd.DataFrame
-            Transformed features.
+        labels : pd.Series
+            Severity labels returned by ``transform``.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.statistics.models import PHQ9Labeler
+        >>> X = pd.DataFrame([[0] * 9])
+        >>> PHQ9Labeler().fit(X).iloc[0]
+        'Subthreshold'
         """
         if X.shape[1] != 9:
             raise ValueError(
@@ -388,29 +420,28 @@ class PHQ9Labeler:
         return self.transform(X)
 
     def transform(self, X):
-        """
-        Transform the input features to assign the label based on the fuzzy
-        weighting of the PHQ-9 items. Needs to contain only 9 columns
-        representing the ordered PHQ-9 items. Should be in the form of a
-        DataFrame with shape (n_samples, 9).
+        """Assign a PHQ-9 severity label to each row.
 
-        Final labels will be either:
-
-        - Not depressed
-        - Mild
-        - Moderate
-        - Mod-Severe
-        - Severe
+        Labels are ``Subthreshold``, ``Mild``, ``Moderate``, ``Mod-Severe``,
+        or ``Severe``.
 
         Parameters
         ----------
         X : pd.DataFrame
-            Input features.
+            Item scores of shape (n_samples, 9).
 
         Returns
         -------
-        pd.DataFrame
-            Transformed features.
+        labels : pd.Series
+            One severity label per sample.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.statistics.models import PHQ9Labeler
+        >>> X = pd.DataFrame([[0] * 9])
+        >>> PHQ9Labeler().transform(X).iloc[0]
+        'Subthreshold'
         """
         if X.shape[1] != 9:
             raise ValueError(
@@ -503,30 +534,36 @@ class PHQ9Labeler:
 
 
 class GAD7Labeler:
+    """Assign GAD-7 severity labels from the seven questionnaire items."""
+
     def __init__(self):
         pass
 
     def fit(self, X, y=None):
-        """
-        Method kept for consistency with the scikit-learn API. But in this
-        case, will simply call the `transform` method since no actual model
-        gets fitted here.
+        """Label GAD-7 item scores.
 
-        Needs to contain only 7 columns representing the GAD-7 items.
-        Should be in the form of a DataFrame with shape (n_samples, 7).
+        Delegates to
+        [transform][neurostatx.statistics.models.GAD7Labeler.transform].
 
         Parameters
         ----------
         X : pd.DataFrame
-            Input features (n_samples, 7) with only the 7 GAD-7 items as
-            columns and subject as rows.
+            Item scores of shape (n_samples, 7).
         y : pd.Series, optional
-            Target variable. Not used in this model. Keeps the API consistent.
+            Unused target, kept for sklearn compatibility.
 
         Returns
         -------
-        pd.DataFrame
-            Transformed features.
+        labels : pd.Series
+            Severity labels returned by ``transform``.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.statistics.models import GAD7Labeler
+        >>> X = pd.DataFrame([[0] * 7])
+        >>> GAD7Labeler().fit(X).iloc[0]
+        'Subthreshold'
         """
         if X.shape[1] != 7:
             raise ValueError(
@@ -537,29 +574,27 @@ class GAD7Labeler:
         return self.transform(X)
 
     def transform(self, X):
-        """
-        Transform the input features to assign the label based on the GAD-7
-        scoring.
+        """Assign a GAD-7 severity label to each row.
 
-        Needs to contain only 7 columns representing the GAD-7 items.
-        Should be in the form of a DataFrame with shape (n_samples, 7).
-
-        Final labels will be either:
-
-        - Not anxious
-        - Mild
-        - Moderate
-        - Severe
+        Labels are ``Subthreshold``, ``Mild``, ``Moderate``, or ``Severe``.
 
         Parameters
         ----------
         X : pd.DataFrame
-            Input features.
+            Item scores of shape (n_samples, 7).
 
         Returns
         -------
-        pd.DataFrame
-            Transformed features.
+        labels : pd.Series
+            One severity label per sample.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.statistics.models import GAD7Labeler
+        >>> X = pd.DataFrame([[0] * 7])
+        >>> GAD7Labeler().transform(X).iloc[0]
+        'Subthreshold'
         """
         if X.shape[1] != 7:
             raise ValueError(

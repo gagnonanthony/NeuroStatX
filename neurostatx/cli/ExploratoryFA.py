@@ -28,6 +28,7 @@ from neurostatx.utils.factor import (
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
+"""Cyclopts application for the ExploratoryFA command-line tool."""
 
 
 @app.default()
@@ -131,47 +132,33 @@ def ExploratoryFA(
         ),
     ] = False,
 ):
-    """Exploratory Factorial Analysis
-    ------------------------------
-    ExploratoryFA is a script that can be used to perform an
-    exploratory factorial analysis (EFA).
+    """Perform exploratory factor analysis with Horn's parallel analysis.
 
-    In the case of performing only an EFA (use the flag --use_only_efa), the
-    script will use Horn's parallel analysis to determine the optimal number
-    of factors to extract from the data. Then the final EFA model will be
-    fitted using the provided rotation and method.
+    ExploratoryFA fits an EFA model using the provided rotation and method.
+    When only an EFA is requested, Horn's parallel analysis determines the
+    optimal number of factors to extract. The script can also split the data
+    into a training set for EFA and a test set for later
+    [ConfirmatoryFA][neurostatx.cli.ConfirmatoryFA.ConfirmatoryFA]. It writes
+    the EFA model, loadings, communalities, and the transformed dataset.
 
-    It is also possible to perform EFA on a training dataset and export the
-    test dataset to be used for further analysis (e.g. ConfirmatoryFA). The
-    script will output the EFA model, the loadings, communalities, and the
-    transformed dataset.
+    Notes
+    -----
 
-    Input Specifications
-    --------------------
-    Dataset can contain multiple descriptive rows before the variables of
-    interest. Simply specify the number of descriptive rows using
-    --desc-columns. Rows with missing values will be removed by
-    default, please select the mean or median option to impute missing data
-    (be cautious when doing this).
+    **Input specifications**
+
+    The dataset can contain multiple descriptive columns before the variables
+    of interest. Specify that count with --desc-columns. Rows with missing
+    values are removed by default; use the mean or median option to impute
+    missing data (be cautious when doing this). See [1], [2], and [3] for
+    discussion of EFA vs CFA factor scores.
 
     References
     ----------
-    [1] Costa, V., & Sarmento, R. Confirmatory Factor
-    Analysis. (https://arxiv.org/ftp/arxiv/papers/1905/1905.05598.pdf)
+    [1] [Costa, V., & Sarmento, R. Confirmatory Factor Analysis](https://arxiv.org/ftp/arxiv/papers/1905/1905.05598.pdf)
 
-    [2] Whether to use EFA or CFA to predict latent variables
-    scores.
-    (https://stats.stackexchange.com/questions/346499/whether-to-use-efa-or-cfa-to-predict-latent-variables-scores)
+    [2] [Whether to use EFA or CFA to predict latent variable scores](https://stats.stackexchange.com/questions/346499/whether-to-use-efa-or-cfa-to-predict-latent-variables-scores)
 
-    [3] Comparison of factor score estimation
-    methods (https://github.com/gagnonanthony/NeuroStatX/pull/11)
-
-    Example Usage
-    -------------
-    ::
-
-        ExploratoryFA --in-dataset df --id-column IDs --out-folder results_FA/
-        --rotation promax --method ml --train_dataset_size 0.5 -v -f -s
+    [3] [Comparison of factor score estimation methods](https://github.com/gagnonanthony/NeuroStatX/pull/11)
 
     Parameters
     ----------
@@ -185,27 +172,35 @@ def ExploratoryFA(
         exclude in statistics and descriptive tables.
     out_folder : str, optional
         Path of the folder in which the results will be written. If not
-        specified, current folder and default name will be used (e.g. =
-        ./output/).
+        specified, current folder and default name will be used. Defaults to
+        ``./ResultsEFA/``.
     rotation : RotationTypes, optional
-        Select the type of rotation to apply on your data.
+        Select the type of rotation to apply on your data. Defaults to promax.
     method : MethodTypes, optional
-        Select the method for fitting the data.
+        Select the method for fitting the data. Defaults to minres.
     nb_factors : int, optional
         Specify the number of factors to extract from the data. If not
         specified, the script will use Horn's parallel analysis to determine
-        the optimal number of factors.
+        the optimal number of factors. Defaults to None.
     train_dataset_size : float, optional
         Specify the proportion of the input dataset to use as training dataset
-        in the EFA. (value from 0 to 1)
+        in the EFA (value from 0 to 1). Defaults to 0.5.
     random_state : int, optional
-        Random seed for reproducibility.
+        Random seed for reproducibility. Defaults to 1234.
     verbose : bool, optional
-        If true, produce verbose output.
+        If true, produce verbose output. Defaults to False.
     save_parameters : bool, optional
         If true, save the parameters used in the analysis in a text file.
+        Defaults to False.
     overwrite : bool, optional
-        If true, force overwriting of existing output files.
+        If true, force overwriting of existing output files. Defaults to False.
+
+    Examples
+    --------
+    ```bash
+    ExploratoryFA --in-dataset df --id-column IDs --out-folder results_FA/
+    --rotation promax --method ml --train_dataset_size 0.5 -v -f -s
+    ```
     """
 
     if verbose:

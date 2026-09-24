@@ -84,11 +84,6 @@ optional = true
 ipdb = ">=0.13.9"
 line_profiler = ">=3.5.1"
 
-[tool.poetry.group.docs.dependencies]
-sphinx = "^8.0.2"
-sphinx-markdown-builder = "^0.6.6"
-sphinx-autodoc-typehints = "^2.2.3"
-
 [tool.pytest.ini_options]
 pythonpath = [
     "."

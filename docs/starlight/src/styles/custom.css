@@ -11,6 +11,8 @@
     --sl-color-gray-5: #383838;
     --sl-color-gray-6: #272727;
     --sl-color-black: #181818;
+    --pyd-accent: var(--sl-color-accent-high);
+    --pyd-accent-low: var(--sl-color-accent-low);
     }
     
     /* Light mode colors. */
@@ -27,5 +29,29 @@
     --sl-color-gray-6: #eeeeee;
     --sl-color-gray-7: #f6f6f6;
     --sl-color-black: #ffffff;
+    --pyd-accent: var(--sl-color-accent-high);
+    --pyd-accent-low: var(--sl-color-accent-low);
     }
+
+/* NumPy ``References`` is an admonition in Griffe; restyle it to match
+   Parameters / Examples (muted uppercase heading, no callout chrome). */
+aside.pyd-aside[aria-label="References"],
+aside.pyd-aside[aria-label="Reference"] {
+    background: transparent;
+    border-inline-start: none;
+    border-radius: 0;
+    padding: 0;
+    margin-block: 1rem;
+    color: inherit;
+}
+
+aside.pyd-aside[aria-label="References"] .pyd-aside-title,
+aside.pyd-aside[aria-label="Reference"] .pyd-aside-title {
+    margin: 0.75rem 0 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--pyd-text-muted);
+}
     

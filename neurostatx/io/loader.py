@@ -12,8 +12,7 @@ from neurostatx.network.viz import NetworkLayout
 
 
 def filter_node_centroids(n):
-    """
-    Function to filter cluster nodes from subject's nodes.
+    """Return True if ``n`` is a cluster-centroid node label.
 
     Parameters
     ----------
@@ -22,15 +21,20 @@ def filter_node_centroids(n):
 
     Returns
     -------
-    bool
-        True or False
+    match : bool
+        True when the label contains ``"c"``.
+
+    Examples
+    --------
+    >>> from neurostatx.io.loader import filter_node_centroids
+    >>> filter_node_centroids("c1")
+    True
     """
     return "c" in n
 
 
 def filter_node_subjects(n):
-    """
-    Function to filter subject nodes from cluster's nodes.
+    """Return True if ``n`` is a subject node label.
 
     Parameters
     ----------
@@ -39,32 +43,45 @@ def filter_node_subjects(n):
 
     Returns
     -------
-    bool
-        True or False
+    match : bool
+        True when the label does not contain ``"c"``.
+
+    Examples
+    --------
+    >>> from neurostatx.io.loader import filter_node_subjects
+    >>> filter_node_subjects("s01")
+    True
     """
     return "c" not in n
 
 
 class DatasetLoader:
+    """Load, reshape, and persist tabular datasets."""
+
     def __init__(self):
         self.data = None
         self.nb_subjects = None
         self.nb_variables = None
 
     def load_data(self, file, **kwargs):
-        """
-        Load tabular data in any format (.txt, .csv, .xlsx).
+        """Load tabular data from ``.txt``, ``.csv``, ``.tsv``, or ``.xlsx``.
 
         Parameters
         ----------
-        file: str
+        file : str
             Input file to load.
         **kwargs
-            Additional keyword arguments.
+            Additional keyword arguments forwarded to pandas.
 
         Returns
         -------
-        df: pandas.DataFrame
+        self : DatasetLoader
+            Loader with ``data`` populated.
+
+        Examples
+        --------
+        >>> from neurostatx.io.loader import DatasetLoader
+        >>> DatasetLoader().load_data("data.csv")
         """
         _, ext = os.path.splitext(file)
         if ext == ".csv":
@@ -86,20 +103,32 @@ class DatasetLoader:
         return self
 
     def import_data(self, data, columns=None, index=None, **kwargs):
-        """
-        Import data from a DataFrame or a array-like object.
+        """Import data from a DataFrame, mapping, or array-like object.
 
         Parameters
         ----------
-        data: pandas.DataFrame or array-like
+        data : pandas.DataFrame or array-like
             Data to import.
-        columns: list, optional
-            List of columns to use. If None, all columns will be used.
+        columns : list, optional
+            Column names to use. If None, pandas default names are kept.
+        index : array-like, optional
+            Index used when constructing a DataFrame from array-like data.
+        **kwargs
+            Additional keyword arguments forwarded to
+            ``pandas.DataFrame.from_dict``.
 
         Returns
         -------
-        DatasetLoader
-            DatasetLoader object with the imported data.
+        self : DatasetLoader
+            Loader with the imported data.
+
+        Examples
+        --------
+        >>> from neurostatx.io.loader import DatasetLoader
+        >>> loader = DatasetLoader().import_data([[1, 2], [3, 4]],
+        ...                                      columns=["a", "b"])
+        >>> loader.get_data().shape
+        (2, 2)
         """
         if isinstance(data, pd.DataFrame):
             self.data = data
@@ -113,18 +142,25 @@ class DatasetLoader:
         return self
 
     def get_descriptive_columns(self, columns):
-        """
-        Get descriptive columns from the data.
+        """Return selected descriptive columns by integer index.
 
         Parameters
         ----------
-        columns: list
-            List of descriptive columns.
+        columns : list
+            Integer column indices to extract.
 
         Returns
         -------
-        data: pandas.DataFrame
-            DataFrame containing the descriptive columns.
+        data : pandas.DataFrame
+            DataFrame containing the selected columns.
+
+        Examples
+        --------
+        >>> from neurostatx.io.loader import DatasetLoader
+        >>> loader = DatasetLoader().import_data([[1, 2], [3, 4]],
+        ...                                      columns=["id", "x"])
+        >>> loader.get_descriptive_columns([0]).columns.tolist()
+        ['id']
         """
         if not hasattr(self, 'data'):
             raise ValueError("Data not loaded. Please load data first.")
@@ -135,18 +171,25 @@ class DatasetLoader:
         return self.data[self.data.columns[columns]]
 
     def drop_columns(self, columns):
-        """
-        Drop specified columns from the data.
+        """Drop columns by integer index or name.
 
         Parameters
         ----------
-        columns: list
-            List of columns index or names to drop.
+        columns : list
+            Column indices or names to drop.
 
         Returns
         -------
-        DatasetLoader
-            DatasetLoader object with the specified columns dropped.
+        self : DatasetLoader
+            Loader with the specified columns removed.
+
+        Examples
+        --------
+        >>> from neurostatx.io.loader import DatasetLoader
+        >>> loader = DatasetLoader().import_data([[1, 2], [3, 4]],
+        ...                                      columns=["id", "x"])
+        >>> loader.drop_columns(["id"]).get_data().columns.tolist()
+        ['x']
         """
         if not hasattr(self, 'data'):
             raise ValueError("Data not loaded. Please load data first.")
@@ -163,24 +206,30 @@ class DatasetLoader:
         return self
 
     def join(self, df, left=True, **kwargs):
-        """
-        Join two DataFrames.
+        """Concatenate ``df`` with the loaded table along columns.
 
         Parameters
         ----------
-        df: pandas.DataFrame
-            DataFrame to join with.
-        left: bool, optional
-            If true, provided DataFrame is the left DataFrame.
-            If false, provided DataFrame is the right DataFrame.
-            Default is True.
+        df : pandas.DataFrame
+            DataFrame or Series to concatenate.
+        left : bool, optional
+            If True, ``df`` is placed on the left. Defaults to True.
         **kwargs
-            Additional keyword arguments for the pd.concat function.
+            Additional keyword arguments forwarded to ``pandas.concat``.
 
         Returns
         -------
-        data: pandas.DataFrame
-            Joined DataFrame.
+        self : DatasetLoader
+            Loader with the concatenated table.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.io.loader import DatasetLoader
+        >>> loader = DatasetLoader().import_data([[1], [2]], columns=["a"])
+        >>> extra = pd.DataFrame({"b": [3, 4]})
+        >>> loader.join(extra, left=False).get_data().columns.tolist()
+        ['a', 'b']
         """
         if not isinstance(df, pd.DataFrame | pd.Series):
             raise ValueError(
@@ -196,14 +245,26 @@ class DatasetLoader:
         return self
 
     def reset_index(self, **kwargs):
-        """
-        Reset the index of the DataFrame.
+        """Reset the DataFrame index in place.
 
         Parameters
         ----------
         **kwargs
-            Additional keyword arguments for the pd.DataFrame.reset_index
-            function.
+            Additional keyword arguments forwarded to
+            ``pandas.DataFrame.reset_index``.
+
+        Returns
+        -------
+        self : DatasetLoader
+            Loader with a reset index.
+
+        Examples
+        --------
+        >>> from neurostatx.io.loader import DatasetLoader
+        >>> loader = DatasetLoader().import_data([[1], [2]], columns=["a"],
+        ...                                      index=[10, 20])
+        >>> loader.reset_index().get_data().index.tolist()
+        [0, 1]
         """
         if not hasattr(self, 'data'):
             raise ValueError("Data not loaded. Please load data first.")
@@ -212,21 +273,28 @@ class DatasetLoader:
         return self
 
     def set_type(self, dtype, columns=None):
-        """
-        Set the type of the specified columns.
+        """Cast selected columns, or the full table, to ``dtype``.
 
         Parameters
         ----------
-        dtype: str
-            Type to set.
-        columns: list, optional
-            List of columns to set the type for. If None, all columns will be
+        dtype : str
+            Target dtype.
+        columns : list, optional
+            Integer column indices to convert. If None, all columns are
             converted.
 
         Returns
         -------
-        data: pandas.DataFrame
-            DataFrame with the specified type set.
+        self : DatasetLoader
+            Loader with updated dtypes.
+
+        Examples
+        --------
+        >>> from neurostatx.io.loader import DatasetLoader
+        >>> loader = DatasetLoader().import_data([[1, 2], [3, 4]],
+        ...                                      columns=["a", "b"])
+        >>> loader.set_type("float").get_data()["a"].dtype.kind
+        'f'
         """
         if not hasattr(self, 'data'):
             raise ValueError("Data not loaded. Please load data first.")
@@ -240,13 +308,20 @@ class DatasetLoader:
         return self
 
     def transpose(self):
-        """
-        Transpose the data.
+        """Transpose the loaded table.
 
         Returns
         -------
-        DatasetLoader
-            DatasetLoader object with the transposed data.
+        self : DatasetLoader
+            Loader with transposed data.
+
+        Examples
+        --------
+        >>> from neurostatx.io.loader import DatasetLoader
+        >>> loader = DatasetLoader().import_data([[1, 2], [3, 4]],
+        ...                                      columns=["a", "b"])
+        >>> loader.transpose().get_data().shape
+        (2, 2)
         """
         if not hasattr(self, 'data'):
             raise ValueError("Data not loaded. Please load data first.")
@@ -256,13 +331,19 @@ class DatasetLoader:
         return self
 
     def get_metadata(self):
-        """
-        Get metadata of the loaded data.
+        """Return the number of rows and columns.
 
         Returns
         -------
-        metadata: dict
-            Dictionary containing the number of subjects and variables.
+        metadata : dict
+            Mapping with ``nb_subjects`` and ``nb_variables``.
+
+        Examples
+        --------
+        >>> from neurostatx.io.loader import DatasetLoader
+        >>> loader = DatasetLoader().import_data([[1, 2], [3, 4]])
+        >>> loader.get_metadata()["nb_subjects"]
+        2
         """
         if not hasattr(self, 'data'):
             raise ValueError("Data not loaded. Please load data first.")
@@ -273,13 +354,18 @@ class DatasetLoader:
         }
 
     def get_data(self):
-        """
-        Get the loaded data.
+        """Return the loaded DataFrame.
 
         Returns
         -------
-        data: pandas.DataFrame
+        data : pandas.DataFrame
             The loaded data.
+
+        Examples
+        --------
+        >>> from neurostatx.io.loader import DatasetLoader
+        >>> DatasetLoader().import_data([[1, 2]]).get_data().shape
+        (1, 2)
         """
         if not hasattr(self, 'data'):
             raise ValueError("Data not loaded. Please load data first.")
@@ -287,15 +373,20 @@ class DatasetLoader:
         return self.data
 
     def save_data(self, file, **kwargs):
-        """
-        Save the data to a file.
+        """Save the loaded table to ``.csv``, ``.tsv``, ``.txt``, or ``.xlsx``.
 
         Parameters
         ----------
-        file: str
+        file : str
             Output file name.
         **kwargs
-            Additional keyword arguments.
+            Additional keyword arguments forwarded to pandas.
+
+        Examples
+        --------
+        >>> from neurostatx.io.loader import DatasetLoader
+        >>> loader = DatasetLoader().import_data([[1, 2]], columns=["a", "b"])
+        >>> loader.save_data("out.csv", index=False)
         """
         if not hasattr(self, 'data'):
             raise ValueError("Data not loaded. Please load data first.")
@@ -314,20 +405,26 @@ class DatasetLoader:
                              "formats are .csv, .xlsx, .tsv, .txt.")
 
     def custom_function(self, func, **kwargs):
-        """
-        Apply a custom function to the data.
+        """Apply ``func`` to the loaded DataFrame.
 
         Parameters
         ----------
-        func: callable
-            Custom function to apply.
+        func : callable
+            Function called as ``func(data, **kwargs)``.
         **kwargs
-            Additional keyword arguments for the custom function.
+            Additional keyword arguments forwarded to ``func``.
 
         Returns
         -------
-        data: pandas.DataFrame
-            The modified data.
+        result
+            Return value of ``func``.
+
+        Examples
+        --------
+        >>> from neurostatx.io.loader import DatasetLoader
+        >>> loader = DatasetLoader().import_data([[1, 2]], columns=["a", "b"])
+        >>> loader.custom_function(lambda df: df.shape)
+        (1, 2)
         """
         if not callable(func):
             raise ValueError("Provided function is not callable.")
@@ -338,25 +435,32 @@ class DatasetLoader:
 
 
 class GraphLoader:
+    """Load, build, annotate, and visualize NetworkX graphs."""
+
     def __init__(self):
         self.graph = None
         self.nb_nodes = None
         self.nb_edges = None
 
     def load_graph(self, file, **kwargs):
-        """
-        Load graph data.
+        """Load a graph from ``.gml``, ``.graphml``, or ``.gexf``.
 
         Parameters
         ----------
-        file: str
+        file : str
             Input file to load.
         **kwargs
-            Additional keyword arguments.
+            Additional keyword arguments forwarded to NetworkX.
 
         Returns
         -------
-        graph: networkx.Graph
+        self : GraphLoader
+            Loader with ``graph`` populated.
+
+        Examples
+        --------
+        >>> from neurostatx.io.loader import GraphLoader
+        >>> GraphLoader().load_graph("network.gml")
         """
         if file.endswith(".gml"):
             self.graph = nx.read_gml(file, **kwargs)
@@ -373,19 +477,33 @@ class GraphLoader:
         return self
 
     def build_graph(self, data, source='source', target='target', **kwargs):
-        """
-        Build a graph from the provided data.
+        """Build a graph from an edgelist DataFrame.
 
         Parameters
         ----------
-        data: pandas.DataFrame
-            DataFrame containing the data to build the graph.
+        data : pandas.DataFrame
+            Edgelist used to construct the graph.
+        source : str, optional
+            Source-node column name. Defaults to ``"source"``.
+        target : str, optional
+            Target-node column name. Defaults to ``"target"``.
         **kwargs
-            Additional keyword arguments.
+            Additional keyword arguments forwarded to
+            ``networkx.from_pandas_edgelist``.
 
         Returns
         -------
-        graph: networkx.Graph
+        self : GraphLoader
+            Loader with the constructed graph.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.io.loader import GraphLoader
+        >>> edges = pd.DataFrame({"source": ["s1"], "target": ["c1"],
+        ...                       "membership": [0.8]})
+        >>> GraphLoader().build_graph(edges, edge_attr="membership").nb_nodes
+        2
         """
         if not isinstance(data, pd.DataFrame):
             raise ValueError("Provided data is not a pandas DataFrame.")
@@ -400,20 +518,28 @@ class GraphLoader:
 
     def layout(self, layout=NetworkLayout.Spring, weight="membership",
                **kwargs):
-        """
-        Compute the layout of the graph.
+        """Compute node positions and store them as a ``pos`` attribute.
+
         Parameters
         ----------
-        layout: NetworkLayout
+        layout : NetworkLayout
             Layout algorithm to use.
-        weight: str, optional
-            Edge attribute to use as weights for the layout.
+        weight : str, optional
+            Edge attribute used as layout weights. Defaults to
+            ``"membership"``.
         **kwargs
-            Additional keyword arguments for the layout algorithm.
-        Returns
-        -------
-        pos: dict
-            Dictionary containing the positions of the nodes.
+            Additional keyword arguments forwarded to the NetworkX layout
+            function.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.io.loader import GraphLoader
+        >>> from neurostatx.network.viz import NetworkLayout
+        >>> edges = pd.DataFrame({"source": ["s1", "s2"], "target": ["c1", "c1"],
+        ...                       "membership": [0.8, 0.4]})
+        >>> g = GraphLoader().build_graph(edges, edge_attr="membership")
+        >>> g.layout(NetworkLayout.Spring)
         """
         if not hasattr(self, 'graph'):
             raise ValueError("Graph not loaded. Please load a graph first.")
@@ -429,13 +555,20 @@ class GraphLoader:
         nx.set_node_attributes(self.graph, pos, "pos")
 
     def add_node_attribute(self, attributes):
-        """
-        Add a node attribute to the graph.
+        """Set node attributes from a nested dictionary.
 
         Parameters
         ----------
-        attributes: dict
-            Dictionary containing the values of the attribute for each node.
+        attributes : dict
+            Mapping of node to attribute dictionary.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.io.loader import GraphLoader
+        >>> edges = pd.DataFrame({"source": ["s1"], "target": ["c1"]})
+        >>> g = GraphLoader().build_graph(edges)
+        >>> g.add_node_attribute({"s1": {"age": 20}})
         """
         if not hasattr(self, 'graph'):
             raise ValueError("Graph not loaded. Please load a graph first.")
@@ -443,13 +576,20 @@ class GraphLoader:
         nx.set_node_attributes(self.graph, attributes)
 
     def add_edge_attribute(self, attributes):
-        """
-        Add an edge attribute to the graph.
+        """Set edge attributes from a nested dictionary.
 
         Parameters
         ----------
-        attribute: dict
-            Dictionary containing the values of the attribute for each edge.
+        attributes : dict
+            Mapping of edge to attribute dictionary.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.io.loader import GraphLoader
+        >>> edges = pd.DataFrame({"source": ["s1"], "target": ["c1"]})
+        >>> g = GraphLoader().build_graph(edges)
+        >>> g.add_edge_attribute({("s1", "c1"): {"membership": 0.8}})
         """
         if not hasattr(self, 'graph'):
             raise ValueError("Graph not loaded. Please load a graph first.")
@@ -457,18 +597,28 @@ class GraphLoader:
         nx.set_edge_attributes(self.graph, attributes)
 
     def fetch_attributes_df(self, attributes=None):
-        """
-        Fetch nodes' attributes from the graph as a DataFrame.
+        """Return subject-node attributes as a DatasetLoader.
 
         Parameters
         ----------
-        attributes: List, optional
-            List of attributes to fetch.
+        attributes : list, optional
+            Attribute names to fetch. If None, all attributes except
+            ``label`` are returned.
 
         Returns
         -------
-        DatasetLoader
-            DatasetLoader object containing the nodes' attributes.
+        data : DatasetLoader
+            Loader containing subject-node attributes.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.io.loader import GraphLoader
+        >>> edges = pd.DataFrame({"source": ["s1"], "target": ["c1"]})
+        >>> g = GraphLoader().build_graph(edges)
+        >>> g.add_node_attribute({"s1": {"age": 20}})
+        >>> g.fetch_attributes_df(["age"]).get_data().loc["s1", "age"]
+        20
         """
         if not hasattr(self, 'graph'):
             raise ValueError("Graph not loaded. Please load a graph first.")
@@ -492,18 +642,27 @@ class GraphLoader:
         return DatasetLoader().import_data(df)
 
     def fetch_edge_data(self, weight="membership"):
-        """
-        Fetch edge data from the graph.
+        """Return subject-to-cluster edge weights as a DatasetLoader.
 
         Parameters
         ----------
-        weight: str, optional
-            Edge attribute to use as weights for the edges.
+        weight : str, optional
+            Edge attribute used as weights. Defaults to ``"membership"``.
 
         Returns
         -------
-        DatasetLoader
-            DatasetLoader object containing the edge data.
+        data : DatasetLoader
+            Loader containing one column per cluster.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.io.loader import GraphLoader
+        >>> edges = pd.DataFrame({"source": ["s1"], "target": ["c1"],
+        ...                       "membership": [0.8]})
+        >>> g = GraphLoader().build_graph(edges, edge_attr="membership")
+        >>> g.fetch_edge_data().get_data().shape[1]
+        1
         """
         if not hasattr(self, 'graph'):
             raise ValueError("Graph not loaded. Please load a graph first.")
@@ -548,41 +707,53 @@ class GraphLoader:
                   colormap="plasma",
                   title="Graph Network",
                   legend_title="Membership values"):
-        """
-        Visualize the graph network.
+        """Draw the graph network and write it to ``output``.
 
         Parameters
         ----------
-        output: str
+        output : str
             Output file name.
-        weight: str, optional
-            Edge attribute to use as weights for the edges.
-        centroids_labelling: bool, optional
-            If true, label the centroid nodes.
-        subjects_labelling: bool, optional
-            If true, label the subject nodes.
-        centroid_node_shape: int, optional
-            Shape of the centroid nodes.
-        centroid_alpha: float, optional
-            Alpha value of the centroid nodes.
-        centroid_node_color: str, optional
-            Color of the centroid nodes.
-        centroid_edge_color: str, optional
-            Color of the centroid edges.
-        subject_node_shape: int, optional
-            Shape of the subject nodes.
-        subject_alpha: float, optional
-            Alpha value of the subject nodes.
-        subject_node_color: str, optional
-            Color of the subject nodes.
-        subject_edge_color: str, optional
-            Color of the subject edges.
-        colormap: str, optional
-            Colormap to use for the edges.
-        title: str, optional
-            Title of the plot.
-        legend_title: str, optional
-            Title of the legend.
+        weight : str, optional
+            Edge attribute used as edge weights. Defaults to ``"weight"``.
+        centroids_labelling : bool, optional
+            If True, label centroid nodes. Defaults to True.
+        subjects_labelling : bool, optional
+            If True, label subject nodes. Defaults to False.
+        centroid_node_shape : int, optional
+            Size of centroid nodes. Defaults to 500.
+        centroid_alpha : float, optional
+            Alpha of centroid nodes. Defaults to 1.
+        centroid_node_color : str, optional
+            Face color of centroid nodes. Defaults to ``"white"``.
+        centroid_edge_color : str, optional
+            Edge color of centroid nodes. Defaults to ``"black"``.
+        subject_node_shape : int, optional
+            Size of subject nodes. Defaults to 5.
+        subject_alpha : float, optional
+            Alpha of subject nodes. Defaults to 0.3.
+        subject_node_color : str, optional
+            Face color of subject nodes. Defaults to ``"black"``.
+        subject_edge_color : str, optional
+            Edge color of subject nodes. Defaults to None.
+        edge_width_multiplier : float, optional
+            Scale factor applied to edge widths. Defaults to 1.
+        colormap : str, optional
+            Matplotlib colormap name for edges. Defaults to ``"plasma"``.
+        title : str, optional
+            Title of the plot. Defaults to ``"Graph Network"``.
+        legend_title : str, optional
+            Title of the colorbar. Defaults to ``"Membership values"``.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.io.loader import GraphLoader
+        >>> from neurostatx.network.viz import NetworkLayout
+        >>> edges = pd.DataFrame({"source": ["s1"], "target": ["c1"],
+        ...                       "weight": [0.8]})
+        >>> g = GraphLoader().build_graph(edges, edge_attr="weight")
+        >>> g.layout(NetworkLayout.Spring, weight="weight")
+        >>> g.visualize("graph.png")
         """
         if not hasattr(self, 'graph'):
             raise ValueError("Graph not loaded. Please load a graph first.")
@@ -688,13 +859,20 @@ class GraphLoader:
         plt.close()
 
     def get_metadata(self):
-        """
-        Get metadata of the loaded graph.
+        """Return the number of nodes and edges.
 
         Returns
         -------
-        metadata: dict
-            Dictionary containing the number of nodes and edges.
+        metadata : dict
+            Mapping with ``nb_nodes`` and ``nb_edges``.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.io.loader import GraphLoader
+        >>> edges = pd.DataFrame({"source": ["s1"], "target": ["c1"]})
+        >>> GraphLoader().build_graph(edges).get_metadata()["nb_nodes"]
+        2
         """
         if not hasattr(self, 'graph'):
             raise ValueError("Graph not loaded. Please load a graph first.")
@@ -705,13 +883,20 @@ class GraphLoader:
         }
 
     def get_graph(self):
-        """
-        Get the loaded graph.
+        """Return the loaded NetworkX graph.
 
         Returns
         -------
-        graph: networkx.Graph
+        graph : networkx.Graph
             The loaded graph.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.io.loader import GraphLoader
+        >>> edges = pd.DataFrame({"source": ["s1"], "target": ["c1"]})
+        >>> GraphLoader().build_graph(edges).get_graph().number_of_nodes()
+        2
         """
         if not hasattr(self, 'graph'):
             raise ValueError("Graph not loaded. Please load a graph first.")
@@ -719,15 +904,21 @@ class GraphLoader:
         return self.graph
 
     def save_graph(self, file, **kwargs):
-        """
-        Save the graph data.
+        """Save the graph to ``.gml``, ``.graphml``, or ``.gexf``.
 
         Parameters
         ----------
-        file: str
+        file : str
             Output file to save.
         **kwargs
-            Additional keyword arguments.
+            Additional keyword arguments forwarded to NetworkX.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.io.loader import GraphLoader
+        >>> edges = pd.DataFrame({"source": ["s1"], "target": ["c1"]})
+        >>> GraphLoader().build_graph(edges).save_graph("network.gml")
         """
         if not hasattr(self, 'graph'):
             raise ValueError("Graph not loaded. Please load a graph first.")
@@ -743,20 +934,28 @@ class GraphLoader:
                              "formats are .gml, .graphml, .gexf.")
 
     def custom_function(self, func, **kwargs):
-        """
-        Apply a custom function to the graph.
+        """Apply ``func`` to the loaded graph.
 
         Parameters
         ----------
-        func: callable
-            Custom function to apply.
+        func : callable
+            Function called as ``func(graph, **kwargs)``.
         **kwargs
-            Additional keyword arguments for the custom function.
+            Additional keyword arguments forwarded to ``func``.
 
         Returns
         -------
-        graph: networkx.Graph
-            The modified graph.
+        result
+            Return value of ``func``.
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from neurostatx.io.loader import GraphLoader
+        >>> edges = pd.DataFrame({"source": ["s1"], "target": ["c1"]})
+        >>> GraphLoader().build_graph(edges).custom_function(
+        ...     lambda g: g.number_of_nodes())
+        2
         """
         if not callable(func):
             raise ValueError("Provided function is not callable.")

@@ -19,6 +19,7 @@ from neurostatx.utils.factor import cfa
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
+"""Cyclopts application for the ConfirmatoryFA command-line tool."""
 
 
 @app.default()
@@ -117,48 +118,36 @@ def ConfirmatoryFA(
         ),
     ] = False,
 ):
-    """Confirmatory Factorial Analysis
-    -------------------------------
-    ConfirmatoryFA is a script that can be used to perform a confirmatory
-    factorial analysis (CFA) to test a hypothesized model of the relationships
-    between observed variables and latent constructs. The script will output
-    factor scores and statistics of goodness of fit such as Chi-square, RMSEA,
-    CFI and TLI. The script will also generate a html report containing the
-    results of the analysis. A good reference to understand those metrics can
-    be accessed in [1].
+    """Perform confirmatory factor analysis from loadings or a lavaan-style model.
 
-    Using EFA Scores Or CFA Scores
-    ------------------------------
-    Both method can be used to derive factor scores. Since there is no clear
-    consensus surrounding which is preferred (see [2]) the script will output
-    both factor scores. As shown in [3], both methods highly correlate with one
-    another. It then comes down to the user's preference.
+    ConfirmatoryFA tests a hypothesized model of the relationships between
+    observed variables and latent constructs. It writes factor scores, goodness
+    of fit statistics (Chi-square, RMSEA, CFI, TLI), and an HTML report.
 
-    Input Specifications
-    --------------------
-    Dataset can contain multiple descriptive rows before the variables of
-    interest. Simply specify the number of descriptive rows using
-    --desc-columns. Rows with missing values will be removed by
-    default, please select the mean or median option to impute missing data
-    (be cautious when doing this).
+    Notes
+    -----
+
+    **EFA vs CFA scores**
+
+    Both EFA and CFA scores can be used to derive factor scores. There is no
+    clear consensus on which is preferred [2], so the script outputs both. The
+    two methods are highly correlated [3]; the choice is a matter of
+    preference. A useful reference for the fit metrics is [1].
+
+    **Input specifications**
+
+    The dataset can contain multiple descriptive columns before the variables
+    of interest. Specify that count with --desc-columns. Rows with missing
+    values are removed by default; use the mean or median option to impute
+    missing data (be cautious when doing this).
 
     References
     ----------
-    [1] Costa, V., & Sarmento, R. Confirmatory Factor Analysis.
-    https://arxiv.org/ftp/arxiv/papers/1905/1905.05598.pdf
+    [1] [Costa, V., & Sarmento, R. Confirmatory Factor Analysis](https://arxiv.org/ftp/arxiv/papers/1905/1905.05598.pdf)
 
-    [2]
-    https://stats.stackexchange.com/questions/346499/whether-to-use-efa-or-cfa-to-predict-latent-variables-scores
+    [2] [Whether to use EFA or CFA to predict latent variable scores](https://stats.stackexchange.com/questions/346499/whether-to-use-efa-or-cfa-to-predict-latent-variables-scores)
 
-    [3] https://github.com/gagnonanthony/NeuroStatX/pull/11
-
-    Example Usage
-    -------------
-    ::
-
-        ConfirmatoryFA --in-dataset dataset.csv --id-column ID --desc-columns 1
-        --out-folder ./output/ --loadings-df loadings.csv --threshold 0.40
-        --mean -v -f
+    [3] [Comparison of factor score estimation methods](https://github.com/gagnonanthony/NeuroStatX/pull/11)
 
     Parameters
     ----------
@@ -172,27 +161,38 @@ def ConfirmatoryFA(
         exclude in statistics and descriptive tables.
     out_folder : str, optional
         Path of the folder in which the results will be written. If not
-        specified, current folder and default name will be used (e.g. =
-        ./output/).
+        specified, current folder and default name will be used. Defaults to
+        ``./ResultsCFA/``.
     loadings_df : str, optional
         Filename of the dataframe containing the loadings of the EFA analysis.
-        Columns must be factors and rows variables.
-    model : str, optional
+        Columns must be factors and rows variables. Defaults to None.
+    model : List[str], optional
         Model specification for the CFA analysis. Must be provided within
-        brackets. (ex: --model "factor1 =~ var1 + var2 + var3"
-        --model "factor2 =~ var4 + var5")
+        brackets (ex: --model "factor1 =~ var1 + var2 + var3"
+        --model "factor2 =~ var4 + var5"). Defaults to None.
     threshold : float, optional
         Threshold to use to determine variables to include for each factor
-        in CFA analysis. (ex: if set to 0.40, only variables with loadings
+        in CFA analysis (ex: if set to 0.40, only variables with loadings
         higher than 0.40 will be assigned to a factor in the CFA model).
+        Defaults to 0.40.
     iterations : int, optional
         Number of iterations to perform the bootstrapping of the model.
+        Defaults to None.
     verbose : bool, optional
-        If true, produce verbose output.
+        If true, produce verbose output. Defaults to False.
     save_parameters : bool, optional
         If true, save the parameters used in the analysis in a text file.
+        Defaults to False.
     overwrite : bool, optional
-        If true, force overwriting of existing output files.
+        If true, force overwriting of existing output files. Defaults to False.
+
+    Examples
+    --------
+    ```bash
+    ConfirmatoryFA --in-dataset dataset.csv --id-column ID --desc-columns 1
+    --out-folder ./output/ --loadings-df loadings.csv --threshold 0.40
+    --mean -v -f
+    ```
     """
 
     if verbose:

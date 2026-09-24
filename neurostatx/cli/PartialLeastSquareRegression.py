@@ -21,6 +21,7 @@ from neurostatx.io.viz import generate_coef_plot, flexible_hist
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
+"""Cyclopts application for the PartialLeastSquareRegression command-line tool."""
 
 
 @app.default()
@@ -113,65 +114,51 @@ def PartialLeastSquareRegression(
         ),
     ] = False
 ):
-    """Partial Least Square Regression (PLSR)
-    --------------------------------------
-    Plsr performs a Partial Least Square Regression (PLSR) on a graph
-    using the nodes' attributes as predictors and the edges' weights as
-    response variable. The script will perform a cross-validation to determine
-    the optimal number of components to use for the PLSR model. It will then
-    perform a permutation testing to determine if the model is statistically
-    significant. Finally, it will output the PLSR coefficients and statistics
-    as well as plots of the distributions of the attributes and edges' weights
-    and the PLSR coefficients.
+    """Fit partial least squares regression of node attributes against graph edges.
 
-    Preprocessing
-    -------------
-    The script will scale the data to unit variance and zero mean and will
-    perform a log transformation on the edges' weights (for now, it assumes
-    that the weights represent a membership value resulting from a fuzzy
-    clustering analysis).
+    PartialLeastSquareRegression uses node attributes as predictors and edge
+    weights as the response. It cross-validates to choose the number of
+    components, then runs permutation testing for statistical significance. It
+    writes PLSR coefficients, statistics, and plots of attribute and
+    edge-weight distributions and of the coefficients.
 
-    Nodes' Attributes
-    -----------------
-    The script takes only one graph file as input. The graph file must be in
-    .gexf format. The script will then fetch the attributes from the graph
-    file and will perform the PLSR analysis on the attributes and edges'
-    weights. If no attributes are provided, the script will use all attributes
-    found in the graph file. To set attributes to the nodes in the graph file,
-    please see AddNodesAttributes.
+    Notes
+    -----
 
-    Scoring Options
-    ---------------
-    The script will perform a permutation testing to determine if the model is
-    statistically significant. The script will compute the p-value for the
-    permutation testing using the R2 score by default. However, the user can
-    also choose multiple scores to compute the p-value. The available scores
-    can be seen in [1]. The equation used to compute the single-tailed p-value
-    is:
+    **Preprocessing**
+
+    Data are scaled to unit variance and zero mean. Edge weights are
+    log-transformed; for now this assumes the weights are membership values
+    from a fuzzy clustering analysis.
+
+    **Node attributes**
+
+    The script takes a single .gexf graph file, fetches node attributes from
+    it, and runs PLSR on those attributes and the edge weights. If no
+    attributes are provided, all attributes in the graph are used. To attach
+    attributes to nodes, see
+    [AddNodesAttributes][neurostatx.cli.AddNodesAttributes.AddNodesAttributes].
+
+    **Scoring**
+
+    Permutation testing assesses whether the model is statistically
+    significant. The p-value uses the R2 score by default; other scores are
+    listed in the scikit-learn scoring documentation [1]. The single-tailed
+    p-value is:
 
         p-value = ∑(score_perm >= score) / (nb_permutations)
 
-    Coefficient Significance
-    ------------------------
-    The script will also compute the p-value for the coefficients using the
-    permutation testing. The p-value for the coefficients is computed by
-    comparing the coefficients obtained from the PLSR model with the
-    coefficients obtained from the permutation testing. The equation used to
-    compute the two-tailed p-value is:
+    **Coefficient significance**
+
+    Coefficient p-values are also computed from the permutation distribution
+    by comparing PLSR coefficients to permuted coefficients. The two-tailed
+    p-value is:
 
         p-value = ∑(abs(coef_perm) >= abs(coef)) / (nb_permutations)
 
     References
     ----------
-    [1] Scikit-learn scoring methods
-    (https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter)
-
-    Example Usage
-    -------------
-    ::
-
-        PartialLeastSquareRegression --in-graph graph.gexf
-        --out-folder output_folder -v -s
+    [1] [scikit-learn scoring parameter](https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter)
 
     Parameters
     ----------
@@ -180,26 +167,35 @@ def PartialLeastSquareRegression(
     out_folder : str
         Output folder.
     attributes : List[str], optional
-        Attributes names to include in the PLSR model. If None are provided,
-        all attributes will be included.
+        Attribute names to include in the PLSR model. If None are provided,
+        all attributes will be included. Defaults to None.
     weight : str, optional
-        Edge weight to use for the PLSR model.
+        Edge weight to use for the PLSR model. Defaults to ``membership``.
     splits : int, optional
-        Number of splits to use for the cross-validation.
+        Number of splits to use for the cross-validation. Defaults to 10.
     permutations : int, optional
-        Number of permutations to use for the permutation testing.
+        Number of permutations to use for the permutation testing. Defaults to
+        1000.
     scoring : ScoringMethod, optional
-        Scoring method to use for the permutation testing.
+        Scoring method to use for the permutation testing. Defaults to r2.
     processes : int, optional
-        Number of processes to use for the cross-validation.
-    verbose : bool, optional
-        If true, produce verbose output.
+        Number of processes to use for the cross-validation. Defaults to 1.
     plot_distributions : bool, optional
-        If true, will plot the distributions of the edges' weights.
+        If true, will plot the distributions of the edges' weights. Defaults
+        to False.
+    verbose : bool, optional
+        If true, produce verbose output. Defaults to False.
     save_parameters : bool, optional
-        If true, will save input parameters to .txt file.
+        If true, will save input parameters to .txt file. Defaults to False.
     overwrite : bool, optional
-        If true, force overwriting of existing output files.
+        If true, force overwriting of existing output files. Defaults to False.
+
+    Examples
+    --------
+    ```bash
+    PartialLeastSquareRegression --in-graph graph.gexf
+    --out-folder output_folder -v -s
+    ```
     """
 
     warnings.filterwarnings("ignore")

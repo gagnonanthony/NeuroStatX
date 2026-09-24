@@ -20,25 +20,27 @@ from scipy.stats import f_oneway
 
 def plot_clustering_results(lst, title, metric, output, errorbar=None,
                             annotation=None):
-    """
-    Function to plot goodness of fit indicators resulting from a clustering
-    model. Resulting plot will be saved in the output folder specified in
-    function's arguments.
+    """Plot a clustering goodness-of-fit curve and write it to a file.
 
     Parameters
     ----------
-    lst : List
-        List of values to plot.
+    lst : list
+        Metric values to plot, one per cluster count starting at ``k=2``.
     title : str
         Title of the plot.
     metric : str
-        Metric name.
+        Y-axis label for the plotted metric.
     output : str
         Output filename.
-    errorbar : List, optional
-        List of values to plot as errorbar (CI, SD, etc.). Defaults to None.
+    errorbar : list, optional
+        Values to plot as error bars (CI, SD, etc.). Defaults to None.
     annotation : str, optional
-        Annotation to add directly on the plot. Defaults to None.
+        Text annotation drawn on the plot. Defaults to None.
+
+    Examples
+    --------
+    >>> from neurostatx.clustering.viz import plot_clustering_results
+    >>> plot_clustering_results([1.2, 0.8, 0.6], "WSS", "WSS", "wss.png")
     """
 
     # Plotting data.
@@ -93,14 +95,13 @@ def plot_clustering_results(lst, title, metric, output, errorbar=None,
 def plot_fuzzy_cmeans_solutions(
     results, output, min_clusters=2, max_clusters=None
 ):
-    """
-    Plot a grid of Fuzzy C-Means solutions for a range of ``k``.
+    """Plot a grid of Fuzzy C-Means solutions for a range of ``k``.
 
     Parameters
     ----------
     results : list of tuple
         Per-k worker results from
-        :func:`neurostatx.clustering.fuzzy.process_cluster`.
+        [process_cluster][neurostatx.clustering.fuzzy.process_cluster].
         Each tuple must contain ``n_cluster``, ``n_iter``, ``fpc``, centroids,
         visualization x/y points, and hard labels.
     output : str
@@ -110,6 +111,13 @@ def plot_fuzzy_cmeans_solutions(
     max_clusters : int, optional
         Largest ``k`` requested, used only for subplot grid size. Defaults
         to the number of results plus ``min_clusters - 1``.
+
+    Examples
+    --------
+    >>> from neurostatx.clustering.viz import plot_fuzzy_cmeans_solutions
+    >>> result = (2, 10, 0.8, [[0.0, 0.0], [1.0, 1.0]], None, None, None,
+    ...           None, None, None, None, [0.0, 1.0], [0.0, 1.0], [0, 1])
+    >>> plot_fuzzy_cmeans_solutions([result], output=".", min_clusters=2)
     """
     if max_clusters is None:
         max_clusters = min_clusters + len(results) - 1
@@ -170,22 +178,25 @@ def plot_fuzzy_cmeans_solutions(
 
 
 def plot_dendrogram(X, output, title="Dendrograms", annotation=None):
-    """
-    Function to plot a dendrogram plot showing hierarchical clustering. Useful
-    to visually determine the appropriate number of clusters.
-    Adapted from:
-    https://towardsdatascience.com/cheat-sheet-to-implementing-7-methods-for-selecting-optimal-number-of-clusters-in-python-898241e1d6ad
+    """Plot a hierarchical clustering dendrogram and write it to a file.
 
     Parameters
     ----------
     X : DataFrame
-        Data on which clustering will be performed.
+        Data used to compute Ward linkage.
     output : str
         Output filename and path.
     title : str, optional
-        Title for the plot. Defaults to 'Dendrograms'.
+        Title for the plot. Defaults to ``"Dendrograms"``.
     annotation : str, optional
-        Annotation to add directly on the plot. Defaults to None.
+        Text annotation drawn on the plot. Defaults to None.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from neurostatx.clustering.viz import plot_dendrogram
+    >>> X = pd.DataFrame([[0.0, 0.1], [0.2, 0.0], [1.0, 1.1], [0.9, 1.0]])
+    >>> plot_dendrogram(X, "dendrogram.png")
     """
 
     fig = plt.figure(figsize=(10, 7))
@@ -215,20 +226,30 @@ def plot_dendrogram(X, output, title="Dendrograms", annotation=None):
 
 
 def sort_int_labels_legend(ax, title=None):
-    """
-    Function automatically reorder numerically labels with matching handles in
-    matplotlib legend.
+    """Reorder legend labels numerically and keep matching handles.
 
     Parameters
     ----------
     ax : Matplotlib Axes
-        Axes object.
+        Axes whose legend labels should be sorted.
     title : str, optional
         Title of the legend. Defaults to None.
 
     Returns
     -------
-    ax.legend : Axes legend object
+    legend : matplotlib.legend.Legend
+        Legend with numerically sorted labels.
+
+    Examples
+    --------
+    >>> import matplotlib.pyplot as plt
+    >>> from neurostatx.clustering.viz import sort_int_labels_legend
+    >>> fig, ax = plt.subplots()
+    >>> ax.plot([0, 1], [0, 1], label="2")
+    >>> ax.plot([0, 1], [1, 0], label="1")
+    >>> legend = sort_int_labels_legend(ax, title="Cluster #")
+    >>> [t.get_text() for t in legend.get_texts()]
+    ['1', '2']
     """
 
     # Fetching handles and tags from matplotlib axes.
@@ -252,29 +273,31 @@ def plot_parallel_plot(
     X, labels, output, mean_values=False, cmap='magma',
     title="Parallel Coordinates plot."
 ):
-    """
-    Function to plot a parallel coordinates plot to visualize differences
-    between clusters. Useful to highlight significant changes between clusters
-    and interpret them.
-    Adapted from:
-    https://towardsdatascience.com/the-art-of-effective-visualization-of-multi-dimensional-data-6c7202990c57
+    """Plot parallel coordinates for clustered features and write a PNG file.
 
     Parameters
     ----------
     X : DataFrame
-        Input dataset of shape (S, F).
+        Input dataset of shape (n_samples, n_features).
     labels : np.array
-        Array of hard membership value (S, ).
+        Hard cluster labels of shape (n_samples,).
     output : str
-        Filename of the png file.
+        Output PNG filename.
     mean_values : bool, optional
-        If true, will plot the mean values of each features for each clusters.
-        Defaults to False.
+        If True, plot the mean of each feature per cluster. Defaults to False.
     cmap : str, optional
-        Colormap to use for the plot. Defaults to 'magma'. See
-        https://matplotlib.org/stable/tutorials/colors/colormaps.html
+        Colormap name. Defaults to ``"magma"``.
     title : str, optional
-        Title of the plot. Defaults to 'Parallel Coordinates plot.'
+        Title of the plot. Defaults to ``"Parallel Coordinates plot."``.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from neurostatx.clustering.viz import plot_parallel_plot
+    >>> X = pd.DataFrame({"a": [0.0, 0.1, 1.0, 0.9], "b": [0.2, 0.0, 1.1, 1.0]})
+    >>> plot_parallel_plot(X, np.array([0, 0, 1, 1]), "parallel.png",
+    ...                    mean_values=True)
     """
 
     labels = labels + 1
@@ -323,29 +346,35 @@ def plot_parallel_plot(
 
 def radar_plot(X, labels, output, frame='circle', title="Radar plot",
                cmap='magma'):
-    """
-    Function to plot a radar plot for all features in the original dataset
-    stratified by clusters. T-test between clusters' mean within a feature is
-    also computed and annotated directly on the plot. When plotting a high
-    number of clusters, plotting of significant annotation is polluting the
-    plot, will be fixed in the future.
+    """Plot a radar chart of feature means by cluster and write a PNG file.
+
+    ANOVA p-values across clusters are annotated on each axis. Dense
+    annotations can appear when many clusters are plotted.
 
     Parameters
     ----------
     X : DataFrame
-        Input dataset of shape (S, F).
+        Input dataset of shape (n_samples, n_features).
     labels : np.array
-        Array of hard membership value (S, ).
+        Hard cluster labels of shape (n_samples,).
     output : str
-        Filename of the png file.
+        Output PNG filename.
     frame : str, optional
-        Shape of the radar plot. Defaults to 'circle'. Choices are 'circle'
-        or 'polygon'.
+        Radar frame shape, ``"circle"`` or ``"polygon"``. Defaults to
+        ``"circle"``.
     title : str, optional
-        Title of the plot. Defaults to 'Radar plot'.
+        Title of the plot. Defaults to ``"Radar plot"``.
     cmap : str, optional
-        Colormap to use for the plot. Defaults to 'magma'. See
-        https://matplotlib.org/stable/tutorials/colors/colormaps.html
+        Colormap name. Defaults to ``"magma"``.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from neurostatx.clustering.viz import radar_plot
+    >>> X = pd.DataFrame({"a": [0.0, 0.1, 1.0, 0.9], "b": [0.2, 0.0, 1.1, 1.0],
+    ...                   "c": [0.1, 0.2, 0.9, 1.0]})
+    >>> radar_plot(X, np.array([0, 0, 1, 1]), "radar.png")
     """
 
     # Setting color palette.

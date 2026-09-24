@@ -4,44 +4,43 @@ from sklearn.impute import KNNImputer
 
 def KNNimputation(ref_df, df, n_neighbors=5, weights='distance',
                   metric='nan_euclidean', keep_all_features=True):
-    """
-    Function to impute data in a dataset based on learned relationship
-    from a reference dataset.
+    """Impute missing values in ``df`` from a complete reference table.
 
-    This function uses the KNNImputer from the sklearn library to impute
-    missing values in a dataset. The imputation is based on the relationship
-    learned from a reference dataset. The reference dataset is used to
-    calculate the distance between samples and the missing values are
-    imputed based on the n_neighbors closest samples. Useful to complete
-    data from a different population and compare both of them later on.
-
-    ** Note: The reference dataset should not contain any missing values. The
-    reference dataset and the dataset to impute values in should contain the
-    same columns. **
+    Fits sklearn ``KNNImputer`` on ``ref_df`` and applies it to ``df``. Both
+    tables must share the same columns, and ``ref_df`` should contain no
+    missing values.
 
     Parameters
     ----------
     ref_df : pd.DataFrame
-        Reference dataset to learn the features' relationship from.
+        Complete reference dataset used to learn neighbor relationships.
     df : pd.DataFrame
         Dataset to impute.
     n_neighbors : int, optional
-        Number of neighbors to use. Defaults to 5.
+        Number of neighbors. Defaults to 5.
     weights : str, optional
-        Weight function to use, possible value:
-        - `uniform`: uniform weights. All points will have equal importance.
-        - `distance`: Weight by the inverse of their distance.
-        Defaults to `distance`.
+        Neighbor weighting, ``"uniform"`` or ``"distance"``. Defaults to
+        ``"distance"``.
     metric : str, optional
-        Distance metric for searching neighbors. Defaults to `nan_euclidean`.
+        Distance metric. Defaults to ``"nan_euclidean"``.
     keep_all_features : bool, optional
-        If True, even columns containing only NaNs will be imputed.
+        If True, columns that are entirely missing are still imputed.
         Defaults to True.
 
     Returns
     -------
-    pd.DataFrame
+    out : pd.DataFrame
         Imputed dataset.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from neurostatx.statistics.utils import KNNimputation
+    >>> ref = pd.DataFrame({"a": [1.0, 2.0, 3.0], "b": [2.0, 4.0, 6.0]})
+    >>> df = pd.DataFrame({"a": [1.5, np.nan], "b": [3.0, 5.0]})
+    >>> KNNimputation(ref, df, n_neighbors=2).isna().sum().sum()
+    0
     """
 
     # Assert columns from both datasets are named the same.
@@ -62,20 +61,32 @@ def KNNimputation(ref_df, df, n_neighbors=5, weights='distance',
 
 
 def apply_various_models(df, mod):
-    """
-    Function to apply various models to a dataset.
+    """Apply a fitted factor or sklearn transformer to ``df``.
+
+    Supports semopy models, sklearn transformers, and factor_analyzer
+    models.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Dataframe to use.
-    mod : Model
-        Model to use.
+        Data to transform.
+    mod : object
+        Fitted model exposing ``predict_factors`` or ``transform``.
 
     Returns
     -------
-    y
-        Predicted values.
+    y : pd.DataFrame
+        Transformed factor or component scores.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from sklearn.decomposition import PCA
+    >>> from neurostatx.statistics.utils import apply_various_models
+    >>> df = pd.DataFrame({"a": [1.0, 2.0, 3.0], "b": [2.0, 4.0, 6.0]})
+    >>> pca = PCA(n_components=1).fit(df)
+    >>> apply_various_models(df, pca).shape
+    (3, 1)
     """
 
     if "semopy" in str(type(mod)):
