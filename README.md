@@ -1,5 +1,5 @@
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
-![Python](https://img.shields.io/badge/Python-≥3.11-blue)
+![Python](https://img.shields.io/badge/Python-≥3.12-blue)
 [![PyPI](https://badge.fury.io/py/NeuroStatX.svg)](https://badge.fury.io/py/NeuroStatX)
 [![codecov](https://codecov.io/gh/gagnonanthony/NeuroStatX/graph/badge.svg?token=7P0QUI6B8U)](https://codecov.io/gh/gagnonanthony/NeuroStatX)
 [![CI](https://github.com/gagnonanthony/NeuroStatX/actions/workflows/build-dev.yml/badge.svg?branch=main)](https://github.com/gagnonanthony/NeuroStatX/actions/workflows/build-dev.yml)
