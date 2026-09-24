@@ -1,5 +1,5 @@
 # Building the image from the base image.
-FROM python:3.12-slim
+FROM ubuntu:22.04
 
 # Defining args.
 ARG VERSION
@@ -11,6 +11,8 @@ WORKDIR /
 RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
     apt-get update && DEBIAN_FRONTED=noninteractive apt-get install -y \
         git \
+        python3 \
+        pip \
         graphviz && \
     rm -rf /var/lib/apt/lists/*
 
