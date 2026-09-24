@@ -13,7 +13,7 @@ def get_nodes_and_edges(df, edge_attr="membership"):
     df : DataFrame
         Pandas DataFrame containing edges data and
         ids (membership matrix from clustering results).
-    
+
     edge_attr : str, optional
         Edge attribute to use as weights for the layout.
 

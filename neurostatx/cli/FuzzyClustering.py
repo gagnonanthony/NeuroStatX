@@ -529,7 +529,9 @@ def FuzzyClustering(
     # Iterating and saving every elements.
     for i in range(len(u)):
         membership = np.argmax(u[i], axis=0)
-        viz_df = DatasetLoader().load_data(in_dataset).drop_columns(descriptive_columns).set_type("float")
+        viz_df = DatasetLoader().load_data(
+            in_dataset
+        ).drop_columns(descriptive_columns).set_type("float")
         if parallelplot:
             viz_df.custom_function(
                 plot_parallel_plot,
