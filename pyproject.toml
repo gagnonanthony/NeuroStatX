@@ -1,15 +1,17 @@
+[project]
+dynamic = ["version"]
+
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.4.0"]
-build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry-dynamic-versioning]
-enable = false
+enable = true
 vcs = "git"
 style = "semver"
 
 [tool.poetry]
 name = "NeuroStatX"
-version = "0.0.0-post.365+2d4bba9"
+version = "0.0.0"
 description = "Command-line toolbox to perform various statistical analysis on neuroscience data."
 authors = ["Anthony Gagnon <anthony.gagnon7@usherbrooke.ca>"]
 documentation = "https://gagnonanthony.github.io/NeuroStatX/"
