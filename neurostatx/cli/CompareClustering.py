@@ -118,8 +118,8 @@ def CompareClustering(
     [1] [Hubert, L., & Arabie, P. (1985). Comparing
     partitions](https://doi.org/10.1007/BF01908075)
 
-    [2] [Rand, W. M. (1971). Objective criteria for the evaluation of clustering
-    methods](https://doi.org/10.2307/2284239)
+    [2] [Rand, W. M. (1971). Objective criteria for the evaluation of
+    clustering methods](https://doi.org/10.2307/2284239)
 
     [3] [Steinley, D. (2004). Properties of the Hubert-Arabie adjusted Rand
     index](https://psycnet.apa.org/doi/10.1037/1082-989X.9.3.386)

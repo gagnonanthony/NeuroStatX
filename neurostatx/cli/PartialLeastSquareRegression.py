@@ -115,7 +115,8 @@ def PartialLeastSquareRegression(
         ),
     ] = False
 ):
-    """Fit partial least squares regression of node attributes against graph edges.
+    """Fit partial least squares regression of node attributes against
+    graph edges.
 
     PartialLeastSquareRegression uses node attributes as predictors and edge
     weights as the response. It cross-validates to choose the number of
