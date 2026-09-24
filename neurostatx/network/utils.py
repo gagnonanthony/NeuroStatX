@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 
-def get_nodes_and_edges(df):
+def get_nodes_and_edges(df, edge_attr="membership"):
     """
     Function to generate a dataframe containing edges' data.
 
@@ -13,6 +13,9 @@ def get_nodes_and_edges(df):
     df : DataFrame
         Pandas DataFrame containing edges data and
         ids (membership matrix from clustering results).
+    
+    edge_attr : str, optional
+        Edge attribute to use as weights for the layout.
 
     Returns
     -------
@@ -34,7 +37,7 @@ def get_nodes_and_edges(df):
         {
             "node1": start_list,
             "node2": target_list,
-            "membership": membership_data.values.flatten(),
+            edge_attr: membership_data.values.flatten(),
         }
     )
 
@@ -98,6 +101,10 @@ def construct_attributes_dict(df, labels, id_column):
 
     # Keeping only columns specified in labels.
     data_to_add = df[labels]
+
+    # Replace whitespaces in column names with underscores.
+    for char in [" ", "#"]:
+        data_to_add.columns = data_to_add.columns.str.replace(char, "")
 
     # Transform to dictionary.
     attributes_dict = data_to_add.to_dict(orient="index")
