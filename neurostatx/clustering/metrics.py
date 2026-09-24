@@ -165,7 +165,8 @@ def compute_gap_stats(
     Examples
     --------
     >>> import numpy as np
-    >>> from neurostatx.clustering.metrics import compute_gap_stats, compute_sse
+    >>> from neurostatx.clustering.metrics import compute_gap_stats,
+    ...                                           compute_sse
     >>> X = np.array([[0.0, 0.0], [0.1, 0.0], [1.0, 1.0], [0.9, 1.0]])
     >>> cntr = np.array([[0.05, 0.0], [0.95, 1.0]])
     >>> labels = np.array([0, 0, 1, 1])

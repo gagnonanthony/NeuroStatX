@@ -21,7 +21,9 @@ class FuzzyCMeans(ClusterMixin, BaseEstimator):
     """Fuzzy C-Means clustering.
 
     Soft clustering estimator with a sklearn-compatible API. Fits a single
-    number of clusters; use [search_fuzzy_cmeans][neurostatx.clustering.fuzzy.search_fuzzy_cmeans] to evaluate a range
+    number of clusters; use
+    [search_fuzzy_cmeans][neurostatx.clustering.fuzzy.search_fuzzy_cmeans]
+    to evaluate a range
     of ``k``. Based on scikit-fuzzy ``cmeans`` /
     ``cmeans_predict``.
 
@@ -59,7 +61,8 @@ class FuzzyCMeans(ClusterMixin, BaseEstimator):
     inertia_ : float
         Within-cluster sum of squared errors (WSS).
     n_features_in_ : int
-        Number of features seen during [fit][neurostatx.clustering.fuzzy.FuzzyCMeans.fit].
+        Number of features seen during
+        [fit][neurostatx.clustering.fuzzy.FuzzyCMeans.fit].
 
     Examples
     --------
@@ -241,7 +244,9 @@ def process_cluster(
     compute_gap,
 ):
     """
-    Core worker of [search_fuzzy_cmeans][neurostatx.clustering.fuzzy.search_fuzzy_cmeans]. Fit one ``k``, compute
+    Core worker of
+    [search_fuzzy_cmeans][neurostatx.clustering.fuzzy.search_fuzzy_cmeans]
+    . Fit one ``k``, compute
     metrics, and subsample points for visualization.
 
     Must remain a module-level function so it can be pickled by
@@ -363,7 +368,9 @@ def search_fuzzy_cmeans(
         Initial membership matrices, one per ``k`` from ``min_clusters``
         to ``max_clusters``. Defaults to None.
     random_state : int, numpy.RandomState instance or None, optional
-        Seed forwarded to each [FuzzyCMeans][neurostatx.clustering.fuzzy.FuzzyCMeans] fit. Defaults to None.
+        Seed forwarded to each
+        [FuzzyCMeans][neurostatx.clustering.fuzzy.FuzzyCMeans]
+        fit. Defaults to None.
 
     Returns
     -------
@@ -445,7 +452,8 @@ def fuzzyCmeans(
     processes=1,
     verbose=False,
 ):
-    """Deprecated wrapper around [search_fuzzy_cmeans][neurostatx.clustering.fuzzy.search_fuzzy_cmeans].
+    """Deprecated wrapper around
+    [search_fuzzy_cmeans][neurostatx.clustering.fuzzy.search_fuzzy_cmeans].
 
     Notes
     -----

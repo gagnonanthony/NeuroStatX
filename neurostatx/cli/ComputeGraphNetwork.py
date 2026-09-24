@@ -161,9 +161,12 @@ def ComputeGraphNetwork(
 
     References
     ----------
-    [1] [Ariza-Jiménez, L., Villa, L. F., & Quintero, O. L. (2019). Memberships Networks for High-Dimensional Fuzzy Clustering Visualization](https://doi.org/10.1007/978-3-030-31019-6_23)
+    [1] [Ariza-Jiménez, L., Villa, L. F., & Quintero, O. L. (2019). Memberships
+    Networks forHigh-Dimensional Fuzzy Clustering
+    Visualization](https://doi.org/10.1007/978-3-030-31019-6_23)
 
-    [2] [NetworkX drawing documentation](https://networkx.org/documentation/stable/reference/drawing.html)
+    [2] [NetworkX drawing
+    documentation](https://networkx.org/documentation/stable/reference/drawing.html)
 
     Parameters
     ----------

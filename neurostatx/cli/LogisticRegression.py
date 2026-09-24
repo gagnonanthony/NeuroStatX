@@ -205,7 +205,8 @@ def LogisticRegression(
 
     References
     ----------
-    [1] [scikit-learn scoring parameter](https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter)
+    [1] [scikit-learn scoring
+    parameter](https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter)
 
     Parameters
     ----------

@@ -21,7 +21,8 @@ from neurostatx.io.viz import generate_coef_plot, flexible_hist
 
 # Initializing the app.
 app = App(default_parameter=Parameter(negative=()))
-"""Cyclopts application for the PartialLeastSquareRegression command-line tool."""
+"""Cyclopts application for the PartialLeastSquareRegression
+command-line tool."""
 
 
 @app.default()
@@ -158,7 +159,8 @@ def PartialLeastSquareRegression(
 
     References
     ----------
-    [1] [scikit-learn scoring parameter](https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter)
+    [1] [scikit-learn scoring
+    parameter](https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter)
 
     Parameters
     ----------

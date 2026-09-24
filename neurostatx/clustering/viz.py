@@ -295,7 +295,8 @@ def plot_parallel_plot(
     >>> import pandas as pd
     >>> import numpy as np
     >>> from neurostatx.clustering.viz import plot_parallel_plot
-    >>> X = pd.DataFrame({"a": [0.0, 0.1, 1.0, 0.9], "b": [0.2, 0.0, 1.1, 1.0]})
+    >>> X = pd.DataFrame({"a": [0.0, 0.1, 1.0, 0.9],
+    ...                   "b": [0.2, 0.0, 1.1, 1.0]})
     >>> plot_parallel_plot(X, np.array([0, 0, 1, 1]), "parallel.png",
     ...                    mean_values=True)
     """

@@ -260,15 +260,20 @@ def FuzzyClustering(
 
     References
     ----------
-    [1] [scikit-fuzzy c-means example](https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_cmeans.html)
+    [1] [scikit-fuzzy c-means
+    example](https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_cmeans.html)
 
-    [2] [scikit-learn clustering performance evaluation](https://scikit-learn.org/stable/modules/clustering.html#clustering-performance-evaluation)
+    [2] [scikit-learn clustering performance
+    evaluation](https://scikit-learn.org/stable/modules/clustering.html#clustering-performance-evaluation)
 
-    [3] [Selecting the optimal number of clusters](https://towardsdatascience.com/cheat-sheet-to-implementing-7-methods-for-selecting-optimal-number-of-clusters-in-python-898241e1d6ad)
+    [3] [Selecting the optimal number of
+    clusters](https://towardsdatascience.com/cheat-sheet-to-implementing-7-methods-for-selecting-optimal-number-of-clusters-in-python-898241e1d6ad)
 
-    [4] [How to determine the right number of clusters](https://towardsdatascience.com/how-to-determine-the-right-number-of-clusters-with-code-d58de36368b1)
+    [4] [How to determine the right number of
+    clusters](https://towardsdatascience.com/how-to-determine-the-right-number-of-clusters-with-code-d58de36368b1)
 
-    [5] [scikit-fuzzy GitHub repository](https://github.com/scikit-fuzzy/scikit-fuzzy)
+    [5] [scikit-fuzzy GitHub
+    repository](https://github.com/scikit-fuzzy/scikit-fuzzy)
 
     Parameters
     ----------

@@ -536,7 +536,8 @@ class GraphLoader:
         >>> import pandas as pd
         >>> from neurostatx.io.loader import GraphLoader
         >>> from neurostatx.network.viz import NetworkLayout
-        >>> edges = pd.DataFrame({"source": ["s1", "s2"], "target": ["c1", "c1"],
+        >>> edges = pd.DataFrame({"source": ["s1", "s2"],
+        ...                       "target": ["c1", "c1"],
         ...                       "membership": [0.8, 0.4]})
         >>> g = GraphLoader().build_graph(edges, edge_attr="membership")
         >>> g.layout(NetworkLayout.Spring)

@@ -91,7 +91,8 @@ def GraphMetrics(
 
     References
     ----------
-    [1] [NetworkX algorithms](https://networkx.org/documentation/stable/reference/algorithms/index.html#)
+    [1] [NetworkX
+    algorithms](https://networkx.org/documentation/stable/reference/algorithms/index.html#)
 
     Parameters
     ----------
