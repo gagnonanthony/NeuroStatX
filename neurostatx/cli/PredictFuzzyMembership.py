@@ -8,11 +8,11 @@ from joblib import load
 
 from cyclopts import App, Parameter
 import numpy as np
-from skfuzzy import cmeans_predict
 from typing_extensions import Annotated
 
 from neurostatx.io.utils import assert_input, assert_output_dir_exist
 from neurostatx.io.loader import DatasetLoader
+from neurostatx.clustering.fuzzy import FuzzyCMeans
 from neurostatx.clustering.viz import (
     plot_parallel_plot,
     radar_plot)
@@ -301,16 +301,18 @@ def PredictFuzzyMembership(
             )
 
     logging.info("Predicting membership matrix...")
-    u, u0, d, jm, p, fpc = cmeans_predict(
-        X.T,
-        cntr.get_data().values,
+    centroids = cntr.get_data().values
+    fcm = FuzzyCMeans(
+        n_clusters=centroids.shape[0],
         m=m,
-        error=error,
-        maxiter=maxiter,
+        max_iter=maxiter,
+        tol=error,
         metric=metric,
-        init=None,
-        seed=42,
+        random_state=42,
     )
+    fcm.cluster_centers_ = centroids
+    fcm.n_features_in_ = centroids.shape[1]
+    u = fcm.predict_proba(X).T
 
     # Saving results.
     logging.info("Saving results...")

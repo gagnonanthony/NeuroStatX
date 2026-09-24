@@ -15,7 +15,7 @@ from typing_extensions import Annotated
 from neurostatx.io.utils import assert_input, assert_output_dir_exist
 from neurostatx.io.loader import DatasetLoader
 from neurostatx.io.viz import flexible_barplot
-from neurostatx.clustering.fuzzy import fuzzyCmeans
+from neurostatx.clustering.fuzzy import search_fuzzy_cmeans
 from neurostatx.utils.preprocessing import compute_pca
 from neurostatx.clustering.viz import (
     plot_clustering_results,
@@ -368,7 +368,7 @@ def FuzzyClustering(
         logging.info("Applying PCA dimensionality reduction.")
         X, model, variance, components, chi, kmo = df.custom_function(
             compute_pca,
-            3)
+            n_components=3)
         logging.info(
             "Bartlett's test of sphericity returned a p-value of {} and "
             "Keiser-Meyer-Olkin (KMO)"
@@ -402,7 +402,10 @@ def FuzzyClustering(
             index=True,
             header=True
         )
+        df.drop_columns(descriptive_columns).set_type("float")
 
+        # Transpose the components matrix to get the loadings values.
+        components.data = components.get_data().T
         components.custom_function(
             flexible_barplot,
             nb_axes=3,
@@ -435,17 +438,19 @@ def FuzzyClustering(
 
     # Computing a range of C-means clustering method.
     logging.info("Computing FCM from k=2 to k={}".format(k))
-    cntr, u, wss, fpcs, ss, chi, dbi, gap, sk = fuzzyCmeans(
+    cntr, u, wss, fpcs, ss, chi, dbi, gap, sk = search_fuzzy_cmeans(
         df.get_data().values,  # This will change in the future.
-        max_cluster=k,
+        min_clusters=2,
+        max_clusters=k,
         m=m,
-        error=error,
-        maxiter=maxiter,
+        tol=error,
+        max_iter=maxiter,
         init=init_mat,
         metric=metric,
         output=out_folder,
-        processes=processes,
+        n_jobs=processes,
         verbose=verbose,
+        random_state=1234,
     )
 
     # Compute knee location on Silhouette Score.
@@ -524,8 +529,9 @@ def FuzzyClustering(
     # Iterating and saving every elements.
     for i in range(len(u)):
         membership = np.argmax(u[i], axis=0)
+        viz_df = DatasetLoader().load_data(in_dataset).drop_columns(descriptive_columns).set_type("float")
         if parallelplot:
-            df.custom_function(
+            viz_df.custom_function(
                 plot_parallel_plot,
                 labels=membership,
                 mean_values=True,
@@ -535,7 +541,7 @@ def FuzzyClustering(
                 title=f"Parallel Coordinates plot for {i+2} clusters solution."
             )
         if radarplot:
-            df.custom_function(
+            viz_df.custom_function(
                 radar_plot,
                 labels=membership,
                 title=f"Radar plot for {i+2} clusters solution.",

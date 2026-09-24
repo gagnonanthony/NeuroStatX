@@ -90,6 +90,85 @@ def plot_clustering_results(lst, title, metric, output, errorbar=None,
         plt.close()
 
 
+def plot_fuzzy_cmeans_solutions(
+    results, output, min_clusters=2, max_clusters=None
+):
+    """
+    Plot a grid of Fuzzy C-Means solutions for a range of ``k``.
+
+    Parameters
+    ----------
+    results : list of tuple
+        Per-k worker results from
+        :func:`neurostatx.clustering.fuzzy.process_cluster`.
+        Each tuple must contain ``n_cluster``, ``n_iter``, ``fpc``, centroids,
+        visualization x/y points, and hard labels.
+    output : str
+        Output folder. The figure is saved as ``viz_multiple_cluster_nb.png``.
+    min_clusters : int, optional
+        Smallest ``k`` that was fitted. Defaults to 2.
+    max_clusters : int, optional
+        Largest ``k`` requested, used only for subplot grid size. Defaults
+        to the number of results plus ``min_clusters - 1``.
+    """
+    if max_clusters is None:
+        max_clusters = min_clusters + len(results) - 1
+
+    grid = math.ceil(math.sqrt(max_clusters))
+    fig, axes = plt.subplots(grid, grid, figsize=(8, 8), squeeze=False)
+
+    for result in results:
+        (
+            n_cluster,
+            n_iter,
+            fpc,
+            cntr,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            xpts_for_viz,
+            ypts_for_viz,
+            cluster_membership_for_viz,
+        ) = result
+
+        idx = n_cluster - min_clusters
+        ax = axes[idx // grid, idx % grid]
+
+        cmap = plt.get_cmap("plasma", n_cluster)
+        colors = [rgb2hex(cmap(i)) for i in range(cmap.N)]
+
+        for j in range(n_cluster):
+            ax.plot(
+                xpts_for_viz[cluster_membership_for_viz == j],
+                ypts_for_viz[cluster_membership_for_viz == j],
+                ".",
+                color=colors[j],
+            )
+
+        for pt in cntr:
+            ax.plot(pt[0], pt[1], "rs")
+
+        ax.set_title(
+            "Clusters = {0}; FPC = {1:.2f}\nIterations = {iteration}"
+            .format(
+                n_cluster, fpc, iteration=n_iter
+            ),
+            fontdict={"fontsize": 8},
+        )
+        ax.axis("off")
+
+    for ax in axes.flat[len(results):]:
+        ax.remove()
+
+    plt.tight_layout()
+    plt.savefig(f"{output}/viz_multiple_cluster_nb.png")
+    plt.close()
+
+
 def plot_dendrogram(X, output, title="Dendrograms", annotation=None):
     """
     Function to plot a dendrogram plot showing hierarchical clustering. Useful
