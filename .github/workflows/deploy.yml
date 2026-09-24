@@ -22,11 +22,11 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
       - uses: actions/setup-python@v7
         with:
-          python-version: 3.11
+          python-version: "3.12"
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.7.1
+          version: 2.5.1
           virtualenvs-create: true
           installer-parallel: true
       - name: Install NeuroStatX & dependencies
