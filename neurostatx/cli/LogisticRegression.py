@@ -348,7 +348,6 @@ def LogisticRegression(
             LabelBinarizer().fit(y_train).transform(y_test)[:, i],
             mod.predict_proba(X_test)[:, 1],
             name="Logistic Regression",
-            color='black',
             plot_chance_level=True
         )
         # Set labels and title.
